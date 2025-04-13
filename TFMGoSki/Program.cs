@@ -1,7 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using TFMGoSki.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<TFMGoSkiDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("TFMGoSkiContext")));
 
 var app = builder.Build();
 
