@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.Class
+﻿@model TFMGoSki.ViewModels.ClassViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -33,8 +33,8 @@
                 <span asp-validation-for="ClassLevel" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="InstructorId" class="control-label"></label>
-                <select asp-for="InstructorId" class ="form-control" asp-items="ViewBag.InstructorId"></select>
+                <label asp-for="Instructor" class="control-label"></label>
+                <select asp-for="Instructor" class ="form-control" asp-items="ViewBag.Instructor"></select>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

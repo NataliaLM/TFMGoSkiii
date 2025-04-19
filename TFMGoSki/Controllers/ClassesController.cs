@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -23,7 +25,26 @@ namespace TFMGoSki.Controllers
         // GET: Classes
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Classes.ToListAsync());
+            List<Class>? classes = await _context.Classes.ToListAsync();
+            List<ClassDto> classDtos = new List<ClassDto>();
+
+            foreach (Class? clase in classes)
+            {
+                ClassDto classDto = new ClassDto
+                {
+                    Id = clase.Id,
+                    Name = clase.Name,
+                    Price = clase.Price,
+                    StudentQuantity = clase.StudentQuantity,
+                    ClassLevel = clase.ClassLevel
+                };
+                Instructor? instructor = await _context.Instructors.FindAsync(clase.InstructorId);
+                classDto.InstructorName = instructor.Name; 
+
+                classDtos.Add(classDto);
+            }
+            
+            return View(classDtos);
         }
 
         // GET: Classes/Details/5
@@ -41,13 +62,22 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(@class);
+            ClassDto classDto = new ClassDto
+            {
+                Id = @class.Id,
+                Name = @class.Name,
+                Price = @class.Price,
+                StudentQuantity = @class.StudentQuantity,
+                ClassLevel = @class.ClassLevel
+            };
+
+            return View(classDto);
         }
 
         // GET: Classes/Create
         public IActionResult Create()
         {
-            ViewBag.InstructorId = new SelectList(_context.Instructors, "Id", "Name");
+            ViewBag.Instructor = new SelectList(_context.Instructors, "Id", "Name");
             ViewBag.ClassLevel = new SelectList(Enum.GetValues(typeof(ClassLevel)));
             return View();
         }
@@ -57,25 +87,23 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Price,StudentQuantity,ClassLevel,InstructorId")] string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId)
+        public async Task<IActionResult> Create(ClassViewModel model)
         {
-            Class @class = new Class(name, price, studentQuantity, classLevel, instructorId);
-
-            if (@class != null)
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    _context.Add(@class);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
+                Class? @class = new Class(
+                    model.Name,
+                    model.Price.Value,
+                    model.StudentQuantity.Value,
+                    model.ClassLevel.Value,
+                    model.Instructor.Value
+                );
 
-                return View(@class);
+                _context.Add(@class);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                return NotFound();
-            }
+            return View(model);
         }
 
         // GET: Classes/Edit/5
@@ -86,16 +114,26 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            var @class = await _context.Classes.FindAsync(id);
+            Class? @class = await _context.Classes.FindAsync(id);
             if (@class == null)
             {
                 return NotFound();
             }
 
-            ViewBag.InstructorId = new SelectList(_context.Instructors, "Id", "Name");
+            ViewBag.Instructor = new SelectList(_context.Instructors, "Id", "Name");
             ViewBag.ClassLevel = new SelectList(Enum.GetValues(typeof(ClassLevel)));
 
-            return View(@class);
+            ClassViewModel model = new ClassViewModel
+            {
+                Id = @class.Id,
+                Name = @class.Name,
+                Price = @class.Price,
+                StudentQuantity = @class.StudentQuantity,
+                ClassLevel = @class.ClassLevel,
+                Instructor = @class.InstructorId
+            };
+
+            return View(model);
         }
 
         // POST: Classes/Edit/5
@@ -103,7 +141,7 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Price,StudentQuantity,ClassLevel,InstructorId")] string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId)
+        public async Task<IActionResult> Edit(int id, ClassViewModel model)//TODO: (Natalia) ¿El Id ya está?
         {
             Class? @class = await _context.Classes.FindAsync(id);
             if (@class != null)
@@ -112,7 +150,7 @@ namespace TFMGoSki.Controllers
                 {
                     try
                     {
-                        @class.Update(name, price, studentQuantity, classLevel, instructorId);
+                        @class.Update(model.Name, model.Price.Value, model.StudentQuantity.Value, model.ClassLevel.Value, model.Instructor.Value);
 
                         _context.Update(@class);
                         await _context.SaveChangesAsync();
@@ -153,7 +191,17 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(@class);
+            ClassViewModel model = new ClassViewModel
+            {
+                Id = @class.Id,
+                Name = @class.Name,
+                Price = @class.Price,
+                StudentQuantity = @class.StudentQuantity,
+                ClassLevel = @class.ClassLevel,
+                Instructor = @class.InstructorId
+            };
+
+            return View(model);
         }
 
         // POST: Classes/Delete/5

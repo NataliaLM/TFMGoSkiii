@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TFMGoSki.Models.Class>
+﻿@model IEnumerable<TFMGoSki.Dtos.ClassDto>
 
 @{
     ViewData["Title"] = "Index";
@@ -25,7 +25,7 @@
                 @Html.DisplayNameFor(model => model.ClassLevel)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.InstructorId) @* //TODO: (Natalia) Crear Dto para que se vea instructor *@
+                @Html.DisplayNameFor(model => model.InstructorName) @* //TODO: (Natalia) Crear Dto para que se vea instructor *@
             </th>
             <th></th>
         </tr>
@@ -46,7 +46,7 @@
                 @Html.DisplayFor(modelItem => item.ClassLevel)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.InstructorId)
+                    @Html.DisplayFor(modelItem => item.InstructorName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
