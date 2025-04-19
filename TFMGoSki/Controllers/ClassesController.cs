@@ -141,7 +141,7 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, ClassViewModel model)//TODO: (Natalia) ¿El Id ya está?
+        public async Task<IActionResult> Edit(int id, ClassViewModel model)//TODO: (Natalia) ¿El Id ya está? Arriba lo uso.
         {
             Class? @class = await _context.Classes.FindAsync(id);
             if (@class != null)
@@ -168,7 +168,7 @@ namespace TFMGoSki.Controllers
                     }
                     return RedirectToAction(nameof(Index));
                 }
-                return View(@class);
+                return View(model);
             }
             else
             {
@@ -191,17 +191,16 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            ClassViewModel model = new ClassViewModel
+            ClassDto classDto = new ClassDto
             {
                 Id = @class.Id,
                 Name = @class.Name,
                 Price = @class.Price,
                 StudentQuantity = @class.StudentQuantity,
-                ClassLevel = @class.ClassLevel,
-                Instructor = @class.InstructorId
+                ClassLevel = @class.ClassLevel
             };
 
-            return View(model);
+            return View(classDto);
         }
 
         // POST: Classes/Delete/5
