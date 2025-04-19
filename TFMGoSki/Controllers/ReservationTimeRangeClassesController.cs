@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -22,7 +24,24 @@ namespace TFMGoSki.Controllers
         // GET: ReservationTimeRangeClasses
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ReservationTimeRangeClasses.ToListAsync());
+            List<ReservationTimeRangeClass>? reservationTimeRangeClasses = await _context.ReservationTimeRangeClasses.ToListAsync();
+            List<ReservationTimeRangeClassDto> reservationTimeRangeClassDtos = new List<ReservationTimeRangeClassDto>();
+
+            foreach (ReservationTimeRangeClass? reservationTimeRangeClass in reservationTimeRangeClasses)
+            {
+                Class? @class = _context.Classes.FirstOrDefault(c => c.Id == reservationTimeRangeClass.ClassId);
+
+                ReservationTimeRangeClassDto reservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                {
+                    Id = reservationTimeRangeClass.Id,
+                    RemainingStudentsQuantity = reservationTimeRangeClass.RemainingStudentsQuantity,                    
+                    Class = @class.Name
+                };
+
+                reservationTimeRangeClassDtos.Add(reservationTimeRangeClassDto);
+            }
+
+            return View(reservationTimeRangeClassDtos);
         }
 
         // GET: ReservationTimeRangeClasses/Details/5
@@ -40,7 +59,16 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(reservationTimeRangeClass);
+            ReservationTimeRangeClassDto reservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+            {
+                Id = reservationTimeRangeClass.Id,
+                StartTime = reservationTimeRangeClass.StartTime,
+                EndTime = reservationTimeRangeClass.EndTime,
+                RemainingStudentsQuantity = reservationTimeRangeClass.RemainingStudentsQuantity,
+                Class = _context.Classes.FirstOrDefault(c => c.Id == reservationTimeRangeClass.ClassId).Name
+            };
+
+            return View(reservationTimeRangeClassDto);
         }
 
         // GET: ReservationTimeRangeClasses/Create
@@ -56,16 +84,16 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("StartTime,EndTime, RemainingStudentsQuantity, ClassId")] DateTime startTime, DateTime endTime, int remainingStudentsQuantity, int classId)
+        public async Task<IActionResult> Create(ReservationTimeRangeClassViewModel reservationTimeRangeClassViewModel)
         {
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(startTime, endTime, remainingStudentsQuantity, classId);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(reservationTimeRangeClassViewModel.StartTime, reservationTimeRangeClassViewModel.EndTime, reservationTimeRangeClassViewModel.RemainingStudentsQuantity, reservationTimeRangeClassViewModel.Class);
             if (ModelState.IsValid)
             {
                 _context.Add(reservationTimeRangeClass);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(reservationTimeRangeClass);
+            return View(reservationTimeRangeClassViewModel);
         }
 
         // GET: ReservationTimeRangeClasses/Edit/5
@@ -84,7 +112,16 @@ namespace TFMGoSki.Controllers
 
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
-            return View(reservationTimeRangeClass);
+            ReservationTimeRangeClassViewModel reservationTimeRangeClassViewModel = new ReservationTimeRangeClassViewModel
+            {
+                Id = reservationTimeRangeClass.Id,
+                StartTime = reservationTimeRangeClass.StartTime,
+                EndTime = reservationTimeRangeClass.EndTime,
+                RemainingStudentsQuantity = reservationTimeRangeClass.RemainingStudentsQuantity,
+                Class = reservationTimeRangeClass.ClassId
+            };
+
+            return View(reservationTimeRangeClassViewModel);
         }
 
         // POST: ReservationTimeRangeClasses/Edit/5
@@ -92,7 +129,7 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("StartTime,EndTime,RemainingStudentsQuantity,ClassId")] DateTime startTime, DateTime endTime, int remainingStudentsQuantity, int classId)
+        public async Task<IActionResult> Edit(int id, ReservationTimeRangeClassViewModel reservationTimeRangeClassViewModel)
         {
             ReservationTimeRangeClass? reservationTimeRangeClass = _context.ReservationTimeRangeClasses.FirstOrDefault(reservation => reservation.Id == id);
 
@@ -105,7 +142,7 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
-                    reservationTimeRangeClass.Update(startTime, endTime, remainingStudentsQuantity, classId);
+                    reservationTimeRangeClass.Update(reservationTimeRangeClassViewModel.StartTime, reservationTimeRangeClassViewModel.EndTime, reservationTimeRangeClassViewModel.RemainingStudentsQuantity, reservationTimeRangeClassViewModel.Class);
 
                     _context.Update(reservationTimeRangeClass);
                     await _context.SaveChangesAsync();
@@ -123,7 +160,7 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(reservationTimeRangeClass);
+            return View(reservationTimeRangeClassViewModel);
         }
 
         // GET: ReservationTimeRangeClasses/Delete/5
@@ -141,7 +178,16 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(reservationTimeRangeClass);
+            ReservationTimeRangeClassDto reservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+            {
+                Id = reservationTimeRangeClass.Id,
+                StartTime = reservationTimeRangeClass.StartTime,
+                EndTime = reservationTimeRangeClass.EndTime,
+                RemainingStudentsQuantity = reservationTimeRangeClass.RemainingStudentsQuantity,
+                Class = _context.Classes.FirstOrDefault(c => c.Id == reservationTimeRangeClass.ClassId).Name
+            };
+
+            return View(reservationTimeRangeClassDto);
         }
 
         // POST: ReservationTimeRangeClasses/Delete/5

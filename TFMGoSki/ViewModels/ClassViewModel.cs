@@ -6,7 +6,7 @@ namespace TFMGoSki.ViewModels
     public class ClassViewModel
     {
         public int Id { get; set; }
-        [Display(Name = "Name")]
+        [Display(Name = "Class Name")]
         [Required(ErrorMessage = "The name is required.")]
         [StringLength(100, ErrorMessage = "The name cannot exceed 100 characters.")]
         public string? Name { get; set; }

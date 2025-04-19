@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TFMGoSki.Models.ReservationTimeRangeClass>
+﻿@model IEnumerable<TFMGoSki.Dtos.ReservationTimeRangeClassDto>
 
 @{
     ViewData["Title"] = "Index";
@@ -22,7 +22,7 @@
                 @Html.DisplayNameFor(model => model.EndTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.ClassId)
+                @Html.DisplayNameFor(model => model.Class)
             </th>
             <th></th>
         </tr>
@@ -40,7 +40,7 @@
                 @Html.DisplayFor(modelItem => item.EndTime)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ClassId)
+                @Html.DisplayFor(modelItem => item.Class)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
