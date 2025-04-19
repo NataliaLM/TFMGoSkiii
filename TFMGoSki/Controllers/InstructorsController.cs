@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -22,7 +24,21 @@ namespace TFMGoSki.Controllers
         // GET: Instructors
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Instructors.ToListAsync());
+            List<Instructor>? instructors = await _context.Instructors.ToListAsync();
+            List<InstructorDto> instructorDtos = new List<InstructorDto>();
+
+            foreach (Instructor? instructor in instructors)
+            {
+                InstructorDto instructorDto = new InstructorDto
+                {
+                    Id = instructor.Id,
+                    Name = instructor.Name
+                };
+
+                instructorDtos.Add(instructorDto);
+            }
+
+            return View(instructorDtos);
         }
 
         // GET: Instructors/Details/5
@@ -40,7 +56,13 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(instructor);
+            InstructorDto instructorDto = new InstructorDto
+            {
+                Id = instructor.Id,
+                Name = instructor.Name
+            };
+
+            return View(instructorDto);
         }
 
         // GET: Instructors/Create
@@ -54,16 +76,17 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name")] string name)
+        public async Task<IActionResult> Create(InstructorViewModel instructorViewModel)
         {
-            Instructor instructor = new Instructor(name);
+            Instructor instructor = new Instructor(instructorViewModel.Name);
+
             if (ModelState.IsValid)
             {
                 _context.Add(instructor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(instructor);
+            return View(instructorViewModel);
         }
 
         // GET: Instructors/Edit/5
@@ -79,7 +102,12 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
-            return View(instructor);
+            InstructorViewModel instructorViewModel = new InstructorViewModel
+            {
+                Id = instructor.Id,
+                Name = instructor.Name
+            };
+            return View(instructorViewModel);
         }
 
         // POST: Instructors/Edit/5
@@ -87,37 +115,36 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name")] string name)
+        public async Task<IActionResult> Edit(int id, InstructorViewModel instructorViewModel)
         {
             Instructor? instructor = _context.Instructors.FirstOrDefault(instructor => instructor.Id == id);
 
             if (instructor != null)
-            {
-                
+            {                
                 if (ModelState.IsValid)
                 {
                     try
                     {
-                        instructor.Update(name);
+                        instructor.Update(instructorViewModel.Name);
 
                         _context.Update(instructor);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!InstructorExists(instructor.Id))
-                    {
-                        return NotFound();
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
-                        throw;
+                        if (!InstructorExists(instructor.Id))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
             }
-            }
-            return View(instructor);
+            return View(instructorViewModel);
         }
 
         // GET: Instructors/Delete/5
@@ -135,7 +162,13 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(instructor);
+            InstructorDto instructorDto = new InstructorDto
+            {
+                Id = instructor.Id,
+                Name = instructor.Name
+            };
+
+            return View(instructorDto);
         }
 
         // POST: Instructors/Delete/5
