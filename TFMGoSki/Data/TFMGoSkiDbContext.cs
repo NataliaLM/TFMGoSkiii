@@ -8,12 +8,19 @@ namespace TFMGoSki.Data
             : base(options)
         {
         }
-        public DbSet<Models.Class> Classes { get; set; } 
+        public DbSet<Models.Class> Classes { get; set; }
+        public DbSet<Models.Instructor> Instructors { get; set; }
+        public DbSet<Models.ReservationTimeRange> ReservationTimeRanges { get; set; }
+        public DbSet<Models.ReservationTimeRangeClass> ReservationTimeRangeClasses { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ClassEFConfig());
+            modelBuilder.ApplyConfiguration(new InstructorEFConfig());
+            modelBuilder.ApplyConfiguration(new ReservationTimeRangeEFConfig());
+            modelBuilder.ApplyConfiguration(new ReservationTimeRangeClassEFConfig());
 
             base.OnModelCreating(modelBuilder);
         }
+
     }
 }
