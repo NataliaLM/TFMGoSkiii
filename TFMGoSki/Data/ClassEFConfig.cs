@@ -17,9 +17,18 @@ namespace TFMGoSki.Data
                 .HasMaxLength(100); 
 
             builder.Property(c => c.Price)
+                .IsRequired()
                 .HasPrecision(18, 2);
 
             builder.Property(c => c.StudentQuantity)
+                .IsRequired();
+
+            builder.HasOne<Instructor>()
+                .WithMany()
+                .HasForeignKey(c => c.InstructorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(c => c.ClassLevel)
                 .IsRequired();
         }
     }
