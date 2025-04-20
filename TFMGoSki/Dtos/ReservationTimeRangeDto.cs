@@ -6,8 +6,12 @@ namespace TFMGoSki.Dtos
     {
         public int Id { get; set; }        
         [Display(Name = "Start Time")]
-        public DateTime StartTime { get; set; }
+        public TimeOnly StartTimeOnly { get; set; }
         [Display(Name = "End Time")]
-        public DateTime EndTime { get; set; }
+        public TimeOnly EndTimeOnly { get; set; }
+        [Display(Name = "Start Date")]
+        public DateOnly StartDateOnly { get; set; }
+        [Display(Name = "End Date")]
+        public DateOnly EndDateOnly { get; set; }
     }
 }

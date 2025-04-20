@@ -30,13 +30,16 @@ namespace TFMGoSki.Controllers
 
             foreach (Class? clase in classes)
             {
+                City? city = _context.Cities.FirstOrDefault(city => city.Id == clase.CityId);
+
                 ClassDto classDto = new ClassDto
                 {
                     Id = clase.Id,
                     Name = clase.Name,
                     Price = clase.Price,
                     StudentQuantity = clase.StudentQuantity,
-                    ClassLevel = clase.ClassLevel
+                    ClassLevel = clase.ClassLevel,
+                    CityName = city.Name
                 };
                 Instructor? instructor = await _context.Instructors.FindAsync(clase.InstructorId);
                 classDto.InstructorName = instructor.Name; 
@@ -68,7 +71,8 @@ namespace TFMGoSki.Controllers
                 Name = @class.Name,
                 Price = @class.Price,
                 StudentQuantity = @class.StudentQuantity,
-                ClassLevel = @class.ClassLevel
+                ClassLevel = @class.ClassLevel,
+                CityName = @class.Name
             };
 
             return View(classDto);
@@ -79,6 +83,7 @@ namespace TFMGoSki.Controllers
         {
             ViewBag.Instructor = new SelectList(_context.Instructors, "Id", "Name");
             ViewBag.ClassLevel = new SelectList(Enum.GetValues(typeof(ClassLevel)));
+            ViewBag.City = new SelectList(_context.Cities, "Id", "Name");
             return View();
         }
 
@@ -96,7 +101,8 @@ namespace TFMGoSki.Controllers
                     model.Price.Value,
                     model.StudentQuantity.Value,
                     model.ClassLevel.Value,
-                    model.Instructor.Value
+                    model.Instructor.Value,
+                    model.City.Value
                 );
 
                 _context.Add(@class);
@@ -122,6 +128,7 @@ namespace TFMGoSki.Controllers
 
             ViewBag.Instructor = new SelectList(_context.Instructors, "Id", "Name");
             ViewBag.ClassLevel = new SelectList(Enum.GetValues(typeof(ClassLevel)));
+            ViewBag.City = new SelectList(_context.Cities, "Id", "Name");
 
             ClassViewModel model = new ClassViewModel
             {
@@ -130,7 +137,8 @@ namespace TFMGoSki.Controllers
                 Price = @class.Price,
                 StudentQuantity = @class.StudentQuantity,
                 ClassLevel = @class.ClassLevel,
-                Instructor = @class.InstructorId
+                Instructor = @class.InstructorId,
+                City = @class.CityId
             };
 
             return View(model);
@@ -150,7 +158,7 @@ namespace TFMGoSki.Controllers
                 {
                     try
                     {
-                        @class.Update(model.Name, model.Price.Value, model.StudentQuantity.Value, model.ClassLevel.Value, model.Instructor.Value);
+                        @class.Update(model.Name, model.Price.Value, model.StudentQuantity.Value, model.ClassLevel.Value, model.Instructor.Value, model.City.Value);
 
                         _context.Update(@class);
                         await _context.SaveChangesAsync();
@@ -197,7 +205,8 @@ namespace TFMGoSki.Controllers
                 Name = @class.Name,
                 Price = @class.Price,
                 StudentQuantity = @class.StudentQuantity,
-                ClassLevel = @class.ClassLevel
+                ClassLevel = @class.ClassLevel,
+                CityName = @class.Name
             };
 
             return View(classDto);

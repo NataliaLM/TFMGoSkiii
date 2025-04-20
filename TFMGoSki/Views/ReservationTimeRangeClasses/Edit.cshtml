@@ -24,14 +24,24 @@
             </div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="StartTime" class="control-label"></label>
-                <input asp-for="StartTime" class="form-control" />
-                <span asp-validation-for="StartTime" class="text-danger"></span>
+                <label asp-for="StartDateOnly" class="control-label"></label>
+                <input asp-for="StartDateOnly" class="form-control" />
+                <span asp-validation-for="StartDateOnly" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EndTime" class="control-label"></label>
-                <input asp-for="EndTime" class="form-control" />
-                <span asp-validation-for="EndTime" class="text-danger"></span>
+                <label asp-for="EndDateOnly" class="control-label"></label>
+                <input asp-for="EndDateOnly" class="form-control" />
+                <span asp-validation-for="EndDateOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartTimeOnly" class="control-label"></label>
+                <input asp-for="StartTimeOnly" class="form-control" />
+                <span asp-validation-for="StartTimeOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndTimeOnly" class="control-label"></label>
+                <input asp-for="EndTimeOnly" class="form-control" />
+                <span asp-validation-for="EndTimeOnly" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

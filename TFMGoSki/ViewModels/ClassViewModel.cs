@@ -27,5 +27,9 @@ namespace TFMGoSki.ViewModels
         [Required(ErrorMessage = "The instructor ID is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "The instructor ID must be greater than zero.")]
         public int? Instructor { get; set; }
+        [Display(Name = "City")]
+        [Required(ErrorMessage = "The city ID is required.")]
+        [Range(1, int.MaxValue, ErrorMessage = "The city ID must be greater than zero.")]
+        public int? City { get; set; }
     }
 }

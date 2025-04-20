@@ -10,32 +10,35 @@ namespace TFMGoSki.Models
         public int StudentQuantity { get; set; }
         public ClassLevel ClassLevel { get; set; }
         public int InstructorId { get; set; }
+        public int CityId { get; set; }
 
-        public Class(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId)
+        public Class(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId, int cityId)
         {
-            Validate(name, price, studentQuantity, classLevel, instructorId);
+            Validate(name, price, studentQuantity, classLevel, instructorId, cityId);
 
             Name = name;
             Price = price;
             StudentQuantity = studentQuantity;
             ClassLevel = classLevel;
             InstructorId = instructorId;
+            CityId = cityId;
         }
 
-        public Class Update(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId)
+        public Class Update(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId, int cityId)
         {
-            Validate(name, price, studentQuantity, classLevel, instructorId);
+            Validate(name, price, studentQuantity, classLevel, instructorId, cityId);
 
             Name = name;
             Price = price;
             StudentQuantity = studentQuantity;
             ClassLevel = classLevel;
             InstructorId = instructorId;
+            CityId = cityId;
 
             return this;
         }
 
-        private void Validate(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId)
+        private void Validate(string name, decimal price, int studentQuantity, ClassLevel classLevel, int instructorId, int cityId)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -49,13 +52,17 @@ namespace TFMGoSki.Models
             {
                 throw new ArgumentException("La cantidad de estudiantes debe ser mayor que cero.", nameof(studentQuantity));
             }
-            if (classLevel <= 0)
+            if (!Enum.IsDefined(typeof(ClassLevel), classLevel))
             {
                 throw new ArgumentException("El ID del nivel de clase debe ser mayor que cero.", nameof(classLevel));
             }
             if (instructorId <= 0)
             {
                 throw new ArgumentException("El ID del instructor debe ser mayor que cero.", nameof(instructorId));
+            }
+            if (cityId <= 0)
+            {
+                throw new ArgumentException("El ID de la ciudad debe ser mayor que cero.", nameof(cityId));
             }
         }
     }

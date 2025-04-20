@@ -30,6 +30,11 @@ namespace TFMGoSki.Data
 
             builder.Property(c => c.ClassLevel)
                 .IsRequired();
+
+            builder.HasOne<City>()
+               .WithMany()
+               .HasForeignKey(c => c.CityId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

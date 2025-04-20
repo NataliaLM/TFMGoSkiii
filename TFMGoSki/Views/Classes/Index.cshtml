@@ -25,7 +25,10 @@
                 @Html.DisplayNameFor(model => model.ClassLevel)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.InstructorName) @* //TODO: (Natalia) Crear Dto para que se vea instructor *@
+                @Html.DisplayNameFor(model => model.InstructorName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CityName)
             </th>
             <th></th>
         </tr>
@@ -46,7 +49,10 @@
                 @Html.DisplayFor(modelItem => item.ClassLevel)
             </td>
             <td>
-                    @Html.DisplayFor(modelItem => item.InstructorName)
+                @Html.DisplayFor(modelItem => item.InstructorName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CityName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
