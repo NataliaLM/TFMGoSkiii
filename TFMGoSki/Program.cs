@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using System.Globalization;
+using TFMGoSki.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddApplicationServices();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

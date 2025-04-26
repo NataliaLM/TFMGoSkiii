@@ -1,196 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using TFMGoSki.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using TFMGoSki.Dtos;
-using TFMGoSki.Models;
+using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
     public class CitiesController : Controller
     {
-        private readonly TFMGoSkiDbContext _context;
+        private readonly ICityService _cityService;
 
-        public CitiesController(TFMGoSkiDbContext context)
+        public CitiesController(ICityService cityService)
         {
-            _context = context;
+            _cityService = cityService;
         }
 
-        // GET: Cities
         public async Task<IActionResult> Index()
         {
-            List<City> cities = await _context.Cities.ToListAsync();
-            List<CityDto> citiesDtos = new List<CityDto>();
-
-            foreach (City city in cities)
-            {
-                CityDto cityDto = new CityDto
-                {
-                    Id = city.Id,
-                    Name = city.Name
-                };
-                citiesDtos.Add(cityDto);
-            }
-
-            return View(citiesDtos);
+            var cities = await _cityService.GetAllAsync();
+            return View(cities);
         }
 
-        // GET: Cities/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var city = await _context.Cities
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (city == null)
-            {
-                return NotFound();
-            }
+            var city = await _cityService.GetByIdAsync(id.Value);
+            if (city == null) return NotFound();
 
-            CityDto cityDto = new CityDto
-            {
-                Id = city.Id,
-                Name = city.Name
-            };
-
-            return View(cityDto);
+            return View(city);
         }
 
-        // GET: Cities/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Cities/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CityViewModel cityViewModel)
+        public async Task<IActionResult> Create(CityViewModel viewModel)
         {
-            if (ModelState.IsValid)
-            {
-                City city = new City(cityViewModel.Name);
+            if (!ModelState.IsValid) return View(viewModel);
 
-                _context.Add(city);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(cityViewModel);
+            await _cityService.CreateAsync(viewModel);
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Cities/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var city = await _context.Cities.FindAsync(id);
-            if (city == null)
-            {
-                return NotFound();
-            }
+            var city = await _cityService.FindEntityByIdAsync(id.Value);
+            if (city == null) return NotFound();
 
-            CityViewModel cityViewModel = new CityViewModel
-            {
-                Id = city.Id,
-                Name = city.Name
-            };
-
-            return View(cityViewModel);
+            return View(new CityViewModel { Id = city.Id, Name = city.Name });
         }
 
-        // POST: Cities/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, CityViewModel cityViewModel)
+        public async Task<IActionResult> Edit(int id, CityViewModel viewModel)
         {
-            City? city = _context.Cities.Find(id);
+            if (!ModelState.IsValid) return View(viewModel);
 
-            if (city == null)
-            {
-                return NotFound();
-            }
+            var updated = await _cityService.UpdateAsync(id, viewModel);
+            if (!updated) return NotFound();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    city.Update(cityViewModel.Name);
-                    _context.Update(city);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CityExists(city.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(cityViewModel);
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Cities/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var city = await _context.Cities
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (city == null)
-            {
-                return NotFound();
-            }
+            var city = await _cityService.GetByIdAsync(id.Value);
+            if (city == null) return NotFound();
 
-            CityDto cityDto = new CityDto
-            {
-                Id = city.Id,
-                Name = city.Name
-            };
-
-            return View(cityDto);
+            return View(city);
         }
 
-        // POST: Cities/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var city = await _context.Cities.FindAsync(id);
-            if (city != null)
-            {
-                _context.Cities.Remove(city);
-            }
-
-            await _context.SaveChangesAsync();
+            await _cityService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool CityExists(int id)
-        {
-            return _context.Cities.Any(e => e.Id == id);
         }
     }
 }
