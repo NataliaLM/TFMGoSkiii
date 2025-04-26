@@ -40,7 +40,13 @@ namespace TFMGoSki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClassViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Instructor = _classService.GetInstructorsSelectList();
+                ViewBag.ClassLevel = _classService.GetClassLevelSelectList();
+                ViewBag.City = _classService.GetCitiesSelectList();
+                return View(model);
+            }            
 
             await _classService.CreateClassAsync(model);
             return RedirectToAction(nameof(Index));
@@ -64,7 +70,13 @@ namespace TFMGoSki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ClassViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Instructor = _classService.GetInstructorsSelectList();
+                ViewBag.ClassLevel = _classService.GetClassLevelSelectList();
+                ViewBag.City = _classService.GetCitiesSelectList();
+                return View(model);
+            }            
 
             var updated = await _classService.UpdateClassAsync(id, model);
             return updated ? RedirectToAction(nameof(Index)) : NotFound();

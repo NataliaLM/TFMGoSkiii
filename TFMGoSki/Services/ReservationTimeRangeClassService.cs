@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
 using TFMGoSki.Models;
@@ -65,7 +66,7 @@ namespace TFMGoSki.Services
             return new ReservationTimeRangeClassViewModel
             {
                 Id = reservation.Id,
-                RemainingStudentsQuantity = reservation.RemainingStudentsQuantity,
+                //RemainingStudentsQuantity = reservation.RemainingStudentsQuantity,
                 Class = reservation.ClassId,
                 StartDateOnly = reservation.StartDateOnly,
                 EndDateOnly = reservation.EndDateOnly,
@@ -76,10 +77,39 @@ namespace TFMGoSki.Services
 
         public async Task CreateAsync(ReservationTimeRangeClassViewModel model)
         {
-            var reservation = new ReservationTimeRangeClass(
+            #region No solapar fechas y horas de clases según intructor
+
+            Class? @class = await _context.Classes.FindAsync(model.Class);
+            if (@class == null) throw new ArgumentException("Clase no encontrada");
+            
+            if (@class.InstructorId == null) throw new ArgumentException("La clase no tiene instructor");
+            
+            var classIds = await _context.Classes
+                .Where(c => c.InstructorId == @class.InstructorId)
+                .Select(c => c.Id)
+                .ToListAsync();
+            
+            var reservations = await _context.ReservationTimeRangeClasses
+                .Where(r => classIds.Contains(r.ClassId))
+                .ToListAsync();
+            
+            foreach (var r in reservations)
+            {
+                bool datesOverlap = model.StartDateOnly <= r.EndDateOnly && model.EndDateOnly >= r.StartDateOnly;
+                bool timesOverlap = model.StartTimeOnly < r.EndTimeOnly && model.EndTimeOnly > r.StartTimeOnly;
+
+                if (datesOverlap && timesOverlap)
+                {
+                    throw new ArgumentException("Ya existe una reserva que se solapa con este horario.");
+                }
+            }
+
+            #endregion
+
+            var reservation = new ReservationTimeRangeClass( //TODO: (Natalia) ¡Cuidado! Se tienen que ir restando reminingstudentsquantity después de cada reserva.
                 model.StartDateOnly, model.EndDateOnly,
                 model.StartTimeOnly, model.EndTimeOnly,
-                model.RemainingStudentsQuantity,
+                @class.StudentQuantity, //model.RemainingStudentsQuantity,
                 model.Class
             );
 
@@ -89,13 +119,42 @@ namespace TFMGoSki.Services
 
         public async Task<bool> UpdateAsync(int id, ReservationTimeRangeClassViewModel model)
         {
+            #region No solapar fechas y horas de reservas
+
+            Class? @class = await _context.Classes.FindAsync(model.Class);
+            if (@class == null) throw new ArgumentException("Clase no encontrada");
+
+            if (@class.InstructorId == null) throw new ArgumentException("La clase no tiene instructor");
+
+            var classIds = await _context.Classes
+                .Where(c => c.InstructorId == @class.InstructorId)
+                .Select(c => c.Id)
+                .ToListAsync();
+
+            var reservations = await _context.ReservationTimeRangeClasses
+                .Where(r => classIds.Contains(r.ClassId))
+                .ToListAsync();
+
+            foreach (var r in reservations)
+            {
+                bool datesOverlap = model.StartDateOnly <= r.EndDateOnly && model.EndDateOnly >= r.StartDateOnly;
+                bool timesOverlap = model.StartTimeOnly < r.EndTimeOnly && model.EndTimeOnly > r.StartTimeOnly;
+
+                if (datesOverlap && timesOverlap)
+                {
+                    throw new ArgumentException("Ya existe una reserva que se solapa con este horario.");
+                }
+            }
+
+            #endregion
+
             var reservation = await _context.ReservationTimeRangeClasses.FindAsync(id);
             if (reservation == null) return false;
 
             reservation.Update(
                 model.StartDateOnly, model.EndDateOnly,
-                model.StartTimeOnly, model.EndTimeOnly,
-                model.RemainingStudentsQuantity,
+                model.StartTimeOnly, model.EndTimeOnly,                
+                @class.StudentQuantity, //model.RemainingStudentsQuantity,
                 model.Class
             );
 
@@ -122,8 +181,14 @@ namespace TFMGoSki.Services
         // Método para obtener SelectList para las clases (evitar la lógica en el controlador)
         public async Task<Microsoft.AspNetCore.Mvc.Rendering.SelectList> GetClassSelectListAsync() //TODO: (Natalia) ¿qué es selectlist? Revisar todos los controllers.
         {
-            var classes = await _context.Classes.ToListAsync();
-            return new Microsoft.AspNetCore.Mvc.Rendering.SelectList(classes, "Id", "Name");
+            var classes = await _context.Classes
+                .Select(c => new
+                {
+                    Id = c.Id,
+                    Description = c.Name + " (" + c.StudentQuantity + " estudiantes)"
+                })
+                .ToListAsync();
+            return new SelectList(classes, "Id", "Description");
         }
     }
 }

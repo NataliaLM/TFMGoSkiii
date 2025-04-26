@@ -38,8 +38,12 @@ namespace TFMGoSki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ReservationTimeRangeClassViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
-
+            if (!ModelState.IsValid)
+            {
+                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                return View(model);
+            }
+            
             await _service.CreateAsync(model);
             return RedirectToAction(nameof(Index));
         }
@@ -60,7 +64,11 @@ namespace TFMGoSki.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ReservationTimeRangeClassViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                return View(model);
+            }
 
             var updated = await _service.UpdateAsync(id, model);
             return updated ? RedirectToAction(nameof(Index)) : NotFound();
