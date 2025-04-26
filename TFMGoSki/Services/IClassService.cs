@@ -6,7 +6,7 @@ namespace TFMGoSki.Services
 {
     public interface IClassService
     {
-        Task<List<ClassDto>> GetAllClassesAsync();
+        Task<List<ClassDto>> GetAllClassesAsync(bool? finalizadas = null);
         Task<ClassDto?> GetClassDetailsAsync(int id);
         Task CreateClassAsync(ClassViewModel model);
         Task<ClassViewModel?> GetEditViewModelAsync(int id);

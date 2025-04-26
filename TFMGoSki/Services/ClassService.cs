@@ -16,15 +16,49 @@ namespace TFMGoSki.Services
             _context = context;
         }
 
-        public async Task<List<ClassDto>> GetAllClassesAsync()
+        public async Task<List<ClassDto>> GetAllClassesAsync(bool? finalizadas = null)
         {
-            var classes = await _context.Classes.ToListAsync();
+            var now = DateOnly.FromDateTime(DateTime.Now);
+            var nowTime = TimeOnly.FromDateTime(DateTime.Now);
             var classDtos = new List<ClassDto>();
+
+            // Obtener todas las clases (filtraremos después)
+            var classes = await _context.Classes.ToListAsync();
 
             foreach (var clase in classes)
             {
                 var city = await _context.Cities.FindAsync(clase.CityId);
                 var instructor = await _context.Instructors.FindAsync(clase.InstructorId);
+
+                // Filtrar reservas por clase y por si están finalizadas o no
+                var reservationsQuery = _context.ReservationTimeRangeClasses
+                    .Where(r => r.ClassId == clase.Id);
+
+                // Clases que ya comenzaron (StartDateOnly < hoy) se consideran no disponibles
+                //reservationsQuery = reservationsQuery.Where(r => r.StartDateOnly >= now);
+
+                if (finalizadas == true)
+                {
+                    reservationsQuery = reservationsQuery.Where(r => r.StartDateOnly < now || (r.StartDateOnly == now && r.StartTimeOnly < nowTime));
+                }
+                else if (finalizadas == false)
+                {
+                    reservationsQuery = reservationsQuery.Where(r => r.StartDateOnly >= now || (r.StartDateOnly == now && r.StartTimeOnly >= nowTime));
+                }
+
+                var reservationTimeRangeClassDtos = await reservationsQuery
+                    .Select(r => new ReservationTimeRangeClassDto
+                    {
+                        RemainingStudentsQuantity = r.RemainingStudentsQuantity,
+                        StartDateOnly = r.StartDateOnly,
+                        EndDateOnly = r.EndDateOnly,
+                        StartTimeOnly = r.StartTimeOnly,
+                        EndTimeOnly = r.EndTimeOnly
+                    })
+                    .ToListAsync();
+
+                // Si la clase no tiene reservas disponibles según el filtro, no la mostramos
+                if (!reservationTimeRangeClassDtos.Any() && finalizadas != null) continue; //Si No hay reservas pero No se especifica si quiere las finalizadas/No finalizadas, se muestra igual.
 
                 classDtos.Add(new ClassDto
                 {
@@ -34,7 +68,8 @@ namespace TFMGoSki.Services
                     StudentQuantity = clase.StudentQuantity,
                     ClassLevel = clase.ClassLevel,
                     InstructorName = instructor?.Name,
-                    CityName = city?.Name
+                    CityName = city?.Name,
+                    ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
                 });
             }
 
@@ -49,6 +84,26 @@ namespace TFMGoSki.Services
             var city = await _context.Cities.FindAsync(@class.CityId);
             var instructor = await _context.Instructors.FindAsync(@class.InstructorId);
 
+            //var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(c => c.ClassId == @class.Id);
+
+            #region ReservationTimeRangeClass
+            List<ReservationTimeRangeClass> listReservationTimeRange = await _context.ReservationTimeRangeClasses
+                .Where(c => c.ClassId == @class.Id)
+                .ToListAsync();
+            List<ReservationTimeRangeClassDto> reservationTimeRangeClassDtos = new List<ReservationTimeRangeClassDto>();
+            foreach (var r in listReservationTimeRange)
+            {
+                reservationTimeRangeClassDtos.Add(new ReservationTimeRangeClassDto
+                {
+                    RemainingStudentsQuantity = r.RemainingStudentsQuantity,
+                    StartDateOnly = r.StartDateOnly,
+                    EndDateOnly = r.EndDateOnly,
+                    StartTimeOnly = r.StartTimeOnly,
+                    EndTimeOnly = r.EndTimeOnly
+                });
+            }
+            #endregion
+
             return new ClassDto
             {
                 Id = @class.Id,
@@ -57,7 +112,10 @@ namespace TFMGoSki.Services
                 StudentQuantity = @class.StudentQuantity,
                 ClassLevel = @class.ClassLevel,
                 InstructorName = instructor?.Name,
-                CityName = city?.Name
+                CityName = city?.Name,
+                #region ReservationTimeRangeClass
+                ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
+                #endregion
             };
         }
 

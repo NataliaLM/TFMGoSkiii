@@ -13,9 +13,9 @@ namespace TFMGoSki.Controllers
             _classService = classService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(bool? finalizadas)
         {
-            var classDtos = await _classService.GetAllClassesAsync();
+            var classDtos = await _classService.GetAllClassesAsync(finalizadas);
             return View(classDtos);
         }
 
