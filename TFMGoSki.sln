@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35919.96 d17.13
+VisualStudioVersion = 17.13.35919.96
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFMGoSki", "TFMGoSki\TFMGoSki.csproj", "{7B292062-1A31-4B7B-AACF-325FF1EDB0A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFMGoSkiTest", "TFMGoSkiTest\TFMGoSkiTest.csproj", "{2DCB1C9C-224B-438F-97B0-89CAC24CB86E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{7B292062-1A31-4B7B-AACF-325FF1EDB0A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B292062-1A31-4B7B-AACF-325FF1EDB0A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7B292062-1A31-4B7B-AACF-325FF1EDB0A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DCB1C9C-224B-438F-97B0-89CAC24CB86E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DCB1C9C-224B-438F-97B0-89CAC24CB86E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DCB1C9C-224B-438F-97B0-89CAC24CB86E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DCB1C9C-224B-438F-97B0-89CAC24CB86E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

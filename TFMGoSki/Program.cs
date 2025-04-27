@@ -5,14 +5,9 @@ using TFMGoSki.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApplicationServices();
+builder.Services.AddApplicationServices(builder.Environment);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<TFMGoSkiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var cultureInfo = new CultureInfo("es-ES");
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
 cultureInfo.NumberFormat.CurrencyDecimalSeparator = ".";
@@ -41,3 +36,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program { }
