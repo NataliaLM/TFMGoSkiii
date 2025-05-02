@@ -56,36 +56,17 @@ jobs:
             /o:"natalialm" `
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.cobertura.reportsPaths="coverage/coverage.cobertura.xml"
+            /d:sonar.cs.opencover.reportsPaths="coverage/coverage.opencover.xml"
 
       - name: Build the project
         run: dotnet build --no-incremental
 
-      - name: Run tests with coverage
-        run: dotnet test TFMGoSkiTest/TFMGoSkiTest.csproj --collect:"XPlat Code Coverage"
-
-      - name: Move coverage report to expected location
-        shell: powershell
-        run: |
-          $reportPath = Get-ChildItem -Path "TFMGoSkiTest\TestResults" -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
-          if (-not $reportPath) {
-            Write-Error "No se encontró coverage.cobertura.xml en TFMGoSkiTest\TestResults"
-            exit 1
-          }
-          Write-Host "Archivo de cobertura encontrado en: $($reportPath.FullName)"
-          New-Item -ItemType Directory -Path "coverage" -Force
-          Copy-Item -Path $reportPath.FullName -Destination "coverage/coverage.cobertura.xml"
-          Write-Host "Archivo de cobertura copiado a: coverage/coverage.cobertura.xml"
+      - name: Run tests with OpenCover coverage
+        run: dotnet test TFMGoSkiTest/TFMGoSkiTest.csproj --no-build /p:CollectCoverage=true /p:CoverletOutput=coverage/ /p:CoverletOutputFormat=opencover
 
       - name: List coverage directory
         shell: powershell
         run: dir coverage
-
-      - name: Upload coverage artifact (opcional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: cobertura-report
-          path: coverage/coverage.cobertura.xml
 
       - name: End SonarCloud analysis
         env:
