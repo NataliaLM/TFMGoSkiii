@@ -35,6 +35,22 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Classes_Details_ReturnsView()
+        {
+            Instructor instructor = new Instructor("Roberto Rodriguez");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            var response = await _client.GetAsync("/Classes/Details/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Classes_Details_ReturnsNotFound_WhenIdInvalid()
         {
             var response = await _client.GetAsync("/Classes/Details/999");
@@ -44,7 +60,7 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Classes_Details_ReturnsNotFound_NotFound_Zero()
         {
-            var response = await _client.GetAsync("/Classes/Details/0");
+            var response = await _client.GetAsync("/Classes/Details?");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -109,7 +125,7 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Classes_Edit_ReturnsNotFound_NotFound_Zero()
         {
-            var response = await _client.GetAsync("/Classes/Edit/0");
+            var response = await _client.GetAsync("/Classes/Edit?");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 

@@ -37,7 +37,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ClassViewModel model)
+        public async Task<IActionResult> Create([FromBody] ClassViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -66,7 +66,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, ClassViewModel model)
+        public async Task<IActionResult> Edit(int id, [FromBody] ClassViewModel model)
         {
             if (!ModelState.IsValid)
             {

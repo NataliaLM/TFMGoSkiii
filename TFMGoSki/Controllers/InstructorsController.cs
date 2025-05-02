@@ -50,7 +50,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost] 
-        public async Task<IActionResult> Edit(int id, InstructorViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, [FromBody] InstructorViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 

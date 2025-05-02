@@ -35,7 +35,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ReservationTimeRangeClassViewModel model)
+        public async Task<IActionResult> Create([FromBody] ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +60,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, ReservationTimeRangeClassViewModel model)
+        public async Task<IActionResult> Edit(int id, [FromBody] ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
             {

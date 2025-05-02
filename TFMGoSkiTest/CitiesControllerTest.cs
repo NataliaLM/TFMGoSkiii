@@ -91,7 +91,7 @@ namespace TFMGoSkiTest
             var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync("/Cities", content);
+            var response = await _client.PostAsync("/Cities/Create", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
