@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Text;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
@@ -193,7 +194,45 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Classes_Delete_ReturnsNotFound_NullId()
         {
-            var response = await _client.GetAsync("/Classes/Delete/0");
+            var response = await _client.GetAsync("/Classes/Delete?");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_Delete_Post_ReturnsSuccess()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("Mexico");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var @class = new Class("Name Class", 15, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/Classes/Delete/{@class.Id}", new StringContent(""));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_Delete_Post_NotFound()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("Mexico");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var @class = new Class("Name Class", 15, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/Classes/Delete/999", new StringContent(""));
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }

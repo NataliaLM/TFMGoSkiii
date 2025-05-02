@@ -33,7 +33,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost] 
-        public async Task<IActionResult> Create(InstructorViewModel viewModel)
+        public async Task<IActionResult> Create([FromBody] InstructorViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 

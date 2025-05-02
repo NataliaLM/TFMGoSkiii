@@ -43,6 +43,13 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Instructors_Details_ReturnsNotFound_IdNull()
+        {
+            var response = await _client.GetAsync("/Instructors/Details?");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Instructors_Details_ReturnsSuccess()
         {
             var instructor = new Instructor("Test Instructor");
@@ -77,6 +84,21 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Instructors_Create_Post_InvalidModel()
+        {
+            var viewModel = new InstructorViewModel
+            {
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Instructors/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Instructors_Edit_Get_ReturnsSuccess()
         {
             var instructor = new Instructor("Edit Test");
@@ -85,6 +107,28 @@ namespace TFMGoSkiTest
 
             var response = await _client.GetAsync($"/Instructors/Edit/{instructor.Id}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Edit_Get_IdNotFound()
+        {
+            var instructor = new Instructor("Edit Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Instructors/Edit/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Edit_Get_IdNull()
+        {
+            var instructor = new Instructor("Edit Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Instructors/Edit?");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -109,6 +153,46 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Instructors_Edit_Post_InvalidModel()
+        {
+            var instructor = new Instructor("Edit Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var viewModel = new InstructorViewModel
+            {
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Instructors/Edit/{instructor.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Edit_Post_IdNotFound()
+        {
+            var instructor = new Instructor("Edit Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var viewModel = new InstructorViewModel
+            {
+                Id = instructor.Id,
+                Name = "Updated Instructor"
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Instructors/Edit/999", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Instructors_Delete_Get_ReturnsSuccess()
         {
             var instructor = new Instructor("Delete Test");
@@ -126,7 +210,7 @@ namespace TFMGoSkiTest
             _context.Instructors.Add(instructor);
             await _context.SaveChangesAsync();
 
-            var response = await _client.GetAsync($"/Instructors/Delete/0");
+            var response = await _client.GetAsync($"/Instructors/Delete?");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 

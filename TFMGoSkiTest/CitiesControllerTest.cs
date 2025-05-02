@@ -63,7 +63,7 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Cities_Details_Id_Null()
         {
-            var response = await _client.GetAsync("/Cities/Details/0");
+            var response = await _client.GetAsync($"/Cities/Details?");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -106,7 +106,7 @@ namespace TFMGoSkiTest
             var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync("/Cities", content);
+            var response = await _client.PostAsync("/Cities/Create", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -114,7 +114,7 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Cities_Create_ReturnsSuccess_Initial()
         {
-            var response = await _client.GetAsync("/Cities");
+            var response = await _client.GetAsync("/Cities/Create");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -138,7 +138,7 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
-            var response = await _client.GetAsync($"/Cities/Edit/0");
+            var response = await _client.GetAsync($"/Cities/Edit?");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -186,7 +186,7 @@ namespace TFMGoSkiTest
             var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync($"/Cities/Edit/0", content);
+            var response = await _client.PostAsync($"/Cities/Edit?", content);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -226,7 +226,7 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
-            var response = await _client.DeleteAsync($"/Cities/Delete/0");
+            var response = await _client.DeleteAsync($"/Cities/Delete?");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }

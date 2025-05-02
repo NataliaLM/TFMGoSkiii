@@ -41,8 +41,7 @@ namespace TFMGoSki.Controllers
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost] 
         public async Task<IActionResult> Create([FromBody] CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
