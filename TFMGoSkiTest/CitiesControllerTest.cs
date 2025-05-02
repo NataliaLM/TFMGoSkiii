@@ -61,6 +61,22 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Cities_Details_Id_Null()
+        {
+            var response = await _client.GetAsync("/Cities/Details/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Details_Id_NotFound()
+        {
+            var response = await _client.GetAsync("/Cities/Details/999");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Cities_Create_ReturnsSuccess()
         {
             var city = new City("Test City");
@@ -78,6 +94,65 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync("/Cities", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Create_ReturnsView()
+        {
+            CityViewModel viewModel = new CityViewModel()
+            {
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Cities", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Create_ReturnsSuccess_Initial()
+        {
+            var response = await _client.GetAsync("/Cities");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_Id_ReturnsSuccess()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Cities/Edit/{city.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_Id_Zero()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Cities/Edit/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_Id_False()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Cities/Edit/999");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -101,6 +176,38 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Cities_Edit_Id_ReturnsNotFound()
+        {
+            CityViewModel viewModel = new CityViewModel()
+            {
+                Name = "Test City Update"
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Cities/Edit/0", content);
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_ReturnsNotFound()
+        {
+            CityViewModel viewModel = new CityViewModel()
+            {
+                Name = "Test City Update"
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Cities/Edit/999", content);
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Cities_Delete_ReturnsSuccess()
         {
             var city = new City("Test City");
@@ -108,6 +215,42 @@ namespace TFMGoSkiTest
             await _context.SaveChangesAsync();
 
             var response = await _client.DeleteAsync($"/Cities/Delete/{city.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Delete_Null()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.DeleteAsync($"/Cities/Delete/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Delete_NotFound()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.DeleteAsync($"/Cities/Delete/999");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Delete_ReturnsOk()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/Cities/Delete/{city.Id}", new StringContent(""));
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }

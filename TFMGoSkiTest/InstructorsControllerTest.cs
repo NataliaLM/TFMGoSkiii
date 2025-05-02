@@ -120,6 +120,28 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Instructors_Delete_Get_NotFound_Zero()
+        {
+            var instructor = new Instructor("Delete Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Instructors/Delete/0");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Delete_Get_NotFound()
+        {
+            var instructor = new Instructor("Delete Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Instructors/Delete/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Instructors_Delete_Post_Redirects()
         {
             var instructor = new Instructor("Delete Test");
@@ -129,6 +151,18 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync($"/Instructors/Delete/{instructor.Id}", new StringContent(""));
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Delete_Post_NotFound()
+        {
+            var instructor = new Instructor("Delete Test");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/Instructors/Delete/999", new StringContent(""));
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }

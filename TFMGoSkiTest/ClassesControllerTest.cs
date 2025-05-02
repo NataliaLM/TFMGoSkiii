@@ -41,6 +41,13 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Classes_Details_ReturnsNotFound_NotFound_Zero()
+        {
+            var response = await _client.GetAsync("/Classes/Details/0");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Classes_Create_Get_ReturnsSuccess()
         {
             var response = await _client.GetAsync("/Classes/Create");
@@ -73,9 +80,35 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Classes_Create_Post_ReturnsSuccess()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            ClassViewModel classViewModel = new ClassViewModel()
+            {
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Classes/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Classes_Edit_ReturnsNotFound_ForInvalidId()
         {
             var response = await _client.GetAsync("/Classes/Edit/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_Edit_ReturnsNotFound_NotFound_Zero()
+        {
+            var response = await _client.GetAsync("/Classes/Edit/0");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -109,6 +142,29 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Classes_Edit_Post_ReturnsRedirect_InvalidModel()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("Mexico");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            ClassViewModel classViewModel = new ClassViewModel()
+            {
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Classes/Edit/{city.Id}", content);
+
+            Assert.True(response.StatusCode == HttpStatusCode.OK);
+        }
+
+        [Fact]
         public async Task Test_Classes_Delete_ReturnsNotFound()
         {
             var instructor = new Instructor("Jorge Poneros");
@@ -131,6 +187,13 @@ namespace TFMGoSkiTest
         public async Task Test_Classes_Delete_ReturnsNotFound_ForInvalidId()
         {
             var response = await _client.GetAsync("/Classes/Delete/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_Delete_ReturnsNotFound_NullId()
+        {
+            var response = await _client.GetAsync("/Classes/Delete/0");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }

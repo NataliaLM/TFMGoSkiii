@@ -22,10 +22,16 @@ namespace TFMGoSki.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
             var city = await _cityService.GetByIdAsync(id.Value);
-            if (city == null) return NotFound();
+            if (city == null)
+            {
+                return NotFound();
+            }
 
             return View(city);
         }
@@ -37,7 +43,7 @@ namespace TFMGoSki.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CityViewModel viewModel)
+        public async Task<IActionResult> Create([FromBody] CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 
@@ -47,16 +53,22 @@ namespace TFMGoSki.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
             var city = await _cityService.FindEntityByIdAsync(id.Value);
-            if (city == null) return NotFound();
+            if (city == null)
+            {
+                return NotFound();
+            }
 
             return View(new CityViewModel { Id = city.Id, Name = city.Name });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, CityViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, [FromBody] CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 
@@ -77,7 +89,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _cityService.DeleteAsync(id);

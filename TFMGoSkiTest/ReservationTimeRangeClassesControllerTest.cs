@@ -50,7 +50,8 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 25, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), 
+                new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 25, @class.Id);
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             _context.SaveChanges();
             
@@ -105,6 +106,33 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Reservation_Create_Post_InvalidModel()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var viewModel = new ReservationTimeRangeClassViewModel
+            {
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Reservation_Edit_Get_ReturnsSuccess()
         {
             Instructor instructor = new Instructor("Name Instructor");
@@ -126,6 +154,20 @@ namespace TFMGoSkiTest
 
             var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Edit/{reservationTimeRangeClass.Id}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Edit_Get_NotFound_Zero()
+        {
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Edit/0");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Edit_Get_NotFound_Id()
+        {
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Edit/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -166,6 +208,75 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Reservation_Edit_Post_InvalidModel()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var viewModel = new ReservationTimeRangeClassViewModel
+            {
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Edit/{reservationTimeRangeClass.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Edit_Post_NotFound_Id()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var viewModel = new ReservationTimeRangeClassViewModel
+            {
+                Class = @class.Id,
+                StartDateOnly = new DateOnly(2015, 10, 21),
+                EndDateOnly = new DateOnly(2016, 11, 22),
+                StartTimeOnly = new TimeOnly(11, 25, 46),
+                EndTimeOnly = new TimeOnly(12, 26, 47)
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Edit/999", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Reservation_Delete_Get_ReturnsSuccess()
         {
             Instructor instructor = new Instructor("Name Instructor");
@@ -187,6 +298,54 @@ namespace TFMGoSkiTest
 
             var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Delete/{reservationTimeRangeClass.Id}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Delete_Get_NotFound_Zero()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Delete/0");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Delete_Get_NotFound()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Delete/999");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -212,6 +371,31 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Delete/{reservationTimeRangeClass.Id}", new StringContent(""));
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Delete_Post_NotFound()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Delete/999", new StringContent(""));
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
     }
 }
