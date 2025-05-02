@@ -189,7 +189,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Instructors/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]

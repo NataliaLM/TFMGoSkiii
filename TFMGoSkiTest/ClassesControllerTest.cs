@@ -140,6 +140,10 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
+            Class @class = new Class("Class Name", 140, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
             ClassViewModel classViewModel = new ClassViewModel()
             {
                 Name = "Test Class Update",
@@ -153,9 +157,9 @@ namespace TFMGoSkiTest
             var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync($"/Classes/Edit/{city.Id}", content);
+            var response = await _client.PostAsync($"/Classes/Edit/{@class.Id}", content);
 
-            Assert.True(response.StatusCode == HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -169,6 +173,11 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
+            Class @class = new Class("Class Name", 140, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+
             ClassViewModel classViewModel = new ClassViewModel()
             {
             };
@@ -176,9 +185,9 @@ namespace TFMGoSkiTest
             var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await _client.PostAsync($"/Classes/Edit/{city.Id}", content);
+            var response = await _client.PostAsync($"/Classes/Edit/{@class.Id}", content);
 
-            Assert.True(response.StatusCode == HttpStatusCode.OK);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
