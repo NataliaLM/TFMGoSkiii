@@ -32,8 +32,7 @@ namespace TFMGoSki.Controllers
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost] 
         public async Task<IActionResult> Create(InstructorViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
@@ -50,8 +49,7 @@ namespace TFMGoSki.Controllers
             return viewModel == null ? NotFound() : View(viewModel);
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost] 
         public async Task<IActionResult> Edit(int id, InstructorViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
@@ -69,7 +67,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var deleted = await _instructorService.DeleteAsync(id);

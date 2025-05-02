@@ -35,7 +35,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
@@ -61,7 +60,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
@@ -83,7 +81,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var deleted = await _service.DeleteAsync(id);

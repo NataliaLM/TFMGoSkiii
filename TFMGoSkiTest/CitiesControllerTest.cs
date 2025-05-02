@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSkiTest
 {
@@ -56,6 +57,58 @@ namespace TFMGoSkiTest
             var response = await _client.GetAsync("/Cities/Details/1");
 
             // Verificar que la respuesta sea 200 OK
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Create_ReturnsSuccess()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            CityViewModel viewModel = new CityViewModel()
+            {
+                Name = "Test City"
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Cities", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_ReturnsSuccess()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            CityViewModel viewModel = new CityViewModel()
+            {
+                Name = "Test City Update"
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Delete_ReturnsSuccess()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.DeleteAsync($"/Cities/Delete/{city.Id}");
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
     }

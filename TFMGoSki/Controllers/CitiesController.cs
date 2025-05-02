@@ -56,7 +56,6 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
