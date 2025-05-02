@@ -67,9 +67,25 @@ jobs:
       - name: Move coverage report to expected location
         shell: powershell
         run: |
-          $reportPath = Get-ChildItem -Path TFMGoSkiTest\TestResults -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
+          $reportPath = Get-ChildItem -Path "TFMGoSkiTest\TestResults" -Recurse -Filter "coverage.cobertura.xml" | Select-Object -First 1
+          if (-not $reportPath) {
+            Write-Error "No se encontró coverage.cobertura.xml en TFMGoSkiTest\TestResults"
+            exit 1
+          }
+          Write-Host "Archivo de cobertura encontrado en: $($reportPath.FullName)"
           New-Item -ItemType Directory -Path "coverage" -Force
           Copy-Item -Path $reportPath.FullName -Destination "coverage/coverage.cobertura.xml"
+          Write-Host "Archivo de cobertura copiado a: coverage/coverage.cobertura.xml"
+
+      - name: List coverage directory
+        shell: powershell
+        run: dir coverage
+
+      - name: Upload coverage artifact (opcional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-report
+          path: coverage/coverage.cobertura.xml
 
       - name: End SonarCloud analysis
         env:
