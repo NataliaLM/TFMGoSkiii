@@ -56,13 +56,13 @@ jobs:
             /o:"natalialm" `
             /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="https://sonarcloud.io" `
-            /d:sonar.cs.cobertura.reportsPaths="**/coverage.cobertura.xml"
+            /d:sonar.cs.cobertura.reportsPaths="TFMGoSkiTest/**/coverage.cobertura.xml"
 
       - name: Build the project
         run: dotnet build --no-incremental
 
       - name: Run tests with coverage
-        run: dotnet test --no-build --collect:"XPlat Code Coverage"
+        run: dotnet test TFMGoSkiTest/TFMGoSkiTest.csproj --no-build --collect:"XPlat Code Coverage"
 
       - name: End SonarCloud analysis
         env:
