@@ -46,7 +46,10 @@ namespace TFMGoSkiTest
             _context.SaveChanges();
 
             var @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
-            var response = await _client.GetAsync("/Classes/Details/999");
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var response = await _client.GetAsync($"/Classes/Details/{@class.Id}");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -116,6 +119,25 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Classes_Edit_ReturnSuccess()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("Mexico");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var @class = new Class("Name Class", 15, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/Classes/Edit/{@class.Id}");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Classes_Edit_ReturnsNotFound_ForInvalidId()
         {
             var response = await _client.GetAsync("/Classes/Edit/999");
@@ -158,6 +180,39 @@ namespace TFMGoSkiTest
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
             var response = await _client.PostAsync($"/Classes/Edit/{@class.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_Edit_Post_ReturnsNotFound()
+        {
+            var instructor = new Instructor("Jorge Poneros");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("Mexico");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            Class @class = new Class("Class Name", 140, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            ClassViewModel classViewModel = new ClassViewModel()
+            {
+                Name = "Test Class Update",
+                Price = 31,
+                StudentQuantity = 21,
+                ClassLevel = ClassLevel.Advanced,
+                Instructor = instructor.Id,
+                City = city.Id
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Classes/Edit/999", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }

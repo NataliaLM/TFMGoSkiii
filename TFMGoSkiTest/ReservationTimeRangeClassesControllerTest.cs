@@ -50,8 +50,8 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), 
-                new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 25, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2025, 06, 21), 
+                new DateOnly(2025, 07, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 25, @class.Id);
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             _context.SaveChanges();
             
@@ -91,8 +91,8 @@ namespace TFMGoSkiTest
             var viewModel = new ReservationTimeRangeClassViewModel
             {
                 Class = @class.Id,
-                StartDateOnly = new DateOnly(2015, 10, 21),
-                EndDateOnly = new DateOnly(2016, 11, 22),
+                StartDateOnly = new DateOnly(2025, 08, 21),
+                EndDateOnly = new DateOnly(2025, 09, 22),
                 StartTimeOnly = new TimeOnly(11, 25, 46),
                 EndTimeOnly = new TimeOnly(12, 26, 47)
             };
@@ -147,7 +147,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2025, 10, 21), new DateOnly(2025, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -159,7 +159,7 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Reservation_Edit_Get_NotFound_Zero()
         {
-            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Edit/0");
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Edit?");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -185,7 +185,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2025, 12, 21), new DateOnly(2026, 01, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -193,8 +193,8 @@ namespace TFMGoSkiTest
             var viewModel = new ReservationTimeRangeClassViewModel
             {
                 Class = @class.Id,
-                StartDateOnly = new DateOnly(2015, 10, 21),
-                EndDateOnly = new DateOnly(2016, 11, 22),
+                StartDateOnly = new DateOnly(2026, 02, 21),
+                EndDateOnly = new DateOnly(2026, 03, 22),
                 StartTimeOnly = new TimeOnly(11, 25, 46),
                 EndTimeOnly = new TimeOnly(12, 26, 47)
             };
@@ -222,7 +222,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2026, 04, 21), new DateOnly(2026, 05, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -254,7 +254,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2026, 06, 21), new DateOnly(2026, 07, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -262,8 +262,8 @@ namespace TFMGoSkiTest
             var viewModel = new ReservationTimeRangeClassViewModel
             {
                 Class = @class.Id,
-                StartDateOnly = new DateOnly(2015, 10, 21),
-                EndDateOnly = new DateOnly(2016, 11, 22),
+                StartDateOnly = new DateOnly(2026, 08, 21),
+                EndDateOnly = new DateOnly(2026, 09, 22),
                 StartTimeOnly = new TimeOnly(11, 25, 46),
                 EndTimeOnly = new TimeOnly(12, 26, 47)
             };
@@ -291,7 +291,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2026, 10, 21), new DateOnly(2026, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -315,12 +315,12 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2026, 12, 21), new DateOnly(2027, 01, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
 
-            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Delete/0");
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Delete?");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -339,7 +339,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2027, 02, 21), new DateOnly(2027, 03, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -363,7 +363,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2027, 04, 21), new DateOnly(2027, 05, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
@@ -388,7 +388,7 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2015, 10, 21), new DateOnly(2016, 11, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2027, 06, 21), new DateOnly(2027, 07, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();

@@ -176,6 +176,25 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Cities_Edit_InvalidModel()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            CityViewModel viewModel = new CityViewModel()
+            {
+            };
+
+            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Cities_Edit_Id_ReturnsNotFound()
         {
             CityViewModel viewModel = new CityViewModel()
