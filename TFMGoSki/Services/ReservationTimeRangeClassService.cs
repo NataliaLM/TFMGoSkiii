@@ -82,7 +82,7 @@ namespace TFMGoSki.Services
             Class? @class = await _context.Classes.FindAsync(model.Class);
             if (@class == null) throw new ArgumentException("Clase no encontrada");
             
-            if (@class.InstructorId == null) throw new ArgumentException("La clase no tiene instructor");
+            if (@class.InstructorId == 0) throw new ArgumentException("La clase no tiene instructor");
             
             var classIds = await _context.Classes
                 .Where(c => c.InstructorId == @class.InstructorId)
@@ -124,7 +124,7 @@ namespace TFMGoSki.Services
             Class? @class = await _context.Classes.FindAsync(model.Class);
             if (@class == null) throw new ArgumentException("Clase no encontrada");
 
-            if (@class.InstructorId == null) throw new ArgumentException("La clase no tiene instructor");
+            if (@class.InstructorId == 0) throw new ArgumentException("La clase no tiene instructor");
 
             var classIds = await _context.Classes
                 .Where(c => c.InstructorId == @class.InstructorId)
