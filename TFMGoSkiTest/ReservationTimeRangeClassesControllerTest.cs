@@ -67,6 +67,13 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Reservation_Details_ReturnsNotFound_IdNull()
+        {
+            var response = await _client.GetAsync("/ReservationTimeRangeClasses/Details?");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Reservation_Create_Get_ReturnsSuccess()
         {
             var response = await _client.GetAsync("/ReservationTimeRangeClasses/Create");
