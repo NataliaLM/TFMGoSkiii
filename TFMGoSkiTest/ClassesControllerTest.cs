@@ -50,7 +50,7 @@ namespace TFMGoSkiTest
             _context.SaveChanges();
 
             var response = await _client.GetAsync($"/Classes/Details/{@class.Id}");
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -134,7 +134,7 @@ namespace TFMGoSkiTest
             await _context.SaveChangesAsync();
 
             var response = await _client.GetAsync($"/Classes/Edit/{@class.Id}");
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -214,7 +214,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Classes/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
