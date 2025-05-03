@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.ReservationTimeRangeClass
+﻿@model TFMGoSki.ViewModels.ReservationTimeRangeClassViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -12,26 +12,36 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
+            @* <div class="form-group">
                 <label asp-for="RemainingStudentsQuantity" class="control-label"></label>
                 <input asp-for="RemainingStudentsQuantity" class="form-control" />
                 <span asp-validation-for="RemainingStudentsQuantity" class="text-danger"></span>
-            </div>
+            </div> *@
             <div class="form-group">
-                <label asp-for="ClassId" class="control-label"></label>
-                <select asp-for="ClassId" class="form-control" asp-items="ViewBag.ClassId"></select>
-                <span asp-validation-for="ClassId" class="text-danger"></span>
+                <label asp-for="Class" class="control-label"></label>
+                <select asp-for="Class" class="form-control" asp-items="ViewBag.ClassId"></select>
+                <span asp-validation-for="Class" class="text-danger"></span>
             </div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="StartTime" class="control-label"></label>
-                <input asp-for="StartTime" class="form-control" />
-                <span asp-validation-for="StartTime" class="text-danger"></span>
+                <label asp-for="StartDateOnly" class="control-label"></label>
+                <input asp-for="StartDateOnly" class="form-control" />
+                <span asp-validation-for="StartDateOnly" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EndTime" class="control-label"></label>
-                <input asp-for="EndTime" class="form-control" />
-                <span asp-validation-for="EndTime" class="text-danger"></span>
+                <label asp-for="EndDateOnly" class="control-label"></label>
+                <input asp-for="EndDateOnly" class="form-control" />
+                <span asp-validation-for="EndDateOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartTimeOnly" class="control-label"></label>
+                <input asp-for="StartTimeOnly" class="form-control" />
+                <span asp-validation-for="StartTimeOnly" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndTimeOnly" class="control-label"></label>
+                <input asp-for="EndTimeOnly" class="form-control" />
+                <span asp-validation-for="EndTimeOnly" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

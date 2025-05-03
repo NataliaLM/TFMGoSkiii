@@ -1,15 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using System.Globalization;
+using TFMGoSki.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddApplicationServices(builder.Environment);
+
 builder.Services.AddControllersWithViews();
-
-builder.Services.AddDbContext<TFMGoSkiDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 var cultureInfo = new CultureInfo("es-ES");
 cultureInfo.NumberFormat.NumberDecimalSeparator = ".";
 cultureInfo.NumberFormat.CurrencyDecimalSeparator = ".";
@@ -38,3 +36,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
+
+public partial class Program { }

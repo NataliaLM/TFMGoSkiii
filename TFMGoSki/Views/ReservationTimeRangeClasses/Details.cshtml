@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.ReservationTimeRangeClass
+﻿@model TFMGoSki.Dtos.ReservationTimeRangeClassDto
 
 @{
     ViewData["Title"] = "Details";
@@ -17,16 +17,28 @@
             @Html.DisplayFor(model => model.RemainingStudentsQuantity)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StartTime)
+            @Html.DisplayNameFor(model => model.StartDateOnly)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StartTime)
+            @Html.DisplayFor(model => model.StartDateOnly)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EndTime)
+            @Html.DisplayNameFor(model => model.EndDateOnly)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EndTime)
+            @Html.DisplayFor(model => model.EndDateOnly)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.StartTimeOnly)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.StartTimeOnly)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.EndTimeOnly)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.EndTimeOnly)
         </dd>
     </dl>
 </div>

@@ -5,8 +5,8 @@
         public int RemainingStudentsQuantity { get; set; }
         public int ClassId { get; set; }
 
-        public ReservationTimeRangeClass(DateTime startTime, DateTime endTime, int remainingStudentsQuantity, int classId)
-            : base(startTime, endTime)
+        public ReservationTimeRangeClass(DateOnly startDateOnly, DateOnly endDateOnly, TimeOnly startTimeOnly, TimeOnly endTimeOnly, int remainingStudentsQuantity, int classId)
+            : base(startDateOnly, endDateOnly, startTimeOnly, endTimeOnly)
         {
             Validate(remainingStudentsQuantity, classId);
 
@@ -14,10 +14,10 @@
             ClassId = classId;
         }
 
-        public ReservationTimeRangeClass Update(DateTime startTime, DateTime endTime, int remainingStudentsQuantity, int classId)
+        public ReservationTimeRangeClass Update(DateOnly startDateOnly, DateOnly endDateOnly, TimeOnly startTimeOnly, TimeOnly endTimeOnly, int remainingStudentsQuantity, int classId)
         {
             Validate(remainingStudentsQuantity, classId);
-            base.Update(startTime, endTime);
+            base.Update(startDateOnly, endDateOnly, startTimeOnly, endTimeOnly);
 
             RemainingStudentsQuantity = remainingStudentsQuantity;
             ClassId = classId;

@@ -9,51 +9,61 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<p>
+    <a asp-action="Index" asp-route-finalizadas="false">Clases Activas</a> |
+    <a asp-action="Index" asp-route-finalizadas="true">Clases Finalizadas</a> |
+    <a asp-action="Index">Todas</a>
+</p>
+
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StudentQuantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ClassLevel)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.InstructorName) @* //TODO: (Natalia) Crear Dto para que se vea instructor *@
-            </th>
-            <th></th>
+            <th>@Html.DisplayNameFor(model => model.Name)</th>
+            <th>@Html.DisplayNameFor(model => model.Price)</th>
+            <th>@Html.DisplayNameFor(model => model.StudentQuantity)</th>
+            <th>@Html.DisplayNameFor(model => model.ClassLevel)</th>
+            <th>@Html.DisplayNameFor(model => model.InstructorName)</th>
+            <th>@Html.DisplayNameFor(model => model.CityName)</th>
+            <th>Reservations Time Range</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StudentQuantity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ClassLevel)
-            </td>
-            <td>
-                    @Html.DisplayFor(modelItem => item.InstructorName)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                <td>@Html.DisplayFor(modelItem => item.StudentQuantity)</td>
+                <td>@Html.DisplayFor(modelItem => item.ClassLevel)</td>
+                <td>@Html.DisplayFor(modelItem => item.InstructorName)</td>
+                <td>@Html.DisplayFor(modelItem => item.CityName)</td>
+                <td>
+                    @if (item.ReservationTimeRangeClassDto != null && item.ReservationTimeRangeClassDto.Any())
+                    {
+                        <ul>
+                            @foreach (var res in item.ReservationTimeRangeClassDto)
+                            {
+                                <li>
+                                    <strong>@res.StartDateOnly</strong> - <strong>@res.EndDateOnly</strong><br />
+                                    @res.StartTimeOnly - @res.EndTimeOnly |
+                                    @res.RemainingStudentsQuantity estudiantes
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>No Reservation Time Range Created</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

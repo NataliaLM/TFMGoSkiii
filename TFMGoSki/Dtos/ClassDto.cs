@@ -16,5 +16,8 @@ namespace TFMGoSki.Dtos
         public ClassLevel ClassLevel { get; set; }
         [Display(Name = "Instructor Name")]
         public string? InstructorName { get; set; }
+        [Display(Name = "City Name")]
+        public string? CityName { get; set; }
+        public List<ReservationTimeRangeClassDto>? ReservationTimeRangeClassDto { get; set; }
     }
 }
