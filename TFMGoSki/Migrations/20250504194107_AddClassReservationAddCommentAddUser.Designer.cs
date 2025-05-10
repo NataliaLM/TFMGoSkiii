@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TFMGoSki.Data;
 
@@ -11,9 +12,11 @@ using TFMGoSki.Data;
 namespace TFMGoSki.Migrations
 {
     [DbContext(typeof(TFMGoSkiDbContext))]
-    partial class TFMGoSkiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250504194107_AddClassReservationAddCommentAddUser")]
+    partial class AddClassReservationAddCommentAddUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,6 +191,10 @@ namespace TFMGoSki.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Discriminator")
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -208,18 +215,11 @@ namespace TFMGoSki.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Rol")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
                     b.HasKey("Id");
 
                     b.ToTable("User", (string)null);
 
-                    b.HasDiscriminator<string>("Rol").HasValue("User");
-
-                    b.UseTphMappingStrategy();
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.ClassComment", b =>
@@ -253,21 +253,21 @@ namespace TFMGoSki.Migrations
                 {
                     b.HasBaseType("TFMGoSki.Models.User");
 
-                    b.HasDiscriminator().HasValue("Administrator");
+                    b.ToTable("Administrator", (string)null);
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.Client", b =>
                 {
                     b.HasBaseType("TFMGoSki.Models.User");
 
-                    b.HasDiscriminator().HasValue("Client");
+                    b.ToTable("Client", (string)null);
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.Worker", b =>
                 {
                     b.HasBaseType("TFMGoSki.Models.User");
 
-                    b.HasDiscriminator().HasValue("Worker");
+                    b.ToTable("Worker", (string)null);
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.Class", b =>
@@ -321,6 +321,33 @@ namespace TFMGoSki.Migrations
                         .WithMany()
                         .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TFMGoSki.Models.Administrator", b =>
+                {
+                    b.HasOne("TFMGoSki.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("TFMGoSki.Models.Administrator", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TFMGoSki.Models.Client", b =>
+                {
+                    b.HasOne("TFMGoSki.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("TFMGoSki.Models.Client", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("TFMGoSki.Models.Worker", b =>
+                {
+                    b.HasOne("TFMGoSki.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("TFMGoSki.Models.Worker", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618
