@@ -268,6 +268,7 @@ namespace TFMGoSkiTest
 
             var viewModel = new ReservationTimeRangeClassViewModel
             {
+                Id = reservationTimeRangeClass.Id,
                 Class = @class.Id,
                 StartDateOnly = new DateOnly(2026, 08, 21),
                 EndDateOnly = new DateOnly(2026, 09, 22),
