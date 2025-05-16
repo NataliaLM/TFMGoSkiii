@@ -29,7 +29,7 @@ namespace TFMGoSki.Controllers
 
             foreach (var reservation in classReservations)
             {
-                var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == reservation.ClientId);
+                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == reservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
 
                 if (client != null && @class != null)
@@ -67,7 +67,7 @@ namespace TFMGoSki.Controllers
         // GET: ClassReservations/Create
         public IActionResult Create()
         {
-            ViewBag.ClientId = new SelectList(_context.Clients, "Id", "Name");
+            ViewBag.UserId = new SelectList(_context.Users, "Id", "Name");
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
             return View();
         }
@@ -77,8 +77,9 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ClientId,ClassId")] ClassReservation classReservation)
+        public async Task<IActionResult> Create(int userId, int classId)
         {
+            ClassReservation classReservation = new ClassReservation(userId, classId);
             if (ModelState.IsValid)
             {
                 _context.Add(classReservation);
@@ -102,7 +103,7 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            ViewBag.ClientId = new SelectList(_context.Clients, "Id", "Name");
+            ViewBag.ClientId = new SelectList(_context.Users, "Id", "Name");
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
             return View(classReservation);
@@ -112,18 +113,14 @@ namespace TFMGoSki.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ClientId,ClassId")] ClassReservation classReservation)
+        public async Task<IActionResult> Edit(int id, int userId, int classId)
         {
-            if (id != classReservation.Id)
-            {
-                return NotFound();
-            }
-
+            ClassReservation? classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == id);
             if (ModelState.IsValid)
             {
                 try
                 {
+                    classReservation.Update(userId, classId);
                     _context.Update(classReservation);
                     await _context.SaveChangesAsync();
                 }

@@ -1,0 +1,30 @@
+﻿namespace TFMGoSki.Models
+{
+    public class Role
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        public Role(string name)
+        {
+            Validate(name);
+
+            Name = name;
+        }
+
+        public Role Update(string name)
+        {
+            Validate(name);
+            Name = name;
+            return this;
+        }
+
+        private void Validate(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("El nombre no puede ser nulo ni vacío.", nameof(name));
+            }
+        }
+    }
+}

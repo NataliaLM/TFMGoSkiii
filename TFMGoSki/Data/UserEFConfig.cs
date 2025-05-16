@@ -26,10 +26,10 @@ namespace TFMGoSki.Data
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.HasDiscriminator<string>("Rol")
-                .HasValue<Client>("Client")
-                .HasValue<Administrator>("Administrator")
-                .HasValue<Worker>("Worker");
+            builder.HasOne<Role>()
+                .WithMany()
+                .HasForeignKey(c => c.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

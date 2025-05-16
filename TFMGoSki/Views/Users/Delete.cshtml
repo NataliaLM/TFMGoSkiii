@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.Administrator
+﻿@model TFMGoSki.Models.User
 
 @{
     ViewData["Title"] = "Delete";
@@ -8,7 +8,7 @@
 
 <h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>Administrator</h4>
+    <h4>User</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -35,14 +35,15 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.Password)
         </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Rol)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Rol)
-        </dd>
     </dl>
-    
+
+    @if (TempData["DeleteError"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["DeleteError"]
+        </div>
+    }
+
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |

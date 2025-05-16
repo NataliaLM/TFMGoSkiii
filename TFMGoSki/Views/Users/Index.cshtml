@@ -1,4 +1,4 @@
-﻿@model IEnumerable<TFMGoSki.Models.Client>
+﻿@model IEnumerable<TFMGoSki.Models.User>
 
 @{
     ViewData["Title"] = "Index";
@@ -24,9 +24,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.Password)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Rol)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -44,9 +41,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Password)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Rol)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

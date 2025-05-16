@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TFMGoSki.Data;
 
@@ -11,9 +12,11 @@ using TFMGoSki.Data;
 namespace TFMGoSki.Migrations
 {
     [DbContext(typeof(TFMGoSkiDbContext))]
-    partial class TFMGoSkiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250511093728_FixUserAddRol")]
+    partial class FixUserAddRol
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,23 +183,6 @@ namespace TFMGoSki.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("TFMGoSki.Models.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles");
-                });
-
             modelBuilder.Entity("TFMGoSki.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -225,12 +211,12 @@ namespace TFMGoSki.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
 
                     b.ToTable("User", (string)null);
                 });
@@ -288,15 +274,6 @@ namespace TFMGoSki.Migrations
                     b.HasOne("TFMGoSki.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TFMGoSki.Models.User", b =>
-                {
-                    b.HasOne("TFMGoSki.Models.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

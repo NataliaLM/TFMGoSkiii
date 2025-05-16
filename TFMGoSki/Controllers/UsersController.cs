@@ -6,26 +6,27 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 
 namespace TFMGoSki.Controllers
 {
-    public class WorkersController : Controller
+    public class UsersController : Controller
     {
         private readonly TFMGoSkiDbContext _context;
 
-        public WorkersController(TFMGoSkiDbContext context)
+        public UsersController(TFMGoSkiDbContext context)
         {
             _context = context;
         }
 
-        // GET: Workers
+        // GET: Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Workers.ToListAsync());
+            return View(await _context.Users.ToListAsync());
         }
 
-        // GET: Workers/Details/5
+        // GET: Users/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -33,42 +34,38 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            var worker = await _context.Workers
+            var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (worker == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return View(worker);
+            return View(user);
         }
 
-        // GET: Workers/Create
+        // GET: Users/Create
         public IActionResult Create()
         {
+            ViewBag.RoleId = new SelectList(_context.Roles, "Id", "Name");
             return View();
         }
 
-        // POST: Workers/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Users/Create
         [HttpPost]
-        public async Task<IActionResult> Create(string name, string email, string phone, string password)
+        public async Task<IActionResult> Create(string name, string email, string phone, string password, int roleId)
         {
-            var worker = new Worker(name, email, phone, password, "Worker");
-
+            User user = new User(name, email, phone, password, roleId);
             if (ModelState.IsValid)
             {
-                _context.Add(worker);
+                _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-
-            return View(worker);
+            return View(user);
         }
 
-
-        // GET: Workers/Edit/5
+        // GET: Users/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -76,38 +73,33 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            var worker = await _context.Workers.FindAsync(id);
-            if (worker == null)
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
             {
                 return NotFound();
             }
-            return View(worker);
+            ViewBag.RoleId = new SelectList(_context.Roles, "Id", "Name");
+            return View(user);
         }
 
-        // POST: Workers/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost] 
-        public async Task<IActionResult> Edit(int id, string name, string email, string phone, string password, string rol)
+        // POST: Users/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, string name, string email, string phone, string password, int roleId)
         {
-            var existingWorker = await _context.Workers.FindAsync(id);
-            if (existingWorker == null)
-            {
-                return NotFound();
-            }
+            User? user = _context.Users.FirstOrDefault(u => u.Id == id);
+            user.Update(name, email, phone, password, roleId);
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    existingWorker.Update(name, email, phone, password, rol);
-                    _context.Update(existingWorker);
+                    _context.Update(user);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!WorkerExists(id))
+                    if (!UserExists(user.Id))
                     {
                         return NotFound();
                     }
@@ -116,13 +108,12 @@ namespace TFMGoSki.Controllers
                         throw;
                     }
                 }
+                return RedirectToAction(nameof(Index));
             }
-
-            return View(existingWorker);
+            return View(user);
         }
 
-
-        // GET: Workers/Delete/5
+        // GET: Users/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -130,34 +121,37 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            var worker = await _context.Workers
+            var user = await _context.Users
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (worker == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return View(worker);
+            return View(user);
         }
 
-        // POST: Workers/Delete/5
+        // POST: Users/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var worker = await _context.Workers.FindAsync(id);
-            if (worker != null)
-            {
-                _context.Workers.Remove(worker);
-            }
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+                return (IActionResult)UpdateReservationResult.Fail("Usuario no encontrado.");
 
+            bool hasReservations = await _context.ClassReservations.AnyAsync(r => r.UserId == id);
+            if (hasReservations)
+                return (IActionResult)UpdateReservationResult.Fail("No se puede eliminar el usuario porque tiene reservas asociadas.");
+
+            _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool WorkerExists(int id)
+        private bool UserExists(int id)
         {
-            return _context.Workers.Any(e => e.Id == id);
+            return _context.Users.Any(e => e.Id == id);
         }
     }
 }

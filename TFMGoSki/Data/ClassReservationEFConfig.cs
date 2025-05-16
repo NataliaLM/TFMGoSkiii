@@ -10,9 +10,9 @@ namespace TFMGoSki.Data
         {
             builder.ToTable("ClassReservation");
 
-            builder.HasOne<Client>()
+            builder.HasOne<User>()
                .WithMany()
-               .HasForeignKey(c => c.ClientId)
+               .HasForeignKey(c => c.UserId)
                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne<Class>()

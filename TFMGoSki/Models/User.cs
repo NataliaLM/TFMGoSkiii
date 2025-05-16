@@ -9,22 +9,22 @@ namespace TFMGoSki.Models
         public string Email { get; set; }
         public string Phone { get; set; }
         public string Password { get; set; }
-        public string Rol { get; set; }
-        public User(string name, string email, string phone, string password, string rol)
+        public int RoleId { get; set; }
+        public User(string name, string email, string phone, string password, int roleId)
         {
             Name = name;
             Email = email;
             Phone = phone;
             Password = password;
-            Rol = rol;
+            RoleId = roleId;
         }
-        public User Update(string name, string email, string phone, string password, string rol)
+        public User Update(string name, string email, string phone, string password, int roleId)
         {
             Name = name;
             Email = email;
             Phone = phone;
             Password = password;
-            Rol = rol;
+            RoleId = roleId;
 
             return this;
         }

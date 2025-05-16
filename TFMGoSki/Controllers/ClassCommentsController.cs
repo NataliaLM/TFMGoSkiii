@@ -52,7 +52,7 @@ namespace TFMGoSki.Controllers
 
             foreach (var classReservation in dbSetClassReservation)
             {
-                var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == classReservation.ClientId);
+                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
 
                 if (client != null && @class != null)
@@ -71,9 +71,9 @@ namespace TFMGoSki.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ClassReservationId,Id,Text,Raiting")] ClassComment classComment)
+        public async Task<IActionResult> Create(int classReservationId, string text , int raiting)
         {
+            ClassComment classComment = new ClassComment(classReservationId, text, raiting);
             if (ModelState.IsValid)
             {
                 _context.Add(classComment);
@@ -102,7 +102,7 @@ namespace TFMGoSki.Controllers
 
             foreach (var classReservation in classReservations)
             {
-                var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == classReservation.ClientId);
+                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
 
                 if (client != null && @class != null)
@@ -122,17 +122,15 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ClassReservationId,Id,Text,Raiting")] ClassComment classComment)
+        public async Task<IActionResult> Edit(int id, int classReservationId, string text, int raiting)
         {
-            if (id != classComment.Id)
-            {
-                return NotFound();
-            }
+            ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id); 
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    classComment.Update(classReservationId, text, raiting);
                     _context.Update(classComment);
                     await _context.SaveChangesAsync();
                 }

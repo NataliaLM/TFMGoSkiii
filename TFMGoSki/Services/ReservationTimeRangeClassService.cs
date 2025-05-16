@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -75,15 +76,15 @@ namespace TFMGoSki.Services
             };
         }
 
-        public async Task CreateAsync(ReservationTimeRangeClassViewModel model)
+        public async Task<UpdateReservationResult> CreateAsync(ReservationTimeRangeClassViewModel model)
         {
             #region No solapar fechas y horas de clases según intructor
 
             Class? @class = await _context.Classes.FindAsync(model.Class);
-            if (@class == null) throw new ArgumentException("Clase no encontrada");
-            
-            if (@class.InstructorId == 0) throw new ArgumentException("La clase no tiene instructor");
-            
+            if (@class == null) return UpdateReservationResult.Fail("Clase no encontrada");
+
+            if (@class.InstructorId == 0) return UpdateReservationResult.Fail("La clase no tiene instructor");
+
             var classIds = await _context.Classes
                 .Where(c => c.InstructorId == @class.InstructorId)
                 .Select(c => c.Id)
@@ -100,7 +101,7 @@ namespace TFMGoSki.Services
 
                 if (datesOverlap && timesOverlap)
                 {
-                    throw new ArgumentException("Ya existe una reserva que se solapa con este horario.");
+                    return UpdateReservationResult.Fail("Ya existe una reserva que se solapa con este horario.");
                 }
             }
 
@@ -115,16 +116,15 @@ namespace TFMGoSki.Services
 
             _context.ReservationTimeRangeClasses.Add(reservation);
             await _context.SaveChangesAsync();
+
+            return UpdateReservationResult.Ok();
         }
 
-        public async Task<bool> UpdateAsync(int id, ReservationTimeRangeClassViewModel model)
+        public async Task<UpdateReservationResult> UpdateAsync(int id, ReservationTimeRangeClassViewModel model)
         {
-            #region No solapar fechas y horas de reservas
-
-            Class? @class = await _context.Classes.FindAsync(model.Class);
-            if (@class == null) throw new ArgumentException("Clase no encontrada");
-
-            if (@class.InstructorId == 0) throw new ArgumentException("La clase no tiene instructor");
+            var @class = await _context.Classes.FindAsync(model.Class);
+            if (@class == null) return UpdateReservationResult.Fail("Clase no encontrada");
+            if (@class.InstructorId == 0) return UpdateReservationResult.Fail("La clase no tiene instructor");
 
             var classIds = await _context.Classes
                 .Where(c => c.InstructorId == @class.InstructorId)
@@ -132,7 +132,7 @@ namespace TFMGoSki.Services
                 .ToListAsync();
 
             var reservations = await _context.ReservationTimeRangeClasses
-                .Where(r => classIds.Contains(r.ClassId))
+                .Where(r => classIds.Contains(r.ClassId) && r.Id != id)
                 .ToListAsync();
 
             foreach (var r in reservations)
@@ -142,25 +142,24 @@ namespace TFMGoSki.Services
 
                 if (datesOverlap && timesOverlap)
                 {
-                    throw new ArgumentException("Ya existe una reserva que se solapa con este horario.");
+                    return UpdateReservationResult.Fail("Ya existe una reserva que se solapa con este horario.");
                 }
             }
 
-            #endregion
-
             var reservation = await _context.ReservationTimeRangeClasses.FindAsync(id);
-            if (reservation == null) return false;
+            if (reservation == null) return UpdateReservationResult.Fail("Reserva no encontrada");
 
             reservation.Update(
                 model.StartDateOnly, model.EndDateOnly,
-                model.StartTimeOnly, model.EndTimeOnly,                
-                @class.StudentQuantity, //model.RemainingStudentsQuantity,
+                model.StartTimeOnly, model.EndTimeOnly,
+                @class.StudentQuantity,
                 model.Class
             );
 
             _context.Update(reservation);
             await _context.SaveChangesAsync();
-            return true;
+
+            return UpdateReservationResult.Ok();
         }
 
         public async Task<bool> DeleteAsync(int id)

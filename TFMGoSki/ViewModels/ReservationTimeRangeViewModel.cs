@@ -34,7 +34,7 @@ namespace TFMGoSki.ViewModels
                     "The start date cannot be earlier than the current date.",
                     new[] { nameof(StartDateOnly) });
             }
-            if (StartTimeOnly <= TimeOnly.FromDateTime(DateTime.Now))
+            if (StartTimeOnly <= TimeOnly.FromDateTime(DateTime.Now) && StartDateOnly == DateOnly.FromDateTime(DateTime.Now))
             {
                 yield return new ValidationResult(
                     "The start time cannot be earlier than the current time.",
