@@ -57,7 +57,7 @@ namespace TFMGoSki.Controllers
 
                 if (client != null && @class != null)
                 {
-                    string displayText = $"{client.Name} - {@class.Name}";
+                    string displayText = $"{client.UserName} - {@class.Name}";
                     listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
                 }
             }
@@ -107,7 +107,7 @@ namespace TFMGoSki.Controllers
 
                 if (client != null && @class != null)
                 {
-                    string displayText = $"{client.Name} - {@class.Name}";
+                    string displayText = $"{client.UserName} - {@class.Name}";
                     listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
                 }
             }

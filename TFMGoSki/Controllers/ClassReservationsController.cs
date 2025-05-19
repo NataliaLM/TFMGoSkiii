@@ -37,7 +37,7 @@ namespace TFMGoSki.Controllers
                     listClassReservationDto.Add(new ClassReservationDto
                     {
                         Id = reservation.Id,
-                        ClientName = client.Name,
+                        ClientName = client.UserName,
                         ClassName = @class.Name
                     });
                 }
@@ -67,7 +67,7 @@ namespace TFMGoSki.Controllers
         // GET: ClassReservations/Create
         public IActionResult Create()
         {
-            ViewBag.UserId = new SelectList(_context.Users, "Id", "Name");
+            ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
             return View();
         }
@@ -103,7 +103,7 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            ViewBag.ClientId = new SelectList(_context.Users, "Id", "Name");
+            ViewBag.ClientId = new SelectList(_context.Users, "Id", "UserName");
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
             return View(classReservation);
