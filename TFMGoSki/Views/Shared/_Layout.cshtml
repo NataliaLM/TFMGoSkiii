@@ -43,17 +43,11 @@
                         </li>
                         @* a *@
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="">Users</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">ClassComment</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">ClassReservations</a>
                         </li> 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Roles" asp-action="">Roles</a>
-                        </li>
                         @* a *@
                         @if (SignInManager.IsSignedIn(User))
                         {
@@ -70,6 +64,9 @@
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
                             </li>
                         }
                     </ul>

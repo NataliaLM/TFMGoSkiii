@@ -1,10 +1,4 @@
-﻿@model IEnumerable<TFMGoSki.Models.ClassComment>
-
-@{
-    ViewData["Title"] = "Index";
-}
-
-<h1>Index</h1>
+﻿@model IEnumerable<TFMGoSki.Dtos.ClassCommentDto>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -12,6 +6,9 @@
 <table class="table">
     <thead>
         <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ClassReservationName)
+            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Text)
             </th>
@@ -24,6 +21,9 @@
     <tbody>
 @foreach (var item in Model) {
         <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ClassReservationName)
+            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Text)
             </td>

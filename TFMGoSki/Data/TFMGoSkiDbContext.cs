@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
+using TFMGoSki.Dtos;
 
 namespace TFMGoSki.Data
 {
@@ -34,8 +35,7 @@ namespace TFMGoSki.Data
             modelBuilder.ApplyConfiguration(new CommentEFConfig());
 
             base.OnModelCreating(modelBuilder);
-        }        
-        public DbSet<TFMGoSki.ViewModels.RegisterViewModel> RegisterViewModel { get; set; } = default!;
-        public DbSet<TFMGoSki.ViewModels.LoginViewModel> LoginViewModel { get; set; } = default!;
+        }
+        public DbSet<TFMGoSki.Dtos.ClassCommentDto> ClassCommentDto { get; set; } = default!;
     }
 }

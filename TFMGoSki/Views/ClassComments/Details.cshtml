@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.ClassComment
+﻿@model TFMGoSki.Dtos.ClassCommentDto
 
 @{
     ViewData["Title"] = "Details";
@@ -10,6 +10,12 @@
     <h4>ClassComment</h4>
     <hr />
     <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ClassReservationName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ClassReservationName)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Text)
         </dt>

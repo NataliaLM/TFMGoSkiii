@@ -4,7 +4,6 @@ namespace TFMGoSki.ViewModels
 {
     public class LoginViewModel
     {
-        public string Id { get; init; } = default!;
         [Required]
         public string UserName { get; init; } = default!;
         [Required, DataType(DataType.Password)]

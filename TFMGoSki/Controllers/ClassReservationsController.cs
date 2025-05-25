@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -60,8 +61,15 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
+            var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+            ClassReservationDto classReservationDto = new ClassReservationDto()
+            {
+                ClientName = client.UserName,
+                ClassName = @class.Name
+            };
 
-            return View(classReservation);
+            return View(classReservationDto);
         }
 
         // GET: ClassReservations/Create
@@ -77,16 +85,16 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int userId, int classId)
+        public async Task<IActionResult> Create(ClassReservationViewModel classReservationViewModel)
         {
-            ClassReservation classReservation = new ClassReservation(userId, classId);
+            ClassReservation classReservation = new ClassReservation(classReservationViewModel.UserId, classReservationViewModel.ClassId);
             if (ModelState.IsValid)
             {
                 _context.Add(classReservation);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(classReservation);
+            return View(classReservationViewModel);
         }
 
         // GET: ClassReservations/Edit/5
@@ -103,24 +111,31 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            ViewBag.ClientId = new SelectList(_context.Users, "Id", "UserName");
+            ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
-            return View(classReservation);
+            ClassReservationViewModel classReservationViewModel = new ClassReservationViewModel()
+            {
+                Id = classReservation.Id,
+                UserId = classReservation.UserId,
+                ClassId = classReservation.ClassId
+            };
+
+            return View(classReservationViewModel);
         }
 
         // POST: ClassReservations/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, int userId, int classId)
+        public async Task<IActionResult> Edit(int id, ClassReservationViewModel classReservationViewModel)
         {
-            ClassReservation? classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == id);
+            ClassReservation? classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classReservationViewModel.Id);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    classReservation.Update(userId, classId);
+                    classReservation.Update(classReservationViewModel.UserId, classReservationViewModel.ClassId);
                     _context.Update(classReservation);
                     await _context.SaveChangesAsync();
                 }
@@ -137,7 +152,7 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(classReservation);
+            return View(classReservationViewModel);
         }
 
         // GET: ClassReservations/Delete/5
@@ -155,7 +170,17 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(classReservation);
+            var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+            ClassReservationDto classReservationDto = new ClassReservationDto()
+            {
+                Id = classReservation.Id,
+                ClientName = client.FullName,
+                ClassName = @class.Name
+            };
+
+            return View(classReservationDto);
         }
 
         // POST: ClassReservations/Delete/5

@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -23,7 +25,34 @@ namespace TFMGoSki.Controllers
         // GET: ClassComments
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ClassComments.ToListAsync());
+            List<ClassCommentDto> classCommentDtos = new List<ClassCommentDto>();
+
+            var comments = await _context.ClassComments.ToListAsync(); // Materializar la consulta
+
+            foreach (var classComment in comments)
+            {
+                var classReservation = await _context.ClassReservations
+                    .FirstOrDefaultAsync(c => c.Id == classComment.ClassReservationId);
+
+                if (classReservation == null)
+                    continue;
+
+                var @class = await _context.Classes
+                    .FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+                if (@class == null)
+                    continue;
+
+                classCommentDtos.Add(new ClassCommentDto
+                {
+                    Id = classComment.Id,
+                    ClassReservationName = @class.Name,
+                    Text = classComment.Text,
+                    Raiting = classComment.Raiting
+                });
+            }
+
+            return View(classCommentDtos);
         }
 
         // GET: ClassComments/Details/5
@@ -41,28 +70,38 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(classComment);
+            ClassReservation classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classComment.ClassReservationId);
+            Class @class = _context.Classes.FirstOrDefault(c => c.Id == classReservation.ClassId);
+
+            ClassCommentDto classCommentDto = new ClassCommentDto()
+            {
+                ClassReservationName = @class.Name,
+                Text = classComment.Text,
+                Raiting = classComment.Raiting
+            };
+
+            return View(classCommentDto);
         }
 
         // GET: ClassComments/Create
         public async Task<IActionResult> Create()
         {
             var dbSetClassReservation = await _context.ClassReservations.ToListAsync();
-            var listaClienteClase = new List<KeyValuePair<int, string>>();
+            var listaUserClase = new List<KeyValuePair<int, string>>();
 
             foreach (var classReservation in dbSetClassReservation)
             {
-                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+                var user = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
 
-                if (client != null && @class != null)
+                if (user != null && @class != null)
                 {
-                    string displayText = $"{client.UserName} - {@class.Name}";
-                    listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
+                    string displayText = $"{user.UserName} - {@class.Name}";
+                    listaUserClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
                 }
             }
 
-            ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value");
+            ViewBag.ClassReservationId = new SelectList(listaUserClase, "Key", "Value");
 
             return View();
         }
@@ -71,16 +110,16 @@ namespace TFMGoSki.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<IActionResult> Create(int classReservationId, string text , int raiting)
+        public async Task<IActionResult> Create(int classReservationId, ClassCommentViewModel classCommentViewModel)
         {
-            ClassComment classComment = new ClassComment(classReservationId, text, raiting);
+            ClassComment classComment = new ClassComment(classReservationId, classCommentViewModel.Text, classCommentViewModel.Raiting);
             if (ModelState.IsValid)
             {
                 _context.Add(classComment);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(classComment);
+            return View(classCommentViewModel);
         }
 
         // GET: ClassComments/Edit/5
@@ -114,7 +153,15 @@ namespace TFMGoSki.Controllers
 
             ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value", classComment.ClassReservationId);
 
-            return View(classComment);
+            ClassCommentViewModel classCommentViewModel = new ClassCommentViewModel()
+            {
+                Id = classComment.Id,
+                ClassReservationId = classComment.ClassReservationId,
+                Text = classComment.Text,
+                Raiting = classComment.Raiting
+            };
+
+            return View(classCommentViewModel);
         }
 
         // POST: ClassComments/Edit/5
@@ -122,7 +169,7 @@ namespace TFMGoSki.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, int classReservationId, string text, int raiting)
+        public async Task<IActionResult> Edit(int id, ClassCommentViewModel classCommentViewModel)
         {
             ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id); 
 
@@ -130,7 +177,7 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
-                    classComment.Update(classReservationId, text, raiting);
+                    classComment.Update(classCommentViewModel.ClassReservationId, classCommentViewModel.Text, classCommentViewModel.Raiting);
                     _context.Update(classComment);
                     await _context.SaveChangesAsync();
                 }
@@ -147,7 +194,7 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(classComment);
+            return View(classCommentViewModel);
         }
 
         // GET: ClassComments/Delete/5
@@ -165,7 +212,17 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            return View(classComment);
+            ClassReservation classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classComment.ClassReservationId);
+            Class @class = _context.Classes.FirstOrDefault(c => c.Id == classReservation.ClassId);
+
+            ClassCommentDto classCommentDto = new ClassCommentDto()
+            {
+                ClassReservationName = @class.Name,
+                Text = classComment.Text,
+                Raiting = classComment.Raiting
+            };
+
+            return View(classCommentDto);
         }
 
         // POST: ClassComments/Delete/5

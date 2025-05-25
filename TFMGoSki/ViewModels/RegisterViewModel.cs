@@ -4,7 +4,6 @@ namespace TFMGoSki.ViewModels
 {
     public class RegisterViewModel
     {
-        public string Id { get; init; }
         [Required]
         public string FullName { get; init; } = default!;
         [Required, EmailAddress]
