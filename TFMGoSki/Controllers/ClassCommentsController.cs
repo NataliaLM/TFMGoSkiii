@@ -168,7 +168,6 @@ namespace TFMGoSki.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ClassCommentViewModel classCommentViewModel)
         {
             ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id); 
@@ -227,7 +226,6 @@ namespace TFMGoSki.Controllers
 
         // POST: ClassComments/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var classComment = await _context.ClassComments.FindAsync(id);
