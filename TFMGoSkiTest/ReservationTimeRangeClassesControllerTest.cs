@@ -261,26 +261,32 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2026, 06, 21), new DateOnly(2026, 07, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(
+                new DateOnly(2026, 06, 21),
+                new DateOnly(2026, 07, 22),
+                new TimeOnly(11, 25, 46),
+                new TimeOnly(12, 26, 47),
+                15,
+                @class.Id
+            );
 
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ReservationTimeRangeClassViewModel
+            var formData = new Dictionary<string, string>
             {
-                Class = @class.Id,
-                StartDateOnly = new DateOnly(2026, 08, 21),
-                EndDateOnly = new DateOnly(2026, 09, 22),
-                StartTimeOnly = new TimeOnly(11, 25, 46),
-                EndTimeOnly = new TimeOnly(12, 26, 47)
+                { "Class", @class.Id.ToString() },
+                { "StartDateOnly", "2026-08-21" },
+                { "EndDateOnly", "2026-09-22" },
+                { "StartTimeOnly", "11:25:46" },
+                { "EndTimeOnly", "12:26:47" }
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
-            var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Edit/999", content);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

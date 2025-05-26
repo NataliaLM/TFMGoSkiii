@@ -42,7 +42,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost] 
-        public async Task<IActionResult> Create([FromBody] CityViewModel viewModel)
+        public async Task<IActionResult> Create(CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 
@@ -67,7 +67,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, [FromBody] CityViewModel viewModel)
+        public async Task<IActionResult> Edit(int id, CityViewModel viewModel)
         {
             if (!ModelState.IsValid) return View(viewModel);
 

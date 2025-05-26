@@ -1,6 +1,7 @@
 ﻿using TFMGoSki.Dtos;
 using TFMGoSki.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TFMGoSki.Exceptions;
 
 namespace TFMGoSki.Services
 {
@@ -9,8 +10,8 @@ namespace TFMGoSki.Services
         Task<List<ReservationTimeRangeClassDto>> GetAllAsync();
         Task<ReservationTimeRangeClassDto?> GetByIdAsync(int id);
         Task<ReservationTimeRangeClassViewModel?> GetEditViewModelAsync(int id);
-        Task CreateAsync(ReservationTimeRangeClassViewModel model);
-        Task<bool> UpdateAsync(int id, ReservationTimeRangeClassViewModel model);
+        Task<UpdateReservationResult> CreateAsync(ReservationTimeRangeClassViewModel model);
+        Task<UpdateReservationResult> UpdateAsync(int id, ReservationTimeRangeClassViewModel model);
         Task<bool> DeleteAsync(int id);
         bool Exists(int id);
 

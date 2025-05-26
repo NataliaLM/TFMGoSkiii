@@ -178,16 +178,14 @@ namespace TFMGoSkiTest
             _context.Instructors.Add(instructor);
             await _context.SaveChangesAsync();
 
-            var viewModel = new InstructorViewModel
+            var formData = new Dictionary<string, string>
             {
-                Id = instructor.Id,
-                Name = "Updated Instructor"
+                { "Name", "Updated Instructor" }
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
-            var response = await _client.PostAsync($"/Instructors/Edit/999", content);
+            var response = await _client.PostAsync("/Instructors/Edit/999", content);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }

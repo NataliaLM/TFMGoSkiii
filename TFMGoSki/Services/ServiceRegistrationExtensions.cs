@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Models;
 
 namespace TFMGoSki.Services
 {
@@ -22,6 +24,14 @@ namespace TFMGoSki.Services
             services.AddScoped<ICityService, CityService>();
             services.AddScoped<IInstructorService, InstructorService>();
             services.AddScoped<IReservationTimeRangeClassService, ReservationTimeRangeClassService>();
+
+            services.AddIdentity<User, Role>(options =>
+            {
+                options.Password.RequiredLength = 6;
+                options.User.RequireUniqueEmail = true;
+            })
+            .AddEntityFrameworkStores<TFMGoSkiDbContext>()
+            .AddDefaultTokenProviders();
 
             return services;
         }

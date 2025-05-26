@@ -196,16 +196,15 @@ namespace TFMGoSkiTest
 
         [Fact]
         public async Task Test_Cities_Edit_Id_ReturnsNotFound()
-        {
-            CityViewModel viewModel = new CityViewModel()
+        { 
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test City Update"
+                { "Name", "Test City Update" }
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
-            var response = await _client.PostAsync($"/Cities/Edit?", content);
+            var response = await _client.PostAsync($"/Cities/Edit?id=0", content);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
@@ -213,13 +212,12 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Cities_Edit_ReturnsNotFound()
         {
-            CityViewModel viewModel = new CityViewModel()
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test City Update"
+                { "Name", "Test City Update" }
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/Cities/Edit/999", content);
 

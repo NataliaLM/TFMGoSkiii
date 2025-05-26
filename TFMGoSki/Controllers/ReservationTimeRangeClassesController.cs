@@ -35,7 +35,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ReservationTimeRangeClassViewModel model)
+        public async Task<IActionResult> Create(ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -60,7 +60,7 @@ namespace TFMGoSki.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, [FromBody] ReservationTimeRangeClassViewModel model)
+        public async Task<IActionResult> Edit(int id, ReservationTimeRangeClassViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -68,8 +68,16 @@ namespace TFMGoSki.Controllers
                 return View(model);
             }
 
-            var updated = await _service.UpdateAsync(id, model);
-            return updated ? RedirectToAction(nameof(Index)) : NotFound();
+            var result = await _service.UpdateAsync(id, model);
+
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Error al actualizar la reserva.");
+                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int? id)

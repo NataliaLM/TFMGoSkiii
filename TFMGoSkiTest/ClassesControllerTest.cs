@@ -199,20 +199,19 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             await _context.SaveChangesAsync();
 
-            ClassViewModel classViewModel = new ClassViewModel()
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test Class Update",
-                Price = 31,
-                StudentQuantity = 21,
-                ClassLevel = ClassLevel.Advanced,
-                Instructor = instructor.Id,
-                City = city.Id
+                { "Name", "Test Class Update" },
+                { "Price", "31" },
+                { "StudentQuantity", "21" },
+                { "ClassLevel", ((int)ClassLevel.Advanced).ToString() },
+                { "Instructor", instructor.Id.ToString() },
+                { "City", city.Id.ToString() }
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
-            var response = await _client.PostAsync($"/Classes/Edit/999", content);
+            var response = await _client.PostAsync("/Classes/Edit/999", content);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
