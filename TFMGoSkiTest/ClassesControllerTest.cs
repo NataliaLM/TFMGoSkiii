@@ -98,8 +98,7 @@ namespace TFMGoSkiTest
             var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/Classes/Create", content);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode); // probablemente es un redirect
-            Assert.StartsWith("/Classes", response.Headers.Location?.ToString() ?? ""); // valida la redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
 

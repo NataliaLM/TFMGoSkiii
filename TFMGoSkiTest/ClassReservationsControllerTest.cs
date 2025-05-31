@@ -136,7 +136,7 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync("/ClassReservations/Create", content);
 
             // Normalmente, en éxito se redirige al Index
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

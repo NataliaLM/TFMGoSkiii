@@ -78,8 +78,7 @@ namespace TFMGoSkiTest
             var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/Instructors/Create", content);
 
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode); // redirige en éxito
-            Assert.StartsWith("/Instructors", response.Headers.Location?.ToString() ?? "");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

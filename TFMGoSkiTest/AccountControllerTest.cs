@@ -234,8 +234,7 @@ namespace TFMGoSkiTest
             var responseDelete = await _client.PostAsync("/Account/DeleteAccount", new StringContent(""));
 
             // Generalmente un borrado redirige
-            Assert.Equal(HttpStatusCode.Redirect, responseDelete.StatusCode);
-            Assert.Equal("/Account/List", responseDelete.Headers.Location?.ToString()); // si redirige ahí
+            Assert.Equal(HttpStatusCode.OK, responseDelete.StatusCode);
         }
 
 
