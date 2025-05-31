@@ -167,6 +167,32 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_ClassReservations_Edit_Get_Id_Null()
+        {
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            var reservation = new ClassReservation(user.Id, @class.Id);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ClassReservations/Edit?");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_ClassReservations_Edit_Post_ReturnsRedirect()
         {
             var user = new User { UserName = "InvalidEditUser" };
@@ -203,6 +229,39 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_ClassReservations_Edit_Post_ModelInvalid()
+        {
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            var reservation = new ClassReservation(user.Id, @class.Id);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var viewModel = new ClassReservationViewModel
+            {
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+            Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
+        }
+
+        [Fact]
         public async Task Test_ClassReservations_Delete_Get_ReturnsSuccess()
         {
             var user = new User { UserName = "InvalidEditUser" };
@@ -226,6 +285,32 @@ namespace TFMGoSkiTest
             var response = await _client.GetAsync($"/ClassReservations/Delete/{reservation.Id}");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_ClassReservations_Delete_Get_IdNull()
+        {
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            var reservation = new ClassReservation(user.Id, @class.Id);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ClassReservations/Delete?");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]

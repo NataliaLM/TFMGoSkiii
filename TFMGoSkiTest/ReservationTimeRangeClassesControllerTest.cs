@@ -95,18 +95,16 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             _context.SaveChanges();
 
-            var viewModel = new ReservationTimeRangeClassViewModel
+            var formData = new Dictionary<string, string>
             {
-                Class = @class.Id,
-                StartDateOnly = new DateOnly(2025, 08, 21),
-                EndDateOnly = new DateOnly(2025, 09, 22),
-                StartTimeOnly = new TimeOnly(11, 25, 46),
-                EndTimeOnly = new TimeOnly(12, 26, 47)
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2025-08-21",
+                ["EndDateOnly"] = "2025-09-22",
+                ["StartTimeOnly"] = "11:25:46",
+                ["EndTimeOnly"] = "12:26:47"
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -197,17 +195,16 @@ namespace TFMGoSkiTest
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ReservationTimeRangeClassViewModel
+            var formData = new Dictionary<string, string>
             {
-                Class = @class.Id,
-                StartDateOnly = new DateOnly(2026, 02, 21),
-                EndDateOnly = new DateOnly(2026, 03, 22),
-                StartTimeOnly = new TimeOnly(11, 25, 46),
-                EndTimeOnly = new TimeOnly(12, 26, 47)
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2025-08-21",
+                ["EndDateOnly"] = "2025-09-22",
+                ["StartTimeOnly"] = "11:25:46",
+                ["EndTimeOnly"] = "12:26:47"
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Edit/{reservationTimeRangeClass.Id}", content);
 

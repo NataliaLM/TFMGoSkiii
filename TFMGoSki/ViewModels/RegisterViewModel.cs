@@ -15,6 +15,6 @@ namespace TFMGoSki.ViewModels
         [DataType(DataType.Password), Compare("Password")]
         public string ConfirmPassword { get; init; } = default!;
         [Required]
-        public string RoleName { get; init; } = "Cliente";
+        public string RoleName { get; init; } = "Client";
     }
 }
