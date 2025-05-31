@@ -34,6 +34,24 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Register_Post_ValidModel_ReturnsView()
+        {
+            var model = new RegisterViewModel()
+            {
+                FullName = "Full Name",
+                Email = "full@name.com",
+                PhoneNumber = "123456789",
+                Password = "123asdASD@",
+                RoleName = "Client"
+            };
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Account/Register", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Register_Post_InvalidModel_ReturnsView()
         {
             var model = new RegisterViewModel(); // Empty model, will be invalid
@@ -52,12 +70,43 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Login_Post_ValidCredentials_ShowsError()
+        {
+            var modelRegister = new RegisterViewModel()
+            {
+                FullName = "Full Name",
+                Email = "full@name.com",
+                PhoneNumber = "123456789",
+                Password = "123asdASD@",
+                RoleName = "Client"
+            };
+            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Account/Register", contentRegister);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var model = new LoginViewModel
+            {
+                UserName = "full@name.com",
+                Password = "123asdASD@",
+                RememberMe = false
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+
+            var responseLogin = await _client.PostAsync("/Account/Login", content);
+
+            Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
+        }
+
+        [Fact]
         public async Task Login_Post_InvalidCredentials_ShowsError()
         {
             var model = new LoginViewModel
             {
-                UserName = "nonexistentuser@example.com",
-                Password = "WrongPassword123!",
+                UserName = "full@name.com",
+                Password = "123asdASD@",
                 RememberMe = false
             };
 
@@ -70,9 +119,80 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Profile_Authenticated_RedirectsToProfile()
+        {
+            var modelRegister = new RegisterViewModel()
+            {
+                FullName = "Full Name",
+                Email = "full@name.com",
+                PhoneNumber = "123456789",
+                Password = "123asdASD@",
+                RoleName = "Client"
+            };
+            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Account/Register", contentRegister);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var model = new LoginViewModel
+            {
+                UserName = "full@name.com",
+                Password = "123asdASD@",
+                RememberMe = false
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+
+            var responseLogin = await _client.PostAsync("/Account/Login", content);
+
+            Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
+
+            var responseProfile = await _client.GetAsync("/Account/Profile");
+
+            Assert.Equal(HttpStatusCode.OK, responseProfile.StatusCode);
+        }
+
+        [Fact]
         public async Task Profile_Unauthenticated_RedirectsToLogin()
         {
             var response = await _client.GetAsync("/Account/Profile");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Logout_Authenticated_ReturnsOK()
+        {
+            var modelRegister = new RegisterViewModel()
+            {
+                FullName = "Full Name",
+                Email = "full@name.com",
+                PhoneNumber = "123456789",
+                Password = "123asdASD@",
+                RoleName = "Client"
+            };
+            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Account/Register", contentRegister);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var model = new LoginViewModel
+            {
+                UserName = "full@name.com",
+                Password = "123asdASD@",
+                RememberMe = false
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+
+            var responseLogin = await _client.PostAsync("/Account/Login", content);
+
+            Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
+
+            var contentLogout = new StringContent("");
+            var responseLogout = await _client.PostAsync("/Account/Logout", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -85,6 +205,42 @@ namespace TFMGoSkiTest
 
             // As Logout has [Authorize], this returns 302 to login
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task DeleteAccount_Authenticated_RedirectsToList()
+        {
+            var modelRegister = new RegisterViewModel()
+            {
+                FullName = "Full Name",
+                Email = "full@name.com",
+                PhoneNumber = "123456789",
+                Password = "123asdASD@",
+                RoleName = "Client"
+            };
+            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/Account/Register", contentRegister);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var model = new LoginViewModel
+            {
+                UserName = "full@name.com",
+                Password = "123asdASD@",
+                RememberMe = false
+            };
+
+            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+
+            var responseLogin = await _client.PostAsync("/Account/Login", content);
+
+            Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
+
+
+            var responseDelete = await _client.PostAsync("/Account/DeleteAccount", new StringContent(""));
+
+            Assert.Equal(HttpStatusCode.OK, responseDelete.StatusCode);
         }
 
         [Fact]

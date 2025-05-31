@@ -189,6 +189,19 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Create_Post_Invalid()
+        { 
+            var formData = new Dictionary<string, string>
+            { 
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync("/ClassComments/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Edit_Get_ReturnsSuccess()
         {
             Instructor instructor = new Instructor("InstructorName");
@@ -226,6 +239,95 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Edit_Get_NotFound()
+        {
+            Instructor instructor = new Instructor("InstructorName");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+            City city = new City("Astún y Candanchú (Huesca)");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            Class @class = new Class("Ski Basics", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var user = new User
+            {
+                UserName = "email@user.com",
+                FullName = "Full Name",
+                Email = "email@user.com",
+                PhoneNumber = "123456789",
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            ClassReservation classReservation = new ClassReservation(user.Id, @class.Id);
+            _context.ClassReservations.Add(classReservation);
+            await _context.SaveChangesAsync();
+
+            ClassComment classComment = new ClassComment(classReservation.Id, "Great class", 5);
+            _context.ClassComments.Add(classComment);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ClassComments/Edit?");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Post_Valid_UpdatesEntry()
+        { 
+            Instructor instructor = new Instructor("InstructorName");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            City city = new City("Astún y Candanchú (Huesca)");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            Class @class = new Class("Ski Basics", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var user = new User
+            {
+                UserName = "email@user.com",
+                FullName = "Full Name",
+                Email = "email@user.com",
+                PhoneNumber = "123456789",
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            ClassReservation classReservation = new ClassReservation(user.Id, @class.Id);
+            _context.ClassReservations.Add(classReservation);
+            await _context.SaveChangesAsync();
+
+            ClassComment classComment = new ClassComment(classReservation.Id, "Original comment", 3);
+            _context.ClassComments.Add(classComment);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", classComment.Id.ToString() },
+                { "ClassReservationId", classReservation.Id.ToString() },
+                { "Text", "Updated comment" },
+                { "Raiting", "4" }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+             
+            var response = await _client.PostAsync($"/ClassComments/Edit/{classComment.Id}", content);
+             
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+
+            var updated = await _context.ClassComments.FindAsync(classComment.Id);
+            Assert.Equal("Updated comment", updated.Text);
+            Assert.Equal(4, updated.Raiting);
+        }
+
+        [Fact]
         public async Task Delete_Get_ReturnsSuccess()
         {
             Instructor instructor = new Instructor("InstructorName");
@@ -258,6 +360,14 @@ namespace TFMGoSkiTest
             await _context.SaveChangesAsync();
 
             var response = await _client.GetAsync($"/ClassComments/Delete/{classComment.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Delete_Get_Invalid()
+        {
+            var response = await _client.GetAsync($"/ClassComments/Delete?");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
