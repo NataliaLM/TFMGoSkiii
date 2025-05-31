@@ -111,33 +111,32 @@ namespace TFMGoSkiTest
         {
             var user = new User { UserName = "InvalidEditUser" };
 
-            Instructor instructor = new Instructor("Name Instructor");
+            var instructor = new Instructor("Name Instructor");
             _context.Instructors.Add(instructor);
-            _context.SaveChanges();
 
-            City city = new City("Name City");
+            var city = new City("Name City");
             _context.Cities.Add(city);
-            _context.SaveChanges();
+
+            await _context.SaveChangesAsync();
 
             var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
             await _context.SaveChangesAsync();
 
-            var viewModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
-                UserId = user.Id,
-                ClassId = @class.Id
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() }
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/ClassReservations/Create", content);
 
-            // Redirecciona al Index si la creación es exitosa
-            Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
+            // Normalmente, en éxito se redirige al Index
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         }
 
         [Fact]
