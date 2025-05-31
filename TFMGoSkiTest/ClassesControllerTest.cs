@@ -79,25 +79,28 @@ namespace TFMGoSkiTest
         {
             var instructor = new Instructor("Jorge Poneros");
             _context.Instructors.Add(instructor);
+
+            var city = new City("Madrid");
+            _context.Cities.Add(city);
+
             await _context.SaveChangesAsync();
 
-            ClassViewModel classViewModel = new ClassViewModel()
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test Class",
-                Price = 30,
-                StudentQuantity = 20,
-                ClassLevel = ClassLevel.Advanced,
-                Instructor = 1,
-                City = 1
+                { "Name", "Test Class" },
+                { "Price", "30" },
+                { "StudentQuantity", "20" },
+                { "ClassLevel", "2" }, // Enum: Advanced = 2 (ajusta si es diferente)
+                { "Instructor", instructor.Id.ToString() },
+                { "City", city.Id.ToString() }
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(classViewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-
+            var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/Classes/Create", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
 
         [Fact]
         public async Task Test_Classes_Create_Post_ReturnsSuccess()

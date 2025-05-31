@@ -36,16 +36,16 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Register_Post_ValidModel_ReturnsView()
         {
-            var model = new RegisterViewModel()
+            var formData = new Dictionary<string, string>
             {
-                FullName = "Full Name",
-                Email = "full@name.com",
-                PhoneNumber = "123456789",
-                Password = "123asdASD@",
-                RoleName = "Client"
+                { "FullName", "Full Name" },
+                { "Email", "full@name.com" },
+                { "PhoneNumber", "123456789" },
+                { "Password", "123asdASD@" },
+                { "RoleName", "Client" }
             };
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
 
+            var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/Account/Register", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -72,30 +72,30 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Login_Post_ValidCredentials_ShowsError()
         {
-            var modelRegister = new RegisterViewModel()
+            // 1. Registrar al usuario
+            var formDataRegister = new Dictionary<string, string>
             {
-                FullName = "Full Name",
-                Email = "full@name.com",
-                PhoneNumber = "123456789",
-                Password = "123asdASD@",
-                RoleName = "Client"
+                { "FullName", "Full Name" },
+                { "Email", "full@name.com" },
+                { "PhoneNumber", "123456789" },
+                { "Password", "123asdASD@" },
+                { "RoleName", "Client" }
             };
-            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
 
+            var contentRegister = new FormUrlEncodedContent(formDataRegister);
             var response = await _client.PostAsync("/Account/Register", contentRegister);
-
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            var model = new LoginViewModel
+            // 2. Intentar login
+            var formDataLogin = new Dictionary<string, string>
             {
-                UserName = "full@name.com",
-                Password = "123asdASD@",
-                RememberMe = false
+                { "UserName", "full@name.com" },
+                { "Password", "123asdASD@" },
+                { "RememberMe", "false" }
             };
 
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
-
-            var responseLogin = await _client.PostAsync("/Account/Login", content);
+            var contentLogin = new FormUrlEncodedContent(formDataLogin);
+            var responseLogin = await _client.PostAsync("/Account/Login", contentLogin);
 
             Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
         }
@@ -121,37 +121,35 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Profile_Authenticated_RedirectsToProfile()
         {
-            var modelRegister = new RegisterViewModel()
+            // Registro usando formulario
+            var formDataRegister = new Dictionary<string, string>
             {
-                FullName = "Full Name",
-                Email = "full@name.com",
-                PhoneNumber = "123456789",
-                Password = "123asdASD@",
-                RoleName = "Client"
+                { "FullName", "Full Name" },
+                { "Email", "full@name.com" },
+                { "PhoneNumber", "123456789" },
+                { "Password", "123asdASD@" },
+                { "RoleName", "Client" }
             };
-            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+            var contentRegister = new FormUrlEncodedContent(formDataRegister);
+            var responseRegister = await _client.PostAsync("/Account/Register", contentRegister);
+            Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
 
-            var response = await _client.PostAsync("/Account/Register", contentRegister);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var model = new LoginViewModel
+            // Login usando formulario
+            var formDataLogin = new Dictionary<string, string>
             {
-                UserName = "full@name.com",
-                Password = "123asdASD@",
-                RememberMe = false
+                { "UserName", "full@name.com" },
+                { "Password", "123asdASD@" },
+                { "RememberMe", "false" }
             };
-
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
-
-            var responseLogin = await _client.PostAsync("/Account/Login", content);
-
+            var contentLogin = new FormUrlEncodedContent(formDataLogin);
+            var responseLogin = await _client.PostAsync("/Account/Login", contentLogin);
             Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
 
+            // Acceder a perfil autenticado
             var responseProfile = await _client.GetAsync("/Account/Profile");
-
             Assert.Equal(HttpStatusCode.OK, responseProfile.StatusCode);
         }
+
 
         [Fact]
         public async Task Profile_Unauthenticated_RedirectsToLogin()
@@ -164,37 +162,35 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Logout_Authenticated_ReturnsOK()
         {
-            var modelRegister = new RegisterViewModel()
+            // Registro
+            var formDataRegister = new Dictionary<string, string>
             {
-                FullName = "Full Name",
-                Email = "full@name.com",
-                PhoneNumber = "123456789",
-                Password = "123asdASD@",
-                RoleName = "Client"
-            };
-            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
-
-            var response = await _client.PostAsync("/Account/Register", contentRegister);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var model = new LoginViewModel
-            {
-                UserName = "full@name.com",
-                Password = "123asdASD@",
-                RememberMe = false
+                { "FullName", "Full Name" },
+                { "Email", "full@name.com" },
+                { "PhoneNumber", "123456789" },
+                { "Password", "123asdASD@" },
+                { "RoleName", "Client" }
             };
 
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
+            var contentRegister = new FormUrlEncodedContent(formDataRegister);
+            var responseRegister = await _client.PostAsync("/Account/Register", contentRegister);
+            Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
 
-            var responseLogin = await _client.PostAsync("/Account/Login", content);
+            // Login
+            var formDataLogin = new Dictionary<string, string>
+            {
+                { "UserName", "full@name.com" },
+                { "Password", "123asdASD@" },
+                { "RememberMe", "false" }
+            };
 
+            var contentLogin = new FormUrlEncodedContent(formDataLogin);
+            var responseLogin = await _client.PostAsync("/Account/Login", contentLogin);
             Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
 
-            var contentLogout = new StringContent("");
-            var responseLogout = await _client.PostAsync("/Account/Logout", content);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            // Logout
+            var responseLogout = await _client.PostAsync("/Account/Logout", new StringContent(""));
+            Assert.Equal(HttpStatusCode.OK, responseLogout.StatusCode);
         }
 
         [Fact]
@@ -210,38 +206,37 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task DeleteAccount_Authenticated_RedirectsToList()
         {
-            var modelRegister = new RegisterViewModel()
+            // Registro (formulario)
+            var formDataRegister = new Dictionary<string, string>
             {
-                FullName = "Full Name",
-                Email = "full@name.com",
-                PhoneNumber = "123456789",
-                Password = "123asdASD@",
-                RoleName = "Client"
+                { "FullName", "Full Name" },
+                { "Email", "full@name.com" },
+                { "PhoneNumber", "123456789" },
+                { "Password", "123asdASD@" },
+                { "RoleName", "Client" }
             };
-            var contentRegister = new StringContent(JsonSerializer.Serialize(modelRegister), Encoding.UTF8, "application/json");
+            var contentRegister = new FormUrlEncodedContent(formDataRegister);
+            var responseRegister = await _client.PostAsync("/Account/Register", contentRegister);
+            Assert.Equal(HttpStatusCode.OK, responseRegister.StatusCode);
 
-            var response = await _client.PostAsync("/Account/Register", contentRegister);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            var model = new LoginViewModel
+            // Login (formulario)
+            var formDataLogin = new Dictionary<string, string>
             {
-                UserName = "full@name.com",
-                Password = "123asdASD@",
-                RememberMe = false
+                { "UserName", "full@name.com" },
+                { "Password", "123asdASD@" },
+                { "RememberMe", "false" }
             };
-
-            var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
-
-            var responseLogin = await _client.PostAsync("/Account/Login", content);
-
+            var contentLogin = new FormUrlEncodedContent(formDataLogin);
+            var responseLogin = await _client.PostAsync("/Account/Login", contentLogin);
             Assert.Equal(HttpStatusCode.OK, responseLogin.StatusCode);
 
-
+            // Delete account (no necesita cuerpo)
             var responseDelete = await _client.PostAsync("/Account/DeleteAccount", new StringContent(""));
 
+            // Generalmente un borrado redirige
             Assert.Equal(HttpStatusCode.OK, responseDelete.StatusCode);
         }
+
 
         [Fact]
         public async Task DeleteAccount_Unauthenticated_RedirectsToLogin()

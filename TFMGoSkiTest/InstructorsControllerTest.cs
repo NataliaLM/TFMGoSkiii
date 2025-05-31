@@ -70,14 +70,12 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Instructors_Create_Post_RedirectsToIndex()
         {
-            var viewModel = new InstructorViewModel
+            var formData = new Dictionary<string, string>
             {
-                Name = "New Instructor"
+                { "Name", "New Instructor" }
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+            var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/Instructors/Create", content);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
