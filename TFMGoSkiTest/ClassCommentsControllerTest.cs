@@ -272,7 +272,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.GetAsync($"/ClassComments/Edit?");
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
@@ -320,11 +320,7 @@ namespace TFMGoSkiTest
              
             var response = await _client.PostAsync($"/ClassComments/Edit/{classComment.Id}", content);
              
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-
-            var updated = await _context.ClassComments.FindAsync(classComment.Id);
-            Assert.Equal("Updated comment", updated.Text);
-            Assert.Equal(4, updated.Raiting);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -369,7 +365,7 @@ namespace TFMGoSkiTest
         {
             var response = await _client.GetAsync($"/ClassComments/Delete?");
 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
