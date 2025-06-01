@@ -130,7 +130,7 @@ namespace TFMGoSki.Controllers
         public async Task<IActionResult> Edit(int id, ClassReservationViewModel classReservationViewModel)
         {
             ClassReservation? classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classReservationViewModel.Id);
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && classReservation != null)
             {
                 try
                 {
