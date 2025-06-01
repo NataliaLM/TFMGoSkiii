@@ -172,7 +172,7 @@ namespace TFMGoSki.Controllers
         {
             ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id); 
 
-            if (ModelState.IsValid)
+            if (ModelState.IsValid && classComment != null)
             {
                 try
                 {
