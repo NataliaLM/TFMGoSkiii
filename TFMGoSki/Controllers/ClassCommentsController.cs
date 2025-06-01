@@ -73,6 +73,11 @@ namespace TFMGoSki.Controllers
             ClassReservation classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classComment.ClassReservationId);
             Class @class = _context.Classes.FirstOrDefault(c => c.Id == classReservation.ClassId);
 
+            if (@class == null)
+            {
+                return NotFound();
+            }
+
             ClassCommentDto classCommentDto = new ClassCommentDto()
             {
                 ClassReservationName = @class.Name,
@@ -213,6 +218,11 @@ namespace TFMGoSki.Controllers
 
             ClassReservation classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classComment.ClassReservationId);
             Class @class = _context.Classes.FirstOrDefault(c => c.Id == classReservation.ClassId);
+
+            if(@class == null)
+            {
+                return NotFound();
+            }
 
             ClassCommentDto classCommentDto = new ClassCommentDto()
             {
