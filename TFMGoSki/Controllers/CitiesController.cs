@@ -48,7 +48,12 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid) return View(viewModel);
 
-            await _cityService.CreateAsync(viewModel);
+            var created = await _cityService.CreateAsync(viewModel);
+            if(!created)
+            {
+                View(viewModel);
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker")]
     public class ClassesController : Controller
     {
         private readonly IClassService _classService;
@@ -41,14 +43,26 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Instructor = _classService.GetInstructorsSelectList();
-                ViewBag.ClassLevel = _classService.GetClassLevelSelectList();
-                ViewBag.City = _classService.GetCitiesSelectList();
+                LoadSelectLists();
                 return View(model);
-            }            
+            }
 
-            await _classService.CreateClassAsync(model);
+            var created = await _classService.CreateClassAsync(model);
+            if (!created)
+            {
+                ModelState.AddModelError("Name", "Ya existe una clase con este nombre.");
+                LoadSelectLists();
+                return View(model);
+            }
+
             return RedirectToAction(nameof(Index));
+        }
+
+        private void LoadSelectLists()
+        {
+            ViewBag.Instructor = _classService.GetInstructorsSelectList();
+            ViewBag.ClassLevel = _classService.GetClassLevelSelectList();
+            ViewBag.City = _classService.GetCitiesSelectList();
         }
 
         public async Task<IActionResult> Edit(int? id)

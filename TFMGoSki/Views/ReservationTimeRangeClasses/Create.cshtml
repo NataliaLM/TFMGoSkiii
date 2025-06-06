@@ -1,41 +1,53 @@
 ﻿@model TFMGoSki.ViewModels.ReservationTimeRangeClassViewModel
-
 @{
     ViewData["Title"] = "Create";
+    bool fixedClass = ViewBag.FixedClass ?? false;
 }
 
-<h1>Create</h1>
-
-<h4>ReservationTimeRangeClass</h4>
+<h1>Create Reservation</h1>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>            
-            <div class="form-group">
-                <label asp-for="Class" class="control-label"></label>
-                <select asp-for="Class" class ="form-control" asp-items="ViewBag.ClassId"></select>
-            </div>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (fixedClass)
+            {
+                <input type="hidden" asp-for="Class" />
+            }
+            else
+            {
+                <div class="form-group">
+                    <label asp-for="Class" class="control-label"></label>
+                    <select asp-for="Class" class="form-control" asp-items="ViewBag.ClassId"></select>
+                    <span asp-validation-for="Class" class="text-danger"></span>
+                </div>
+            }
+
             <div class="form-group">
                 <label asp-for="StartDateOnly" class="control-label"></label>
                 <input asp-for="StartDateOnly" class="form-control" type="date" />
                 <span asp-validation-for="StartDateOnly" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="EndDateOnly" class="control-label"></label>
                 <input asp-for="EndDateOnly" class="form-control" type="date" />
                 <span asp-validation-for="EndDateOnly" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="StartTimeOnly" class="control-label"></label>
                 <input asp-for="StartTimeOnly" class="form-control" type="time" />
                 <span asp-validation-for="StartTimeOnly" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="EndTimeOnly" class="control-label"></label>
                 <input asp-for="EndTimeOnly" class="form-control" type="time" />
                 <span asp-validation-for="EndTimeOnly" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -44,9 +56,12 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Go to class listing</a>
+    <a asp-controller="Classes" asp-action="Details" asp-route-id="@Model.Class" class="btn btn-secondary">Go to class</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

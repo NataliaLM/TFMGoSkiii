@@ -27,11 +27,22 @@ namespace TFMGoSki.Controllers
             return reservation == null ? NotFound() : View(reservation);
         }
 
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? classId)
         {
-            // Ahora el servicio maneja el SelectList
-            ViewBag.ClassId = await _service.GetClassSelectListAsync();
-            return View();
+            var model = new ReservationTimeRangeClassViewModel();
+
+            if (classId.HasValue)
+            {
+                model.Class = classId.Value;
+                ViewBag.FixedClass = true; // Indicador para la vista
+            }
+            else
+            {
+                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                ViewBag.FixedClass = false;
+            }
+
+            return View(model);
         }
 
         [HttpPost]
@@ -39,12 +50,41 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                if (model.Class != 0)
+                {
+                    ViewBag.FixedClass = true;
+                }
+                else
+                {
+                    ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                    ViewBag.FixedClass = false;
+                }
+
                 return View(model);
             }
-            
-            await _service.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+
+            var result = await _service.CreateAsync(model);
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+                if (model.Class != 0)
+                {
+                    ViewBag.FixedClass = true;
+                }
+                else
+                {
+                    ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                    ViewBag.FixedClass = false;
+                }
+                return View(model);
+            }
+
+            if(model.Class != 0)
+            {
+                return RedirectToAction("Details", "Classes", new { id = model.Class });
+            }
+
+            return RedirectToAction(nameof(Index));            
         }
 
         public async Task<IActionResult> Edit(int? id)

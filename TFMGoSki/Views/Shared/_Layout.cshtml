@@ -38,9 +38,13 @@
                             </li>
                         }                        
                         @* a *@
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="">Classes</a>
-                        </li>
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="">Class Management</a>
+                            </li>
+                        }                        
+                        @* a *@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Instructors" asp-action="">Instructors</a>
                         </li>

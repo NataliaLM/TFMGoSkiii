@@ -36,11 +36,19 @@ namespace TFMGoSki.Services
             return await _context.Cities.FindAsync(id);
         }
 
-        public async Task CreateAsync(CityViewModel cityViewModel)
+        public async Task<bool> CreateAsync(CityViewModel cityViewModel)
         {
+            var cityFound = _context.Cities.FirstOrDefault(c => c.Name.Equals(cityViewModel.Name));
+
+            if (cityFound != null)
+            {
+                return false;
+            }
+
             City city = new City(cityViewModel.Name);
             _context.Add(city);
             await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> UpdateAsync(int id, CityViewModel viewModel)

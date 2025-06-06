@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
@@ -119,8 +120,15 @@ namespace TFMGoSki.Services
             };
         }
 
-        public async Task CreateClassAsync(ClassViewModel model)
+        public async Task<bool> CreateClassAsync(ClassViewModel model)
         {
+            var classFound = _context.Classes.FirstOrDefault(c => c.Name.Equals(model.Name));
+
+            if (classFound != null)
+            {
+                return false;
+            }
+
             var @class = new Class(
                 model.Name,
                 model.Price!.Value,
@@ -132,6 +140,8 @@ namespace TFMGoSki.Services
 
             _context.Classes.Add(@class);
             await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<ClassViewModel?> GetEditViewModelAsync(int id)
