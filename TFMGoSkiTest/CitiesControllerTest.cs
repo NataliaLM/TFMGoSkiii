@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +30,55 @@ namespace TFMGoSkiTest
             // Crear el contexto con la base de datos en memoria
             var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+             Task.Run(() => AuthenticateAsync()).Wait();
         }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            // Crear un nuevo usuario en la base de datos
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            // Crear rol si no existe
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = "testuser@example.com";
+            var testPassword = "Test123!";
+
+            var user = await userManager.FindByEmailAsync(testEmail);
+            if (user == null)
+            {
+                user = new User
+                {
+                    UserName = testEmail,
+                    Email = testEmail,
+                    FullName = "Test User",
+                    PhoneNumber = "123456789"
+                };
+
+                await userManager.CreateAsync(user, testPassword);
+                await userManager.AddToRoleAsync(user, role);
+            }
+
+            // Simular login real con el HttpClient
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+
+            // Forzar cookies y redirección para mantener autenticación
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode(); // si falla, lanza excepción
+        }
+
 
         [Fact]
         public async Task Test_Cities_Index_ReturnsSuccess()
@@ -238,11 +287,7 @@ namespace TFMGoSkiTest
 
         [Fact]
         public async Task Test_Cities_Delete_Null()
-        {
-            var city = new City("Test City");
-            _context.Cities.Add(city);
-            await _context.SaveChangesAsync();
-
+        { 
             var response = await _client.DeleteAsync($"/Cities/Delete?");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -251,6 +296,8 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Cities_Delete_NotFound()
         {
+            await AuthenticateAsync();
+
             var city = new City("Test City");
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
