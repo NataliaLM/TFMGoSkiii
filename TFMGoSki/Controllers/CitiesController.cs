@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TFMGoSki.Dtos;
 using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker")]
     public class CitiesController : Controller
     {
         private readonly ICityService _cityService;
