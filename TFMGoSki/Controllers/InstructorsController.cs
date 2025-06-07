@@ -37,7 +37,11 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid) return View(viewModel);
 
-            await _instructorService.CreateAsync(viewModel);
+            var created = await _instructorService.CreateAsync(viewModel);
+            if(created == false)
+            {
+                return View(viewModel);
+            }
             return RedirectToAction(nameof(Index));
         }
 
@@ -55,7 +59,14 @@ namespace TFMGoSki.Controllers
             if (!ModelState.IsValid) return View(viewModel);
 
             var updated = await _instructorService.UpdateAsync(id, viewModel);
-            return updated ? RedirectToAction(nameof(Index)) : NotFound();
+
+            if (!updated.Success)
+            {
+                ModelState.AddModelError("Name", updated.ErrorMessage ?? "Error updating the instructor.");
+                return View(viewModel);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int? id)

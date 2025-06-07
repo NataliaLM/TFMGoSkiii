@@ -244,7 +244,7 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
-        public async Task Test_Cities_Edit_Id_ReturnsNotFound()
+        public async Task Test_Cities_Edit_Id_ReturnsCityNotFound()
         { 
             var formData = new Dictionary<string, string>
             {
@@ -255,11 +255,11 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Cities/Edit?id=0", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
-        public async Task Test_Cities_Edit_ReturnsNotFound()
+        public async Task Test_Cities_Edit_ReturnsCityDoesntExist()
         {
             var formData = new Dictionary<string, string>
             {
@@ -270,7 +270,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Cities/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

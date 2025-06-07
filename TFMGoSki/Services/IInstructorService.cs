@@ -1,4 +1,5 @@
 ﻿using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Services
@@ -7,9 +8,9 @@ namespace TFMGoSki.Services
     {
         Task<List<InstructorDto>> GetAllAsync();
         Task<InstructorDto?> GetDetailsAsync(int id);
-        Task CreateAsync(InstructorViewModel viewModel);
+        Task<bool> CreateAsync(InstructorViewModel viewModel);
         Task<InstructorViewModel?> GetEditViewModelAsync(int id);
-        Task<bool> UpdateAsync(int id, InstructorViewModel viewModel);
+        Task<UpdateResult> UpdateAsync(int id, InstructorViewModel viewModel);
         Task<bool> DeleteAsync(int id);
         bool Exists(int id);
     }

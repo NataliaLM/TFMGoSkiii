@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -161,17 +162,28 @@ namespace TFMGoSki.Services
             };
         }
 
-        public async Task<bool> UpdateClassAsync(int id, ClassViewModel model)
+        public async Task<UpdateResult> UpdateClassAsync(int id, ClassViewModel model)
         {
+            var duplicate = _context.Classes
+                .FirstOrDefault(c => c.Name.Equals(model.Name) && c.Id != id);
+
+            if (duplicate != null)
+            {
+                return UpdateResult.Fail("A class with this name already exists.");
+            }
+
             var @class = await _context.Classes.FindAsync(id);
-            if (@class == null) return false;
+            if (@class == null)
+            {
+                return UpdateResult.Fail("Class not found.");
+            }
 
             @class.Update(model.Name, model.Price!.Value, model.StudentQuantity!.Value,
                           model.ClassLevel!.Value, model.Instructor!.Value, model.City!.Value);
 
             _context.Classes.Update(@class);
             await _context.SaveChangesAsync();
-            return true;
+            return UpdateResult.Ok();
         }
 
         public async Task<bool> DeleteClassAsync(int id)

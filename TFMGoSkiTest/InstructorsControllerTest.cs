@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
@@ -13,19 +14,70 @@ namespace TFMGoSkiTest
     public class InstructorsControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
+        private readonly WebApplicationFactory<Program> _factory;
         private readonly TFMGoSkiDbContext _context;
 
         public InstructorsControllerTest(WebApplicationFactory<Program> factory)
         {
-            var webApp = factory.WithWebHostBuilder(builder =>
+            // Configurar el entorno para usar la base de datos en memoria en las pruebas
+            _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Test");
             });
 
-            _client = webApp.CreateClient();
+            // Crear cliente HTTP para realizar las pruebas
+            _client = _factory.CreateClient();
 
-            var scope = webApp.Services.CreateScope();
+            // Crear el contexto con la base de datos en memoria
+            var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+            Task.Run(() => AuthenticateAsync()).Wait();
+        }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            // Crear un nuevo usuario en la base de datos
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            // Crear rol si no existe
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = "testuser@example.com";
+            var testPassword = "Test123!";
+
+            var user = await userManager.FindByEmailAsync(testEmail);
+            if (user == null)
+            {
+                user = new User
+                {
+                    UserName = testEmail,
+                    Email = testEmail,
+                    FullName = "Test User",
+                    PhoneNumber = "123456789"
+                };
+
+                await userManager.CreateAsync(user, testPassword);
+                await userManager.AddToRoleAsync(user, role);
+            }
+
+            // Simular login real con el HttpClient
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+
+            // Forzar cookies y redirección para mantener autenticación
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode(); // si falla, lanza excepción
         }
 
         [Fact]
@@ -170,7 +222,7 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
-        public async Task Test_Instructors_Edit_Post_IdNotFound()
+        public async Task Test_Instructors_Edit_Post_IdInstructorDoesntExist()
         {
             var instructor = new Instructor("Edit Test");
             _context.Instructors.Add(instructor);
@@ -185,7 +237,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync("/Instructors/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

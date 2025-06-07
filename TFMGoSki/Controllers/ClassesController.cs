@@ -50,7 +50,7 @@ namespace TFMGoSki.Controllers
             var created = await _classService.CreateClassAsync(model);
             if (!created)
             {
-                ModelState.AddModelError("Name", "Ya existe una clase con este nombre.");
+                ModelState.AddModelError("Name", "A class with this name already exists.");
                 LoadSelectLists();
                 return View(model);
             }
@@ -84,14 +84,20 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Instructor = _classService.GetInstructorsSelectList();
-                ViewBag.ClassLevel = _classService.GetClassLevelSelectList();
-                ViewBag.City = _classService.GetCitiesSelectList();
+                LoadSelectLists();
                 return View(model);
-            }            
+            }
 
-            var updated = await _classService.UpdateClassAsync(id, model);
-            return updated ? RedirectToAction(nameof(Index)) : NotFound();
+            var result = await _classService.UpdateClassAsync(id, model);
+
+            if (!result.Success)
+            {
+                ModelState.AddModelError("Name", result.ErrorMessage ?? "Error updating the class.");
+                LoadSelectLists();
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Delete(int? id)

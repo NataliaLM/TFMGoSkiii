@@ -51,6 +51,7 @@ namespace TFMGoSki.Controllers
             var created = await _cityService.CreateAsync(viewModel);
             if(!created)
             {
+                ModelState.AddModelError("Name", "There is already a city with this name.");
                 View(viewModel);
             }
 
@@ -79,7 +80,11 @@ namespace TFMGoSki.Controllers
             if (!ModelState.IsValid) return View(viewModel);
 
             var updated = await _cityService.UpdateAsync(id, viewModel);
-            if (!updated) return NotFound();
+            if (!updated.Success)
+            {
+                ModelState.AddModelError("Name", updated.ErrorMessage ?? "Error updating the city.");
+                return View(viewModel);
+            }
 
             return RedirectToAction(nameof(Index));
         }

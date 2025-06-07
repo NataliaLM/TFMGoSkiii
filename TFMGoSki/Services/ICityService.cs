@@ -1,4 +1,5 @@
 ﻿using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -10,7 +11,7 @@ namespace TFMGoSki.Services
         Task<CityDto?> GetByIdAsync(int id);
         Task<City?> FindEntityByIdAsync(int id);
         Task<bool> CreateAsync(CityViewModel cityViewModel);
-        Task<bool> UpdateAsync(int id, CityViewModel viewModel);
+        Task<UpdateResult> UpdateAsync(int id, CityViewModel viewModel);
         Task<bool> DeleteAsync(int id);
         Task<bool> ExistsAsync(int id);
     }
