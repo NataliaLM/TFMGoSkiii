@@ -32,6 +32,7 @@ namespace TFMGoSki.Controllers
             {
                 var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == reservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
+                var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == reservation.ReservationTimeRangeClassId);
 
                 if (client != null && @class != null)
                 {
@@ -39,7 +40,14 @@ namespace TFMGoSki.Controllers
                     {
                         Id = reservation.Id,
                         ClientName = client.UserName,
-                        ClassName = @class.Name
+                        ClassName = @class.Name,
+                        ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                        {
+                            StartDateOnly = reservationTimeRangeClass.StartDateOnly,
+                            EndDateOnly = reservationTimeRangeClass.EndDateOnly,
+                            StartTimeOnly = reservationTimeRangeClass.StartTimeOnly,
+                            EndTimeOnly = reservationTimeRangeClass.EndTimeOnly
+                        }
                     });
                 }
             }
@@ -63,10 +71,19 @@ namespace TFMGoSki.Controllers
             }
             var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
             var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+            var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == classReservation.ReservationTimeRangeClassId);
+
             ClassReservationDto classReservationDto = new ClassReservationDto()
             {
                 ClientName = client.UserName,
-                ClassName = @class.Name
+                ClassName = @class.Name,
+                ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                {
+                    StartDateOnly = reservationTimeRangeClass.StartDateOnly,
+                    EndDateOnly = reservationTimeRangeClass.EndDateOnly,
+                    StartTimeOnly = reservationTimeRangeClass.StartTimeOnly,
+                    EndTimeOnly = reservationTimeRangeClass.EndTimeOnly
+                }
             };
 
             return View(classReservationDto);
@@ -86,7 +103,7 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ClassReservationViewModel classReservationViewModel)
         {
-            ClassReservation classReservation = new ClassReservation(classReservationViewModel.UserId, classReservationViewModel.ClassId);
+            ClassReservation classReservation = new ClassReservation(classReservationViewModel.UserId, classReservationViewModel.ClassId, classReservationViewModel.ReservationTimeRangeClassId);
             if (ModelState.IsValid)
             {
                 _context.Add(classReservation);
@@ -117,7 +134,8 @@ namespace TFMGoSki.Controllers
             {
                 Id = classReservation.Id,
                 UserId = classReservation.UserId,
-                ClassId = classReservation.ClassId
+                ClassId = classReservation.ClassId,
+                ReservationTimeRangeClassId = classReservation.ReservationTimeRangeClassId
             };
 
             return View(classReservationViewModel);
@@ -134,7 +152,7 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
-                    classReservation.Update(classReservationViewModel.UserId, classReservationViewModel.ClassId);
+                    classReservation.Update(classReservationViewModel.UserId, classReservationViewModel.ClassId, classReservationViewModel.ReservationTimeRangeClassId);
                     _context.Update(classReservation);
                     await _context.SaveChangesAsync();
                 }
@@ -171,12 +189,20 @@ namespace TFMGoSki.Controllers
 
             var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
             var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+            var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == classReservation.ReservationTimeRangeClassId);
 
             ClassReservationDto classReservationDto = new ClassReservationDto()
             {
                 Id = classReservation.Id,
                 ClientName = client.FullName,
-                ClassName = @class.Name
+                ClassName = @class.Name,
+                ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                {
+                    StartDateOnly = reservationTimeRangeClass.StartDateOnly,
+                    EndDateOnly = reservationTimeRangeClass.EndDateOnly,
+                    StartTimeOnly = reservationTimeRangeClass.StartTimeOnly,
+                    EndTimeOnly = reservationTimeRangeClass.EndTimeOnly
+                }
             };
 
             return View(classReservationDto);
