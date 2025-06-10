@@ -11,6 +11,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class InstructorsControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
@@ -48,7 +49,7 @@ namespace TFMGoSkiTest
                 await roleManager.CreateAsync(new Role(role));
             }
 
-            var testEmail = "testuser@example.com";
+            var testEmail = "testuserInstructor@example.com";
             var testPassword = "Test123!";
 
             var user = await userManager.FindByEmailAsync(testEmail);
@@ -58,7 +59,7 @@ namespace TFMGoSkiTest
                 {
                     UserName = testEmail,
                     Email = testEmail,
-                    FullName = "Test User",
+                    FullName = "Test User Instructor",
                     PhoneNumber = "123456789"
                 };
 

@@ -34,9 +34,18 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_ClassReservations_Index_ReturnsSuccess()
         {
-            var user = new User { UserName = "InvalidEditUser" };
+            var user = new User
+            {
+                UserName = "email@email.com",
+                FullName = "email@email.com",
+                Email = "email@email.com",
+                PhoneNumber = "1234456789"
+            };
 
-            Instructor instructor = new Instructor("Name Instructor");
+            //_context.Users.Add(user);
+            //_context.SaveChanges();
+
+            Instructor instructor = new Instructor("Name Instructor ClassReservation");
             _context.Instructors.Add(instructor);
             _context.SaveChanges();
 
@@ -287,7 +296,12 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_ClassReservations_Delete_Get_ReturnsSuccess()
         {
-            var user = new User { UserName = "InvalidEditUser" };
+            var user = new User { 
+                UserName = "asNewd@asdNew.com",
+                FullName = "FullName",
+                Email = "asNewd@asdNew.com",
+                PhoneNumber = "1234456789"
+            };
 
             Instructor instructor = new Instructor("Name Instructor");
             _context.Instructors.Add(instructor);

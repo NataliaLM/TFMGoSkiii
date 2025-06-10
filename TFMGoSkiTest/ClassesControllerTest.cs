@@ -10,6 +10,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class ClassesControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
@@ -37,35 +38,28 @@ namespace TFMGoSkiTest
 
         private async Task AuthenticateAsync(string role = "Admin")
         {
-            // Crear un nuevo usuario en la base de datos
             var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
             var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
 
-            // Crear rol si no existe
             if (!await roleManager.RoleExistsAsync(role))
             {
                 await roleManager.CreateAsync(new Role(role));
             }
 
-            var testEmail = "testuser@example.com";
+            var testEmail = $"testuser{Guid.NewGuid()}Classes@exampleClasses.com"; // email único
             var testPassword = "Test123!";
 
-            var user = await userManager.FindByEmailAsync(testEmail);
-            if (user == null)
+            var user = new User
             {
-                user = new User
-                {
-                    UserName = testEmail,
-                    Email = testEmail,
-                    FullName = "Test User",
-                    PhoneNumber = "123456789"
-                };
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Classes",
+                PhoneNumber = "133456789"
+            };
 
-                await userManager.CreateAsync(user, testPassword);
-                await userManager.AddToRoleAsync(user, role);
-            }
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
 
-            // Simular login real con el HttpClient
             var loginData = new Dictionary<string, string>
             {
                 { "UserName", testEmail },
@@ -73,10 +67,8 @@ namespace TFMGoSkiTest
             };
 
             var loginContent = new FormUrlEncodedContent(loginData);
-
-            // Forzar cookies y redirección para mantener autenticación
             var response = await _client.PostAsync("/Account/Login", loginContent);
-            response.EnsureSuccessStatusCode(); // si falla, lanza excepción
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
