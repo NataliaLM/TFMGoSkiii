@@ -8,8 +8,6 @@ namespace TFMGoSki.Data
     {
         public void Configure(EntityTypeBuilder<ClassComment> builder)
         {
-            builder.ToTable("ClassComment");
-
             builder.HasOne<ClassReservation>()
                 .WithMany()
                 .HasForeignKey(c => c.ClassReservationId)
