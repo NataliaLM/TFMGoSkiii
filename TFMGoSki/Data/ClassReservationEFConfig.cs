@@ -19,6 +19,11 @@ namespace TFMGoSki.Data
                .WithMany()
                .HasForeignKey(c => c.ClassId)
                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<ReservationTimeRangeClass>()
+               .WithMany()
+               .HasForeignKey(c => c.ReservationTimeRangeClassId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
