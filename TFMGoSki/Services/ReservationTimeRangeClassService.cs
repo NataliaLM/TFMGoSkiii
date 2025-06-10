@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
 using TFMGoSki.Exceptions;
@@ -170,7 +171,7 @@ namespace TFMGoSki.Services
             _context.ReservationTimeRangeClasses.Remove(reservation);
             await _context.SaveChangesAsync();
             return true;
-        }
+        } //TODO: (Natalia) Hay que sumar Remaining Students si cancela la reserva.
 
         public bool Exists(int id)
         {

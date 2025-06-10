@@ -11,5 +11,8 @@ namespace TFMGoSki.ViewModels
         [Display(Name = "Class")]
         [Required(ErrorMessage = "The class is required.")]
         public int ClassId { get; set; }
+        [Display(Name = " Reservation Time Range Class")]
+        [Required(ErrorMessage = "The  Reservation Time Range Class is required.")]
+        public int ReservationTimeRangeClassId { get; set; }
     }
 }

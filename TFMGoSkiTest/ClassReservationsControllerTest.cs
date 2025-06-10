@@ -48,7 +48,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            _context.ClassReservations.Add(new ClassReservation(user.Id, @class.Id));
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            _context.ClassReservations.Add(new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id));
             await _context.SaveChangesAsync();
 
             var response = await _client.GetAsync("/ClassReservations");
@@ -73,7 +77,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -156,7 +164,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -182,7 +194,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -208,7 +224,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -244,7 +264,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -277,7 +301,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -303,7 +331,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -329,7 +361,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -370,7 +406,12 @@ namespace TFMGoSkiTest
             var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
             _context.Users.Add(user);
             _context.Classes.Add(@class);
-            var reservation = new ClassReservation(user.Id, @class.Id);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 

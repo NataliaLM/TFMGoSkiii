@@ -36,6 +36,6 @@ namespace TFMGoSki.Data
 
             base.OnModelCreating(modelBuilder);
         }
-        public DbSet<TFMGoSki.Dtos.ClassCommentDto> ClassCommentDto { get; set; } = default!;
+        //public DbSet<TFMGoSki.Dtos.ClassCommentDto> ClassCommentDto { get; set; } = default!;
     }
 }
