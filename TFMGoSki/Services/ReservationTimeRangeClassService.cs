@@ -185,7 +185,7 @@ namespace TFMGoSki.Services
                 .Select(c => new
                 {
                     Id = c.Id,
-                    Description = c.Name + " (" + c.StudentQuantity + " estudiantes)"
+                    Description = c.Name + " (" + c.StudentQuantity + " students)"
                 })
                 .ToListAsync();
             return new SelectList(classes, "Id", "Description");

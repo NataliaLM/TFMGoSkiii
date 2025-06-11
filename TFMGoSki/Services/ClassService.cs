@@ -51,7 +51,7 @@ namespace TFMGoSki.Services
                 var reservationTimeRangeClassDtos = await reservationsQuery
                     .Select(r => new ReservationTimeRangeClassDto
                     {
-                        RemainingStudentsQuantity = r.RemainingStudentsQuantity,
+                        RemainingStudentsQuantity = r.RemainingStudentsQuantity == -1 ? 0 : r.RemainingStudentsQuantity,
                         StartDateOnly = r.StartDateOnly,
                         EndDateOnly = r.EndDateOnly,
                         StartTimeOnly = r.StartTimeOnly,
@@ -71,6 +71,102 @@ namespace TFMGoSki.Services
                     ClassLevel = clase.ClassLevel,
                     InstructorName = instructor?.Name,
                     CityName = city?.Name,
+                    ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
+                });
+            }
+
+            return classDtos;
+        }
+
+        public async Task<List<ClassDto>> GetAllClassesUserAsync(bool? finalizadas = null, string name = null, decimal? minPrice = null, decimal? maxPrice = null, string classLevel = null, string cityName = null, DateOnly? minDate = null, DateOnly? maxDate = null)
+        {
+            var now = DateOnly.FromDateTime(DateTime.Now);
+            var nowTime = TimeOnly.FromDateTime(DateTime.Now);
+            var classDtos = new List<ClassDto>();
+
+            // Obtener todas las clases (filtraremos después)
+            var classes = await _context.Classes.ToListAsync();
+
+            // Filtrar por nombre si se especifica
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                classes = classes.Where(c => c.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            // Filtrar por precio mínimo
+            if (minPrice.HasValue)
+            {
+                classes = classes.Where(c => c.Price >= minPrice.Value).ToList();
+            }
+
+            // Filtrar por precio máximo
+            if (maxPrice.HasValue)
+            {
+                classes = classes.Where(c => c.Price <= maxPrice.Value).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(classLevel))
+            {
+                classes = classes.Where(c => c.ClassLevel.ToFriendlyString().Equals(classLevel)).ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(cityName))
+            {
+                var cityIds = await _context.Cities
+                    .Where(city => city.Name == cityName)
+                    .Select(city => city.Id)
+                    .ToListAsync();
+
+                classes = classes.Where(c => cityIds.Contains(c.CityId)).ToList();
+            }
+
+            foreach (var clase in classes)
+            {
+                var cityFound = await _context.Cities.FindAsync(clase.CityId);
+                var instructor = await _context.Instructors.FindAsync(clase.InstructorId);
+
+                // Filtrar reservas por clase y por si están finalizadas o no
+                var reservationsQuery = _context.ReservationTimeRangeClasses
+                    .Where(r => r.ClassId == clase.Id);
+
+                reservationsQuery = reservationsQuery.Where(r => r.StartDateOnly >= now || (r.StartDateOnly == now && r.StartTimeOnly >= nowTime));
+
+                // Nuevo filtro por fecha mínima
+                if (minDate.HasValue)
+                {
+                    reservationsQuery = reservationsQuery
+                        .Where(r => r.StartDateOnly >= minDate.Value);
+                }
+
+                // Nuevo filtro por fecha máxima
+                if (maxDate.HasValue)
+                {
+                    reservationsQuery = reservationsQuery
+                        .Where(r => r.StartDateOnly <= maxDate.Value);
+                }
+
+                var reservationTimeRangeClassDtos = await reservationsQuery
+                    .Select(r => new ReservationTimeRangeClassDto
+                    {
+                        RemainingStudentsQuantity = r.RemainingStudentsQuantity == -1 ? 0 : r.RemainingStudentsQuantity,
+                        StartDateOnly = r.StartDateOnly,
+                        EndDateOnly = r.EndDateOnly,
+                        StartTimeOnly = r.StartTimeOnly,
+                        EndTimeOnly = r.EndTimeOnly
+                    })
+                    .ToListAsync();
+
+                if (!reservationTimeRangeClassDtos.Any()) continue; //interrumpe la iteración actual dentro de un bucle (for, while, do-while) y pasa a la siguiente iteración sin ejecutar el resto del código dentro del bucle
+
+                classDtos.Add(new ClassDto
+                {
+                    Id = clase.Id,
+                    Name = clase.Name,
+                    Price = clase.Price,
+                    StudentQuantity = clase.StudentQuantity,
+                    ClassLevel = clase.ClassLevel,
+                    InstructorName = instructor?.Name,
+                    CityName = cityFound?.Name,
                     ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
                 });
             }

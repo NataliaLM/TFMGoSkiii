@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Index";
-}
+} @* Nosé para qué es *@
 
 <h1>Class Management</h1>
 
@@ -11,9 +11,9 @@
 </p>
 
 <p>
-    <a asp-action="Index" asp-route-finalizadas="false">Active classes</a> |
-    <a asp-action="Index" asp-route-finalizadas="true">Completed classes</a> |
-    <a asp-action="Index">All classes</a>
+    <a asp-action="IndexUser" asp-route-finalizadas="false">Active classes</a> |
+    <a asp-action="IndexUser" asp-route-finalizadas="true">Completed classes</a> |
+    <a asp-action="IndexUser">All classes</a>
 </p>
 
 <table class="table">
