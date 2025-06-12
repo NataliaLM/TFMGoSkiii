@@ -78,7 +78,7 @@ namespace TFMGoSki.Services
             return classDtos;
         }
 
-        public async Task<List<ClassDto>> GetAllClassesUserAsync(bool? finalizadas = null, string name = null, decimal? minPrice = null, decimal? maxPrice = null, string classLevel = null, string cityName = null, DateOnly? minDate = null, DateOnly? maxDate = null)
+        public async Task<List<ClassDto>> GetAllClassesUserAsync(bool? finalizadas = null, string name = null, decimal? minPrice = null, decimal? maxPrice = null, string classLevel = null, string cityName = null, DateOnly? minDate = null, DateOnly? maxDate = null, int? minRating = null)
         {
             var now = DateOnly.FromDateTime(DateTime.Now);
             var nowTime = TimeOnly.FromDateTime(DateTime.Now);
@@ -173,6 +173,15 @@ namespace TFMGoSki.Services
                             UserName = u.UserName
                         })
                     .ToListAsync();
+
+                // Calcular el promedio de rating
+                var averageRating = comments.Any() ? comments.Average(c => c.Raiting) : 0;
+
+                // Filtrar por mínimo rating si está especificado
+                if (minRating.HasValue && averageRating < minRating.Value)
+                {
+                    continue;
+                }
 
                 classDtos.Add(new ClassDto
                 {

@@ -25,7 +25,7 @@ namespace TFMGoSki.Controllers
             return View(classDtos);
         }
 
-        public async Task<IActionResult> IndexUser(bool? finalizadas, string name, decimal? minPrice, decimal? maxPrice, string classLevel, string cityName, DateOnly? minDate, DateOnly? maxDate)
+        public async Task<IActionResult> IndexUser(bool? finalizadas, string name, decimal? minPrice, decimal? maxPrice, string classLevel, string cityName, DateOnly? minDate, DateOnly? maxDate, int? minRating)
         {
             // Obtener todos los niveles distintos disponibles en la base de datos
             var classLevels = await _context.Classes
@@ -49,7 +49,7 @@ namespace TFMGoSki.Controllers
                 "Value", "Text"
                 ); // Carga el ViewBag con la lista para el dropdown
 
-            var classDtos = await _classService.GetAllClassesUserAsync(finalizadas, name, minPrice, maxPrice, classLevel, cityName, minDate, maxDate);
+            var classDtos = await _classService.GetAllClassesUserAsync(finalizadas, name, minPrice, maxPrice, classLevel, cityName, minDate, maxDate, minRating);
             return View(classDtos);
         }
 

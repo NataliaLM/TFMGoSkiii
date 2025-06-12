@@ -8,7 +8,7 @@ namespace TFMGoSki.Services
     public interface IClassService
     {
         Task<List<ClassDto>> GetAllClassesAsync(bool? finalizadas = null);
-        Task<List<ClassDto>> GetAllClassesUserAsync(bool? finalizadas = null, string name = null, decimal? minPrice = null, decimal? maxPrice = null, string classLevel = null, string city = null, DateOnly? minDate = null, DateOnly? maxDate = null);
+        Task<List<ClassDto>> GetAllClassesUserAsync(bool? finalizadas = null, string name = null, decimal? minPrice = null, decimal? maxPrice = null, string classLevel = null, string city = null, DateOnly? minDate = null, DateOnly? maxDate = null, int? minRating = null);
         Task<ClassDto?> GetClassDetailsAsync(int id);
         Task<bool> CreateClassAsync(ClassViewModel model);
         Task<ClassViewModel?> GetEditViewModelAsync(int id);
