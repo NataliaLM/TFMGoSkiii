@@ -60,6 +60,7 @@
             <th>@Html.DisplayNameFor(model => model.InstructorName)</th>
             <th>@Html.DisplayNameFor(model => model.CityName)</th>
             <th>Reservations Time Range</th>
+            <th>Comments</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -90,6 +91,24 @@
                     else
                     {
                         <span>No Reservation Available</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Comments != null && item.Comments.Any())
+                    {
+                        <ul>
+                            @foreach (var comment in item.Comments)
+                            {
+                                <li>
+                                    <strong>@comment.UserName:</strong> "@comment.Text"
+                                    <span>(Rating: @comment.Raiting/5)</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>No comments available</span>
                     }
                 </td>
                 <td>

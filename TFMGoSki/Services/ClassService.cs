@@ -158,6 +158,22 @@ namespace TFMGoSki.Services
 
                 if (!reservationTimeRangeClassDtos.Any()) continue; //interrumpe la iteración actual dentro de un bucle (for, while, do-while) y pasa a la siguiente iteración sin ejecutar el resto del código dentro del bucle
 
+                var comments = await _context.ClassComments
+                    .Where(cc => _context.ClassReservations
+                        .Where(cr => cr.ClassId == clase.Id)
+                        .Select(cr => cr.Id)
+                        .Contains(cc.ClassReservationId))
+                    .Join(_context.Users,
+                        cc => _context.ClassReservations.FirstOrDefault(cr => cr.Id == cc.ClassReservationId).UserId,
+                        u => u.Id,
+                        (cc, u) => new ClassCommentDto
+                        {
+                            Text = cc.Text,
+                            Raiting = cc.Raiting,
+                            UserName = u.UserName
+                        })
+                    .ToListAsync();
+
                 classDtos.Add(new ClassDto
                 {
                     Id = clase.Id,
@@ -167,7 +183,8 @@ namespace TFMGoSki.Services
                     ClassLevel = clase.ClassLevel,
                     InstructorName = instructor?.Name,
                     CityName = cityFound?.Name,
-                    ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
+                    ReservationTimeRangeClassDto = reservationTimeRangeClassDtos,
+                    Comments = comments
                 });
             }
 
