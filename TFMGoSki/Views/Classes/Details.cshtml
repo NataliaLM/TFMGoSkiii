@@ -58,6 +58,7 @@
                     <th>End Date</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,6 +70,15 @@
                         <td>@reservation.EndDateOnly</td>
                         <td>@reservation.StartTimeOnly</td>
                         <td>@reservation.EndTimeOnly</td>
+                        <td>
+                            <a asp-controller="ClassReservations"
+                               asp-action="Create"
+                               asp-route-classId="@Model.Id"
+                               asp-route-reservationTimeRangeClassId="@reservation.Id"
+                               class="btn btn-primary btn-sm">
+                                Reservar clase
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -17,10 +18,11 @@ namespace TFMGoSki.Controllers
     public class ClassReservationsController : Controller
     {
         private readonly TFMGoSkiDbContext _context;
-
-        public ClassReservationsController(TFMGoSkiDbContext context)
+        private readonly UserManager<User> _userManager;
+        public ClassReservationsController(TFMGoSkiDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: ClassReservations
@@ -109,11 +111,35 @@ namespace TFMGoSki.Controllers
         }
 
         // GET: ClassReservations/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int? classId = null, int? reservationTimeRangeClassId = null)
         {
-            ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
-            ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
-            return View();
+            if(classId != null && reservationTimeRangeClassId != null)
+            {
+                var userId = _userManager.GetUserId(User);
+                var classItem = await _context.Classes.FindAsync(classId);
+                var reservation = await _context.ReservationTimeRangeClasses.FindAsync(reservationTimeRangeClassId);
+                if (classItem == null || reservation == null || userId == null)
+                {
+                    return NotFound();
+                }
+                var viewModel = new ClassReservationViewModel
+                {
+                    ClassId = classId.Value,
+                    ReservationTimeRangeClassId = reservationTimeRangeClassId.Value,
+                    UserId = int.Parse(userId),
+                    ClassName = classItem.Name,
+                    ReservationTimeRangeClassName = $"[{reservation.StartDateOnly} - {reservation.EndDateOnly}] [{reservation.StartTimeOnly} - {reservation.EndTimeOnly}]"
+                };
+                ViewData["FromDetails"] = true;
+                return View(viewModel);
+            }
+            else
+            {
+                ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
+                ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
+                ViewData["FromDetails"] = false;
+                return View();
+            }                
         }
 
         // POST: ClassReservations/Create
