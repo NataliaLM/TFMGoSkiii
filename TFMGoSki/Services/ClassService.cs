@@ -220,7 +220,7 @@ namespace TFMGoSki.Services
                 reservationTimeRangeClassDtos.Add(new ReservationTimeRangeClassDto
                 {
                     Id = r.Id,
-                    RemainingStudentsQuantity = r.RemainingStudentsQuantity,
+                    RemainingStudentsQuantity = r.RemainingStudentsQuantity == -1 ? 0 : r.RemainingStudentsQuantity,
                     StartDateOnly = r.StartDateOnly,
                     EndDateOnly = r.EndDateOnly,
                     StartTimeOnly = r.StartTimeOnly,

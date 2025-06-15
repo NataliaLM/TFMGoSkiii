@@ -10,6 +10,9 @@ namespace TFMGoSki.Data
         {
             builder.ToTable("ClassReservation");
 
+            builder.Property(c => c.NumberPersonsBooked)
+                .IsRequired();
+
             builder.HasOne<User>()
                .WithMany()
                .HasForeignKey(c => c.UserId)

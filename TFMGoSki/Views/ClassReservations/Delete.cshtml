@@ -50,6 +50,13 @@
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.ReservationTimeRangeClassDto.EndTimeOnly)
         </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.NumberPersonsBooked)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.NumberPersonsBooked)
+        </dd>
     </dl>
     
     <form asp-action="Delete">

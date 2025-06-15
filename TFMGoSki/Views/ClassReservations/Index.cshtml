@@ -4,7 +4,7 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Class Reservation</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -20,7 +20,7 @@
                     <th>Fecha Fin</th>
                     <th>Hora Inicio</th>
                     <th>Hora Fin</th>
-                    <th>Acciones</th>
+                    <th>Number Persons Booked</th>
                 </tr>
             </thead>
         </tr>
@@ -35,6 +35,7 @@
                 <td>@item.ReservationTimeRangeClassDto.EndDateOnly.ToShortDateString()</td>
                 <td>@item.ReservationTimeRangeClassDto.StartTimeOnly</td>
                 <td>@item.ReservationTimeRangeClassDto.EndTimeOnly</td>
+                <td>@item.NumberPersonsBooked</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
