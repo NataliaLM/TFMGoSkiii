@@ -62,6 +62,7 @@ namespace TFMGoSki.Controllers
                         Id = reservation.Id,
                         ClientName = client.UserName,
                         ClassName = @class.Name,
+                        NumberPersonsBooked = reservation.NumberPersonsBooked,
                         ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
                         {
                             StartDateOnly = reservationTimeRangeClass.StartDateOnly,
@@ -96,8 +97,10 @@ namespace TFMGoSki.Controllers
 
             ClassReservationDto classReservationDto = new ClassReservationDto()
             {
+                Id = classReservation.Id,
                 ClientName = client.UserName,
                 ClassName = @class.Name,
+                NumberPersonsBooked = classReservation.NumberPersonsBooked,
                 ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
                 {
                     StartDateOnly = reservationTimeRangeClass.StartDateOnly,
@@ -148,49 +151,72 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ClassReservationViewModel classReservationViewModel)
         {
-            ClassReservation classReservation = new ClassReservation(classReservationViewModel.UserId, classReservationViewModel.ClassId, classReservationViewModel.ReservationTimeRangeClassId);
+            ClassReservation classReservation = new ClassReservation(
+                classReservationViewModel.UserId,
+                classReservationViewModel.ClassId,
+                classReservationViewModel.ReservationTimeRangeClassId,
+                classReservationViewModel.NumberPersonsBooked
+            );
 
             if (ModelState.IsValid)
             {
                 #region Remaining Students Quantity
 
-                ReservationTimeRangeClass? reservationTimeRangeClass = _context.ReservationTimeRangeClasses.FirstOrDefault(r => r.Id == classReservation.ReservationTimeRangeClassId);
-                Class? @class = _context.Classes.FirstOrDefault(c => c.Id == classReservationViewModel.ClassId);
+                var reservationTimeRangeClass = _context.ReservationTimeRangeClasses
+                    .FirstOrDefault(r => r.Id == classReservation.ReservationTimeRangeClassId);
+                var @class = _context.Classes
+                    .FirstOrDefault(c => c.Id == classReservationViewModel.ClassId);
 
-                if(reservationTimeRangeClass == null)
+                if (reservationTimeRangeClass == null || @class == null)
                 {
+                    ModelState.AddModelError(string.Empty, "Reservation time range or class not found.");
                     return View(classReservationViewModel);
                 }
 
-                if (@class == null)
-                {
-                    return View(classReservationViewModel);
-                }
+                int numberToBook = classReservationViewModel.NumberPersonsBooked;
 
+                // Si ya está marcado como sin plazas (-1)
                 if (reservationTimeRangeClass.RemainingStudentsQuantity == -1)
                 {
                     ModelState.AddModelError(string.Empty, "There are no places left to book in the class.");
+                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                    return View(classReservationViewModel);
                 }
+
+                // Si aún no se ha inicializado el número de plazas disponibles
                 if (reservationTimeRangeClass.RemainingStudentsQuantity == 0)
                 {
                     reservationTimeRangeClass.RemainingStudentsQuantity = @class.StudentQuantity;
                 }
-                else
+
+                // Verificamos que haya suficientes plazas disponibles
+                if (reservationTimeRangeClass.RemainingStudentsQuantity < numberToBook)
                 {
-                    reservationTimeRangeClass.RemainingStudentsQuantity += -1;
-                    if (reservationTimeRangeClass.RemainingStudentsQuantity == 0)
-                    {
-                        reservationTimeRangeClass.RemainingStudentsQuantity = -1;
-                    }
+                    ModelState.AddModelError(string.Empty, $"Only {reservationTimeRangeClass.RemainingStudentsQuantity} places are available.");
+                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                    return View(classReservationViewModel);
+                }
+
+                // Restamos las plazas reservadas
+                reservationTimeRangeClass.RemainingStudentsQuantity -= numberToBook;
+
+                // Si ya no quedan plazas, marcamos con -1
+                if (reservationTimeRangeClass.RemainingStudentsQuantity == 0)
+                {
+                    reservationTimeRangeClass.RemainingStudentsQuantity = -1;
                 }
 
                 _context.Update(reservationTimeRangeClass);
                 await _context.SaveChangesAsync();
 
                 #endregion
-            
+
+                // Guardamos la reserva
                 _context.Add(classReservation);
                 await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Index));
             }
 
@@ -247,83 +273,147 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, ClassReservationViewModel classReservationViewModel)
         {
-            ClassReservation? classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classReservationViewModel.Id);
+            var classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classReservationViewModel.Id);
 
-            if(classReservation == null)
+            if (classReservation == null)
             {
                 return View(classReservationViewModel);
             }
 
             #region Remaining Students Quantity
 
-            ReservationTimeRangeClass? reservationTimeRangeClass = _context.ReservationTimeRangeClasses.FirstOrDefault(r => r.Id == classReservation.ReservationTimeRangeClassId);
-            Class? @class = _context.Classes.FirstOrDefault(c => c.Id == classReservationViewModel.ClassId);
-
-            if (reservationTimeRangeClass == null)
-            {
-                return View(classReservationViewModel);
-            }
-
-            if (@class == null)
-            {
-                return View(classReservationViewModel);
-            }
-
-            var originalClassId = classReservation.ClassId;
             var originalTimeRangeId = classReservation.ReservationTimeRangeClassId;
+            var originalClassId = classReservation.ClassId;
+            var originalNumberBooked = classReservation.NumberPersonsBooked;
 
-            if (originalTimeRangeId != classReservationViewModel.ReservationTimeRangeClassId) //reserva con otro rango
+            var newTimeRangeId = classReservationViewModel.ReservationTimeRangeClassId;
+            var newClassId = classReservationViewModel.ClassId;
+            var newNumberBooked = classReservationViewModel.NumberPersonsBooked;
+
+            var originalReservationTimeRange = await _context.ReservationTimeRangeClasses
+                .FirstOrDefaultAsync(r => r.Id == originalTimeRangeId);
+            var newReservationTimeRange = await _context.ReservationTimeRangeClasses
+                .FirstOrDefaultAsync(r => r.Id == newTimeRangeId);
+
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == newClassId);
+
+            if (@class == null || newReservationTimeRange == null || originalReservationTimeRange == null)
             {
-                if (reservationTimeRangeClass.RemainingStudentsQuantity == -1)
+                ModelState.AddModelError(string.Empty, "Invalid class or reservation time range.");
+                ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                return View(classReservationViewModel);
+            }
+
+            // Si se cambió el rango de horario
+            if (originalTimeRangeId != newTimeRangeId)
+            {
+                // Verificar disponibilidad en el nuevo rango
+                if (newReservationTimeRange.RemainingStudentsQuantity == -1)
                 {
                     ModelState.AddModelError(string.Empty, "There are no places left to book in the class.");
+                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                    return View(classReservationViewModel);
                 }
-                if (reservationTimeRangeClass.RemainingStudentsQuantity == 0)
+
+                if (newReservationTimeRange.RemainingStudentsQuantity == 0)
                 {
-                    reservationTimeRangeClass.RemainingStudentsQuantity = @class.StudentQuantity;
+                    newReservationTimeRange.RemainingStudentsQuantity = @class.StudentQuantity;
+                }
+
+                if (newReservationTimeRange.RemainingStudentsQuantity < newNumberBooked)
+                {
+                    ModelState.AddModelError(string.Empty, $"Only {newReservationTimeRange.RemainingStudentsQuantity} places available.");
+                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                    return View(classReservationViewModel);
+                }
+
+                // Restamos nuevas reservas
+                newReservationTimeRange.RemainingStudentsQuantity -= newNumberBooked;
+                if (newReservationTimeRange.RemainingStudentsQuantity == 0)
+                {
+                    newReservationTimeRange.RemainingStudentsQuantity = -1;
+                }
+
+                // Revertimos reservas originales
+                if (originalReservationTimeRange.RemainingStudentsQuantity == -1)
+                {
+                    originalReservationTimeRange.RemainingStudentsQuantity = originalNumberBooked;
                 }
                 else
                 {
-                    reservationTimeRangeClass.RemainingStudentsQuantity += -1;
-                    if (reservationTimeRangeClass.RemainingStudentsQuantity == 0)
+                    originalReservationTimeRange.RemainingStudentsQuantity += originalNumberBooked;
+                }
+
+                _context.Update(originalReservationTimeRange);
+                _context.Update(newReservationTimeRange);
+                await _context.SaveChangesAsync();
+            }
+            // Si solo cambió la cantidad de personas pero el horario es el mismo
+            else if (originalNumberBooked != newNumberBooked)
+            {
+                int difference = newNumberBooked - originalNumberBooked;
+
+                if (difference > 0) // Quiere reservar más personas
+                {
+                    if (newReservationTimeRange.RemainingStudentsQuantity == -1)
                     {
-                        reservationTimeRangeClass.RemainingStudentsQuantity = -1;
+                        ModelState.AddModelError(string.Empty, "There are no places left to book in the class.");
+                        ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                        ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                        return View(classReservationViewModel);
+                    }
+
+                    if (newReservationTimeRange.RemainingStudentsQuantity == 0)
+                    {
+                        newReservationTimeRange.RemainingStudentsQuantity = @class.StudentQuantity;
+                    }
+
+                    if (newReservationTimeRange.RemainingStudentsQuantity < difference)
+                    {
+                        ModelState.AddModelError(string.Empty, $"Only {newReservationTimeRange.RemainingStudentsQuantity} more places are available.");
+                        ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                        ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+                        return View(classReservationViewModel);
+                    }
+
+                    newReservationTimeRange.RemainingStudentsQuantity -= difference;
+                    if (newReservationTimeRange.RemainingStudentsQuantity == 0)
+                    {
+                        newReservationTimeRange.RemainingStudentsQuantity = -1;
+                    }
+                }
+                else // Está reduciendo el número de personas
+                {
+                    if (newReservationTimeRange.RemainingStudentsQuantity == -1)
+                    {
+                        newReservationTimeRange.RemainingStudentsQuantity = -difference;//Ahora es positivo
+                    }
+                    else
+                    {
+                        newReservationTimeRange.RemainingStudentsQuantity += -difference;
                     }
                 }
 
-                _context.Update(reservationTimeRangeClass);
-                await _context.SaveChangesAsync();
-
-                Class? @classAnterior = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.Id);
-                if(@classAnterior == null)
-                {
-                    return View(classReservationViewModel);
-                }
-                ReservationTimeRangeClass? reservationTimeRangeClassAnterior = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.ClassId == @classAnterior.Id);
-                if (reservationTimeRangeClassAnterior == null)
-                {
-                    return View(classReservationViewModel);
-                }
-                if (reservationTimeRangeClassAnterior.RemainingStudentsQuantity == -1)
-                {
-                    reservationTimeRangeClassAnterior.RemainingStudentsQuantity = 1;
-                }
-                else
-                {
-                    reservationTimeRangeClassAnterior.RemainingStudentsQuantity += 1;
-                }
-
-                _context.Update(reservationTimeRangeClass);
+                _context.Update(newReservationTimeRange);
                 await _context.SaveChangesAsync();
             }
 
             #endregion
 
-            if (ModelState.IsValid && classReservation != null)
+            if (ModelState.IsValid)
             {
                 try
                 {
-                    classReservation.Update(classReservationViewModel.UserId, classReservationViewModel.ClassId, classReservationViewModel.ReservationTimeRangeClassId);
+                    classReservation.Update(
+                        classReservationViewModel.UserId,
+                        classReservationViewModel.ClassId,
+                        classReservationViewModel.ReservationTimeRangeClassId,
+                        classReservationViewModel.NumberPersonsBooked
+                    );
+
                     _context.Update(classReservation);
                     await _context.SaveChangesAsync();
                 }
@@ -338,8 +428,10 @@ namespace TFMGoSki.Controllers
                         throw;
                     }
                 }
+
                 return RedirectToAction(nameof(Index));
             }
+
             ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
             return View(classReservationViewModel);
@@ -384,8 +476,9 @@ namespace TFMGoSki.Controllers
             ClassReservationDto classReservationDto = new ClassReservationDto()
             {
                 Id = classReservation.Id,
-                ClientName = client.FullName,
+                ClientName = client.UserName,
                 ClassName = @class.Name,
+                NumberPersonsBooked = classReservation.NumberPersonsBooked,
                 ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
                 {
                     StartDateOnly = reservationTimeRangeClass.StartDateOnly,
