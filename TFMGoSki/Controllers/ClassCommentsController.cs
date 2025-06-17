@@ -121,15 +121,17 @@ namespace TFMGoSki.Controllers
 
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == reservation.UserId);
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
+                var reservationTimeRangeClass = _context.ReservationTimeRangeClasses.FirstOrDefault(r => r.Id == reservation.ReservationTimeRangeClassId);
 
-                if (user == null || @class == null)
+                if (user == null || @class == null || reservationTimeRangeClass == null)
                     return NotFound();
 
                 ViewBag.DisplayName = $"{user.UserName} - {@class.Name}";
 
                 var viewModel = new ClassCommentViewModel
                 {
-                    ClassReservationId = reservation.Id
+                    ClassReservationId = reservation.Id,
+                    ClassReservationName = $"{@class.Name} - {reservationTimeRangeClass.StartDateOnly} - {reservationTimeRangeClass.EndDateOnly}"
                 };
 
                 ViewData["FromDetails"] = true;

@@ -14,12 +14,12 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
             {
-            <!--<input type="hidden" asp-for="ClassReservationId" />-->
+                <input type="hidden" asp-for="ClassReservationId" />
 
                 <div class="form-group">
-                    <label>Class Reservation</label>
-                    <input class="form-control" value="@Model.ClassReservationId" disabled />
-                    <input type="hidden" asp-for="ClassReservationId" />
+                    <!--<label>Class Reservation</label>-->
+                    <input class="form-control" value="@Model.ClassReservationName" disabled />
+                    <input type="hidden" asp-for="ClassReservationName" />
                 </div>                          
             }
             else

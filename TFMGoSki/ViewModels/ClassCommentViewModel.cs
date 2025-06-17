@@ -5,6 +5,8 @@ namespace TFMGoSki.ViewModels
     public class ClassCommentViewModel
     {
         public int Id { get; set; }
+        [Display(Name = "Class Reservation")]
+        public string ClassReservationName { get; set; }
         [Display(Name = "ClassReservation")]
         public int ClassReservationId { get; set; }
         [Display(Name = "Text")]
