@@ -5,6 +5,7 @@ namespace TFMGoSki.ViewModels
     public class ClassCommentViewModel
     {
         public int Id { get; set; }
+        [Display(Name = "ClassReservation")]
         public int ClassReservationId { get; set; }
         [Display(Name = "Text")]
         [Required(ErrorMessage = "The text is required.")]

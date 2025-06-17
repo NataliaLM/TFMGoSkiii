@@ -8,7 +8,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
-    [Authorize(Roles = "Admin,Worker")]
+    [Authorize(Roles = "Admin,Worker,Client")]
     public class ClassesController : Controller
     {
         private readonly IClassService _classService;
@@ -25,6 +25,7 @@ namespace TFMGoSki.Controllers
             return View(classDtos);
         }
 
+        [Authorize(Roles = "Client")]
         public async Task<IActionResult> IndexUser(bool? finalizadas, string name, decimal? minPrice, decimal? maxPrice, string classLevel, string cityName, DateOnly? minDate, DateOnly? maxDate, int? minRating)
         {
             // Obtener todos los niveles distintos disponibles en la base de datos

@@ -12,11 +12,23 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+            {
+            <!--<input type="hidden" asp-for="ClassReservationId" />-->
 
-            <div class="form-group">
-                <label asp-for="ClassReservationId" class="control-label"></label>
-                <select asp-for="ClassReservationId" class ="form-control" asp-items="ViewBag.ClassReservationId"></select>
-            </div>
+                <div class="form-group">
+                    <label>Class Reservation</label>
+                    <input class="form-control" value="@Model.ClassReservationId" disabled />
+                    <input type="hidden" asp-for="ClassReservationId" />
+                </div>                          
+            }
+            else
+            {
+                <div class="form-group">
+                    <label asp-for="ClassReservationId" class="control-label"></label>
+                    <select asp-for="ClassReservationId" class ="form-control" asp-items="ViewBag.ClassReservationId"></select>
+                </div>
+            }
             <div class="form-group">
                 <label asp-for="Text" class="control-label"></label>
                 <input asp-for="Text" class="form-control" />
@@ -24,9 +36,16 @@
             </div>
             <div class="form-group">
                 <label asp-for="Raiting" class="control-label"></label>
-                <input asp-for="Raiting" class="form-control" />
+                <select asp-for="Raiting" class="form-control">
+                    <option value="">-- Select Rating --</option>
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <option value="@i" selected="@(Model.Raiting == i ? "selected" : null)">@i</option>
+                    }
+                </select>
                 <span asp-validation-for="Raiting" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -35,7 +54,16 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Go to class comments listing</a>
+    
+    @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+    {
+        <a asp-controller="ClassReservation" asp-action="IndexUser" class="btn btn-secondary">Go to my class reservations</a>
+    }
+    else
+    {
+        <a asp-controller="ClassReservation" asp-action="Index" class="btn btn-secondary">Go to class reservations</a>
+    }
 </div>
 
 @section Scripts {

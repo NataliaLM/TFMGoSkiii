@@ -77,6 +77,60 @@ namespace TFMGoSki.Controllers
             return View(listClassReservationDto);
         }
 
+        public async Task<IActionResult> IndexUser()
+        {
+            var classReservations = await _context.ClassReservations.ToListAsync();
+
+            var userId = _userManager.GetUserId(User);
+
+            var classReservationsUser = classReservations.Where(c => c.UserId.ToString().Equals(userId));
+
+            var listClassReservationDto = new List<ClassReservationDto>();
+
+            foreach (var reservation in classReservationsUser)
+            {
+                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == reservation.UserId);
+                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
+                var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == reservation.ReservationTimeRangeClassId);
+
+                if (client == null)
+                {
+                    return NotFound();
+                }
+                if (client.UserName == null)
+                {
+                    return NotFound();
+                }
+                if (@class == null)
+                {
+                    return NotFound();
+                }
+                if (reservationTimeRangeClass == null)
+                {
+                    return NotFound();
+                }
+
+                if (client != null && @class != null)
+                {
+                    listClassReservationDto.Add(new ClassReservationDto
+                    {
+                        Id = reservation.Id,
+                        //ClientName = client.UserName,
+                        ClassName = @class.Name,
+                        NumberPersonsBooked = reservation.NumberPersonsBooked,
+                        ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                        {
+                            StartDateOnly = reservationTimeRangeClass.StartDateOnly,
+                            EndDateOnly = reservationTimeRangeClass.EndDateOnly,
+                            StartTimeOnly = reservationTimeRangeClass.StartTimeOnly,
+                            EndTimeOnly = reservationTimeRangeClass.EndTimeOnly
+                        }
+                    });
+                }
+            }
+            return View(listClassReservationDto);
+        }
+
         // GET: ClassReservations/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -116,7 +170,7 @@ namespace TFMGoSki.Controllers
         // GET: ClassReservations/Create
         public async Task<IActionResult> Create(int? classId = null, int? reservationTimeRangeClassId = null)
         {
-            if(classId != null && reservationTimeRangeClassId != null)
+            if (classId != null && reservationTimeRangeClassId != null && User.IsInRole("Client"))
             {
                 var userId = _userManager.GetUserId(User);
                 var classItem = await _context.Classes.FindAsync(classId);
@@ -138,7 +192,25 @@ namespace TFMGoSki.Controllers
             }
             else
             {
-                ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
+                // Obtener el ID del rol "Client"
+                var clientRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Client");
+                if (clientRole == null)
+                {
+                    return NotFound("No se encontró el rol 'Client'.");
+                }
+
+                // Obtener los IDs de usuarios que tienen el rol "Client"
+                var clientUserIds = await _context.UserRoles
+                    .Where(ur => ur.RoleId == clientRole.Id)
+                    .Select(ur => ur.UserId)
+                    .ToListAsync();
+
+                // Obtener los usuarios con ese rol
+                var clientUsers = await _context.Users
+                    .Where(u => clientUserIds.Contains(u.Id))
+                    .ToListAsync();
+
+                ViewBag.UserId = new SelectList(clientUsers, "Id", "UserName");
                 ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
                 ViewData["FromDetails"] = false;
                 return View();
@@ -217,7 +289,13 @@ namespace TFMGoSki.Controllers
                 _context.Add(classReservation);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction(nameof(Index));
+                if(User.IsInRole("Client"))
+                {
+                    return RedirectToAction(nameof(IndexUser));
+                } else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
