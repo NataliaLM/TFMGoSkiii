@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TFMGoSki.Data;
 using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
@@ -7,10 +9,12 @@ namespace TFMGoSki.Controllers
     public class ReservationTimeRangeClassesController : Controller
     {
         private readonly IReservationTimeRangeClassService _service;
+        private readonly TFMGoSkiDbContext _context;
 
-        public ReservationTimeRangeClassesController(IReservationTimeRangeClassService service)
+        public ReservationTimeRangeClassesController(IReservationTimeRangeClassService service, TFMGoSkiDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -131,6 +135,22 @@ namespace TFMGoSki.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var reservationTimeRange = _context.ClassReservations
+                                       .Where(r => r.ReservationTimeRangeClassId == id)
+                                       .ToList(); // Ejecuta la consulta
+
+            if (reservationTimeRange.Any())
+            {
+                // Recupera el modelo nuevamente
+                var reservationTimeRangeClassDto = await _service.GetByIdAsync(id);
+
+                // Agrega el error al modelo
+                ModelState.AddModelError(string.Empty, "The reservation time range class cannot be deleted because it has associated class reservations.");
+
+                // Devuelve la vista Delete con el modelo y el error
+                return View("Delete", reservationTimeRangeClassDto);
+            }
+
             var deleted = await _service.DeleteAsync(id);
             return deleted ? RedirectToAction(nameof(Index)) : NotFound();
         }

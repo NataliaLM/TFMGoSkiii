@@ -57,10 +57,13 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Instructors" asp-action="">Instructor Management</a>
                             </li>
                         }                        
-                        @* a *@
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="ReservationTimeRangeClasses" asp-action="">ReservationTimeRangeClasses</a>
-                        </li>
+                        @* a *@                        
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ReservationTimeRangeClasses" asp-action="">Reservation Time Range Classes Management</a>
+                            </li>
+                        }    
                         @* a *@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">ClassComment</a>
