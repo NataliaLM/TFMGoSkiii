@@ -60,7 +60,14 @@
         </dd>
     </dl>
 </div>
-<div>
+<div>  
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+    {        
+        <a asp-action="IndexUser">Back to my reservations List</a>
+    }
+    else
+    {
+        <a asp-action="Index">Back to List</a>
+    }
 </div>

@@ -73,10 +73,19 @@
         </form>
     </div>
 </div>
+@if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+{
+    <div>
+        <a asp-action="IndexUser">Back to List of Class Reservation</a>
+    </div>
+}
+else
+{
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+}
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
     @await Html.PartialAsync("_ValidationScriptsPartial")

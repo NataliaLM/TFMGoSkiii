@@ -60,8 +60,22 @@
     </dl>
     
     <form asp-action="Delete">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
+        @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+        {
+            <div>
+                <a asp-action="IndexUser">Back to my List</a>
+            </div>
+        }
+        else
+        {
+            <div>
+                <a asp-action="Index">Back to List</a>
+                </div>
+        }
+    
     </form>
 </div>

@@ -81,7 +81,7 @@
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">ClassReservations</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">Class Reservations Management</a>
                             </li> 
                         } 
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
