@@ -18,7 +18,7 @@ namespace TFMGoSki.Controllers
             _classService = classService;
             _context = context;
         }
-
+        [Authorize(Roles = "Admin,Worker")]
         public async Task<IActionResult> Index(bool? finalizadas)
         {
             var classDtos = await _classService.GetAllClassesAsync(finalizadas);
@@ -134,7 +134,7 @@ namespace TFMGoSki.Controllers
         }
 
         public async Task<IActionResult> Delete(int? id)
-        {
+        {            
             if (id == null) return NotFound();
 
             var classDto = await _classService.GetClassDetailsAsync(id.Value);
@@ -144,6 +144,22 @@ namespace TFMGoSki.Controllers
         [HttpPost, ActionName("Delete")] 
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var reservationTimeRange = _context.ReservationTimeRangeClasses
+                                       .Where(r => r.ClassId == id)
+                                       .ToList(); // Ejecuta la consulta
+
+            if (reservationTimeRange.Any())
+            {
+                // Recupera el modelo nuevamente
+                var classDto = await _classService.GetClassDetailsAsync(id);
+
+                // Agrega el error al modelo
+                ModelState.AddModelError(string.Empty, "The class cannot be deleted because it has associated time ranges.");
+
+                // Devuelve la vista Delete con el modelo y el error
+                return View("Delete", classDto);
+            }
+
             var deleted = await _classService.DeleteClassAsync(id);
             return deleted ? RedirectToAction(nameof(Index)) : NotFound();
         }
