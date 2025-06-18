@@ -127,12 +127,21 @@ namespace TFMGoSki.Controllers
                 Raiting = classComment.Raiting
             };
 
+            if (_userManager.GetUserId(User) != null)
+            {
+                ViewData["FromDetails"] = true;
+            }
+            else
+            {
+                ViewData["FromDetails"] = false;
+            }
+
             return View(classCommentDto);
         }
 
         // GET: ClassComments/Create
         public async Task<IActionResult> Create(int? classReservationId = null)
-        {  
+        {
             if (classReservationId == null)
             {
                 var dbSetClassReservation = await _context.ClassReservations.ToListAsync();
@@ -173,7 +182,8 @@ namespace TFMGoSki.Controllers
                 ViewData["FromDetails"] = false;
 
                 return View(new ClassCommentViewModel());
-            } else
+            }
+            else
             {
                 var reservation = await _context.ClassReservations.FirstOrDefaultAsync(r => r.Id == classReservationId);
                 if (reservation == null)
@@ -291,7 +301,7 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, ClassCommentViewModel classCommentViewModel)
         {
-            ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id); 
+            ClassComment? classComment = _context.ClassComments.FirstOrDefault(c => c.Id == id);
 
             if (ModelState.IsValid && classComment != null)
             {
@@ -361,7 +371,7 @@ namespace TFMGoSki.Controllers
             ClassReservation classReservation = _context.ClassReservations.FirstOrDefault(c => c.Id == classComment.ClassReservationId);
             Class @class = _context.Classes.FirstOrDefault(c => c.Id == classReservation.ClassId);
 
-            if(@class == null)
+            if (@class == null)
             {
                 return NotFound();
             }
@@ -395,7 +405,7 @@ namespace TFMGoSki.Controllers
             else
             {
                 return RedirectToAction(nameof(Index));
-            }            
+            }
         }
 
         private bool ClassCommentExists(int id)

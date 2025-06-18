@@ -216,7 +216,7 @@ namespace TFMGoSki.Controllers
                 ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
                 ViewData["FromDetails"] = false;
                 return View();
-            }                
+            }
         }
 
         // POST: ClassReservations/Create
@@ -291,10 +291,11 @@ namespace TFMGoSki.Controllers
                 _context.Add(classReservation);
                 await _context.SaveChangesAsync();
 
-                if(User.IsInRole("Client"))
+                if (User.IsInRole("Client"))
                 {
                     return RedirectToAction(nameof(IndexUser));
-                } else
+                }
+                else
                 {
                     return RedirectToAction(nameof(Index));
                 }
@@ -319,7 +320,26 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName");
+            // Obtener el ID del rol "Client"
+            var clientRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Client");
+            if (clientRole == null)
+            {
+                return NotFound("The role 'Client' was not found.");
+            }
+
+            // Obtener los IDs de usuarios que tienen el rol "Client"
+            var clientUserIds = await _context.UserRoles
+                .Where(ur => ur.RoleId == clientRole.Id)
+                .Select(ur => ur.UserId)
+                .ToListAsync();
+
+            // Obtener los usuarios con ese rol
+            var clientUsers = await _context.Users
+                .Where(u => clientUserIds.Contains(u.Id))
+                .ToListAsync();
+
+            ViewBag.UserId = new SelectList(clientUsers, "Id", "UserName");
+
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
             ClassReservationViewModel classReservationViewModel = new ClassReservationViewModel()
@@ -327,7 +347,8 @@ namespace TFMGoSki.Controllers
                 Id = classReservation.Id,
                 UserId = classReservation.UserId,
                 ClassId = classReservation.ClassId,
-                ReservationTimeRangeClassId = classReservation.ReservationTimeRangeClassId
+                ReservationTimeRangeClassId = classReservation.ReservationTimeRangeClassId,
+                NumberPersonsBooked = classReservation.NumberPersonsBooked
             };
 
             #region desplegable reservation time range
@@ -380,7 +401,8 @@ namespace TFMGoSki.Controllers
             if (@class == null || newReservationTimeRange == null || originalReservationTimeRange == null)
             {
                 ModelState.AddModelError(string.Empty, "Invalid class or reservation time range.");
-                ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
+
                 ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
                 return View(classReservationViewModel);
             }
@@ -392,7 +414,8 @@ namespace TFMGoSki.Controllers
                 if (newReservationTimeRange.RemainingStudentsQuantity == -1)
                 {
                     ModelState.AddModelError(string.Empty, "There are no places left to book in the class.");
-                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
+
                     ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
                     return View(classReservationViewModel);
                 }
@@ -405,7 +428,8 @@ namespace TFMGoSki.Controllers
                 if (newReservationTimeRange.RemainingStudentsQuantity < newNumberBooked)
                 {
                     ModelState.AddModelError(string.Empty, $"Only {newReservationTimeRange.RemainingStudentsQuantity} places available.");
-                    ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                    ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
+
                     ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
                     return View(classReservationViewModel);
                 }
@@ -441,7 +465,8 @@ namespace TFMGoSki.Controllers
                     if (newReservationTimeRange.RemainingStudentsQuantity == -1)
                     {
                         ModelState.AddModelError(string.Empty, "There are no places left to book in the class.");
-                        ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                        ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
+
                         ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
                         return View(classReservationViewModel);
                     }
@@ -454,7 +479,8 @@ namespace TFMGoSki.Controllers
                     if (newReservationTimeRange.RemainingStudentsQuantity < difference)
                     {
                         ModelState.AddModelError(string.Empty, $"Only {newReservationTimeRange.RemainingStudentsQuantity} more places are available.");
-                        ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+                        ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
+
                         ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
                         return View(classReservationViewModel);
                     }
@@ -512,9 +538,34 @@ namespace TFMGoSki.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.UserId = new SelectList(_context.Users, "Id", "UserName", classReservationViewModel.UserId);
+            ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
             return View(classReservationViewModel);
+        }
+
+        public async Task<dynamic> GetReservasCliente(ClassReservationViewModel classReservationViewModel)
+        {
+            // Obtener el ID del rol "Client"
+            var clientRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Client");
+            if (clientRole == null)
+            {
+                return NotFound("The role 'Client' was not found.");
+            }
+
+            // Obtener los IDs de usuarios que tienen el rol "Client"
+            var clientUserIds = await _context.UserRoles
+                .Where(ur => ur.RoleId == clientRole.Id)
+                .Select(ur => ur.UserId)
+                .ToListAsync();
+
+            // Obtener los usuarios con ese rol
+            var clientUsers = await _context.Users
+                .Where(u => clientUserIds.Contains(u.Id))
+                .ToListAsync();
+
+            ViewBag.UserId = new SelectList(clientUsers, "Id", "UserName", classReservationViewModel.UserId);
+
+            return ViewBag.UserId;
         }
 
         // GET: ClassReservations/Delete/5
@@ -575,10 +626,46 @@ namespace TFMGoSki.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var classReservation = await _context.ClassReservations.FindAsync(id);
-            if (classReservation != null)
+            var classComments = _context.ClassComments.Where(cc => cc.ClassReservationId == id).ToList();
+
+            if (classComments.Any())
             {
-                _context.ClassReservations.Remove(classReservation);
+                var classReservation = await _context.ClassReservations
+                .FirstOrDefaultAsync(m => m.Id == id);
+                if (classReservation == null)
+                {
+                    return NotFound();
+                }
+                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+                var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == classReservation.ReservationTimeRangeClassId);
+
+                ClassReservationDto classReservationDto = new ClassReservationDto()
+                {
+                    Id = classReservation.Id,
+                    ClientName = client.UserName,
+                    ClassName = @class.Name,
+                    NumberPersonsBooked = classReservation.NumberPersonsBooked,
+                    ReservationTimeRangeClassDto = new ReservationTimeRangeClassDto
+                    {
+                        StartDateOnly = reservationTimeRangeClass.StartDateOnly,
+                        EndDateOnly = reservationTimeRangeClass.EndDateOnly,
+                        StartTimeOnly = reservationTimeRangeClass.StartTimeOnly,
+                        EndTimeOnly = reservationTimeRangeClass.EndTimeOnly
+                    }
+                };
+
+                // Agrega el error al modelo
+                ModelState.AddModelError(string.Empty, "The class reservation cannot be deleted because it has associated a comment.");
+
+                // Devuelve la vista Delete con el modelo y el error
+                return View("Delete", classReservationDto);
+            }
+
+            var classReservationDelete = await _context.ClassReservations.FindAsync(id);
+            if (classReservationDelete != null)
+            {
+                _context.ClassReservations.Remove(classReservationDelete);
             }
 
             await _context.SaveChangesAsync();
