@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Services;
@@ -6,6 +7,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker")]
     public class ReservationTimeRangeClassesController : Controller
     {
         private readonly IReservationTimeRangeClassService _service;

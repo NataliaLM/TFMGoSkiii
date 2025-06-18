@@ -54,15 +54,17 @@
 </div>
 
 <div>
-    <a asp-action="Index">Go to class comments listing</a>
+    
     
     @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
     {
-        <a asp-controller="ClassReservation" asp-action="IndexUser" class="btn btn-secondary">Go to my class reservations</a>
+        <a asp-action="IndexUser">Go to my class comments listing</a>
+        <a asp-controller="ClassReservations" asp-action="IndexUser" class="btn btn-secondary">Go to my class reservations</a>
     }
     else
     {
-        <a asp-controller="ClassReservation" asp-action="Index" class="btn btn-secondary">Go to class reservations</a>
+        <a asp-action="Index">Go to class comments listing</a>
+        <a asp-controller="ClassReservations" asp-action="Index" class="btn btn-secondary">Go to class reservations</a>
     }
 </div>
 

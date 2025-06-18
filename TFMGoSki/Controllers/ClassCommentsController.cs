@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +19,12 @@ namespace TFMGoSki.Controllers
     public class ClassCommentsController : Controller
     {
         private readonly TFMGoSkiDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public ClassCommentsController(TFMGoSkiDbContext context)
+        public ClassCommentsController(TFMGoSkiDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: ClassComments
@@ -56,6 +59,43 @@ namespace TFMGoSki.Controllers
 
             return View(classCommentDtos);
         }
+        [Authorize(Roles = "Client")]
+        public async Task<IActionResult> IndexUser()
+        {
+            List<ClassCommentDto> classCommentDtos = new List<ClassCommentDto>();
+
+            var comments = await _context.ClassComments.ToListAsync(); // Materializar la consulta
+
+            var userId = _userManager.GetUserId(User);
+
+            var classReservationsUser = _context.ClassReservations.Where(c => c.UserId.ToString().Equals(userId));
+
+            foreach (var classComment in comments)
+            {
+                var classReservation = await _context.ClassReservations
+                    .FirstOrDefaultAsync(c => c.Id == classComment.ClassReservationId);
+
+                if (classReservation == null)
+                    continue;
+
+                var @class = await _context.Classes
+                    .FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+                if (@class == null)
+                    continue;
+
+                classCommentDtos.Add(new ClassCommentDto
+                {
+                    Id = classComment.Id,
+                    ClassReservationName = @class.Name,
+                    Text = classComment.Text,
+                    Raiting = classComment.Raiting
+                });
+            }
+
+            return View(classCommentDtos);
+        }
+
 
         // GET: ClassComments/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -96,9 +136,27 @@ namespace TFMGoSki.Controllers
             if (classReservationId == null)
             {
                 var dbSetClassReservation = await _context.ClassReservations.ToListAsync();
+
+                // Obtener el ID del rol "Client"
+                var clientRoleId = await _context.Roles
+                    .Where(r => r.Name == "Client")
+                    .Select(r => r.Id)
+                    .FirstOrDefaultAsync();
+
+                // Obtener los IDs de los usuarios que tienen el rol "Client"
+                var clientUserIds = await _context.UserRoles
+                    .Where(ur => ur.RoleId == clientRoleId)
+                    .Select(ur => ur.UserId)
+                    .ToListAsync();
+
+                // Filtrar reservas de usuarios que son clientes
+                var classReservations = dbSetClassReservation
+                    .Where(d => clientUserIds.Contains(d.UserId))
+                    .ToList();
+
                 var listaUserClase = new List<KeyValuePair<int, string>>();
 
-                foreach (var classReservation in dbSetClassReservation)
+                foreach (var classReservation in classReservations)
                 {
                     var user = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
                     var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
@@ -155,7 +213,8 @@ namespace TFMGoSki.Controllers
             if (existingComment != null)
             {
                 // Ya existe un comentario, mostrar advertencia en la vista
-                ModelState.AddModelError(string.Empty, "Ya existe un comentario para esta reserva.");
+                ModelState.AddModelError(string.Empty, "A comment already exists for this reservation.");
+                ViewData["FromDetails"] = true;
                 return View(classCommentViewModel);
             }
             ClassComment classComment = new ClassComment(classReservationId, classCommentViewModel.Text, classCommentViewModel.Raiting);
@@ -163,7 +222,15 @@ namespace TFMGoSki.Controllers
             {
                 _context.Add(classComment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+
+                if (User.IsInRole("Client"))
+                {
+                    return RedirectToAction(nameof(IndexUser));
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
             return View(classCommentViewModel);
         }
@@ -182,27 +249,35 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            var classReservations = await _context.ClassReservations.ToListAsync();
-            var listaClienteClase = new List<KeyValuePair<int, string>>();
+            //var classReservations = await _context.ClassReservations.ToListAsync();
+            //var listaClienteClase = new List<KeyValuePair<int, string>>();
 
-            foreach (var classReservation in classReservations)
-            {
-                var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
-                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+            //foreach (var classReservation in classReservations)
+            //{
+            //    var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+            //    var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
 
-                if (client != null && @class != null)
-                {
-                    string displayText = $"{client.UserName} - {@class.Name}";
-                    listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
-                }
-            }
+            //    if (client != null && @class != null)
+            //    {
+            //        string displayText = $"{client.UserName} - {@class.Name}";
+            //        listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
+            //    }
+            //}
 
-            ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value", classComment.ClassReservationId);
+            //ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value", classComment.ClassReservationId);
+
+            var classReservation = await _context.ClassReservations.FirstOrDefaultAsync(cr => cr.Id == classComment.ClassReservationId);
+
+            var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+            var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+            string displayText = client != null && @class != null ? $"{client.UserName} - {@class.Name}" : "N/A";
 
             ClassCommentViewModel classCommentViewModel = new ClassCommentViewModel()
             {
                 Id = classComment.Id,
                 ClassReservationId = classComment.ClassReservationId,
+                ClassReservationName = displayText,
                 Text = classComment.Text,
                 Raiting = classComment.Raiting
             };
@@ -237,8 +312,34 @@ namespace TFMGoSki.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                if (User.IsInRole("Client"))
+                {
+                    return RedirectToAction(nameof(IndexUser));
+                }
+                else
+                {
+                    return RedirectToAction(nameof(Index));
+                }
             }
+            //#region classReservation
+            //var classReservations = await _context.ClassReservations.ToListAsync();
+            //var listaClienteClase = new List<KeyValuePair<int, string>>();
+
+            //foreach (var classReservation in classReservations)
+            //{
+            //    var client = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+            //    var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+            //    if (client != null && @class != null)
+            //    {
+            //        string displayText = $"{client.UserName} - {@class.Name}";
+            //        listaClienteClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
+            //    }
+            //}
+
+            //ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value", classComment.ClassReservationId);
+            //#endregion
+
             return View(classCommentViewModel);
         }
 
@@ -286,7 +387,15 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            if (User.IsInRole("Client"))
+            {
+                return RedirectToAction(nameof(IndexUser));
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }            
         }
 
         private bool ClassCommentExists(int id)

@@ -198,7 +198,7 @@ namespace TFMGoSki.Controllers
                 var clientRole = await _context.Roles.FirstOrDefaultAsync(r => r.Name == "Client");
                 if (clientRole == null)
                 {
-                    return NotFound("No se encontró el rol 'Client'.");
+                    return NotFound("The role 'Client' was not found.");
                 }
 
                 // Obtener los IDs de usuarios que tienen el rol "Client"

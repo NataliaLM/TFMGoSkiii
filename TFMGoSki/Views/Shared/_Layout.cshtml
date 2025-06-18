@@ -64,11 +64,20 @@
                                 <a class="nav-link text-dark" asp-area="" asp-controller="ReservationTimeRangeClasses" asp-action="">Reservation Time Range Classes Management</a>
                             </li>
                         }    
-                        @* a *@
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">ClassComment</a>
-                        </li>
-                        
+                        @* a *@                        
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">Class Comment Management</a>
+                            </li>
+                        }
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="IndexUser">My Comments</a>
+                            </li>
+                        } 
+                        <!--a-->
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
                         {
                             <li class="nav-item">
@@ -78,7 +87,7 @@
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="IndexUser">Class Reservations Client</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="IndexUser">My Class Reservations</a>
                             </li> 
                         }                         
                         @* a *@
