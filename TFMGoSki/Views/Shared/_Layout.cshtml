@@ -43,7 +43,13 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="">Class Management</a>
                             </li>
-                        }                        
+                        }     
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Client"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="IndexUser">Class Management Client</a>
+                            </li>
+                        }
                         @* a *@
                         @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
                         {
@@ -59,9 +65,19 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">ClassComment</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">ClassReservations</a>
-                        </li> 
+                        
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">ClassReservations</a>
+                            </li> 
+                        } 
+                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="IndexUser">Class Reservations Client</a>
+                            </li> 
+                        }                         
                         @* a *@
                         @if (SignInManager.IsSignedIn(User))
                         {

@@ -228,6 +228,23 @@ namespace TFMGoSki.Services
                 });
             }
             #endregion
+            #region Comments
+            var comments = await _context.ClassComments
+                    .Where(cc => _context.ClassReservations
+                        .Where(cr => cr.ClassId == @class.Id)
+                        .Select(cr => cr.Id)
+                        .Contains(cc.ClassReservationId))
+                    .Join(_context.Users,
+                        cc => _context.ClassReservations.FirstOrDefault(cr => cr.Id == cc.ClassReservationId).UserId,
+                        u => u.Id,
+                        (cc, u) => new ClassCommentDto
+                        {
+                            Text = cc.Text,
+                            Raiting = cc.Raiting,
+                            UserName = u.UserName
+                        })
+                    .ToListAsync();
+            #endregion
 
             return new ClassDto
             {
@@ -239,8 +256,9 @@ namespace TFMGoSki.Services
                 InstructorName = instructor?.Name,
                 CityName = city?.Name,
                 #region ReservationTimeRangeClass
-                ReservationTimeRangeClassDto = reservationTimeRangeClassDtos
+                ReservationTimeRangeClassDto = reservationTimeRangeClassDtos,
                 #endregion
+                Comments = comments
             };
         }
 

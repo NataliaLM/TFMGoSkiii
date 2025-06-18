@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
 using TFMGoSki.Models;
@@ -13,6 +14,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker,Client")]
     public class ClassCommentsController : Controller
     {
         private readonly TFMGoSkiDbContext _context;
@@ -89,26 +91,55 @@ namespace TFMGoSki.Controllers
         }
 
         // GET: ClassComments/Create
-        public async Task<IActionResult> Create()
-        {
-            var dbSetClassReservation = await _context.ClassReservations.ToListAsync();
-            var listaUserClase = new List<KeyValuePair<int, string>>();
-
-            foreach (var classReservation in dbSetClassReservation)
+        public async Task<IActionResult> Create(int? classReservationId = null)
+        {  
+            if (classReservationId == null)
             {
-                var user = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
-                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+                var dbSetClassReservation = await _context.ClassReservations.ToListAsync();
+                var listaUserClase = new List<KeyValuePair<int, string>>();
 
-                if (user != null && @class != null)
+                foreach (var classReservation in dbSetClassReservation)
                 {
-                    string displayText = $"{user.UserName} - {@class.Name}";
-                    listaUserClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
+                    var user = await _context.Users.FirstOrDefaultAsync(c => c.Id == classReservation.UserId);
+                    var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == classReservation.ClassId);
+
+                    if (user != null && @class != null)
+                    {
+                        string displayText = $"{user.UserName} - {@class.Name}";
+                        listaUserClase.Add(new KeyValuePair<int, string>(classReservation.Id, displayText));
+                    }
                 }
+
+                ViewBag.ClassReservationId = new SelectList(listaUserClase, "Key", "Value");
+
+                ViewData["FromDetails"] = false;
+
+                return View(new ClassCommentViewModel());
+            } else
+            {
+                var reservation = await _context.ClassReservations.FirstOrDefaultAsync(r => r.Id == classReservationId);
+                if (reservation == null)
+                    return NotFound();
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == reservation.UserId);
+                var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
+                var reservationTimeRangeClass = _context.ReservationTimeRangeClasses.FirstOrDefault(r => r.Id == reservation.ReservationTimeRangeClassId);
+
+                if (user == null || @class == null || reservationTimeRangeClass == null)
+                    return NotFound();
+
+                ViewBag.DisplayName = $"{user.UserName} - {@class.Name}";
+
+                var viewModel = new ClassCommentViewModel
+                {
+                    ClassReservationId = reservation.Id,
+                    ClassReservationName = $"{@class.Name} - {reservationTimeRangeClass.StartDateOnly} - {reservationTimeRangeClass.EndDateOnly}"
+                };
+
+                ViewData["FromDetails"] = true;
+
+                return View(viewModel);
             }
-
-            ViewBag.ClassReservationId = new SelectList(listaUserClase, "Key", "Value");
-
-            return View();
         }
 
         // POST: ClassComments/Create
@@ -117,6 +148,16 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(int classReservationId, ClassCommentViewModel classCommentViewModel)
         {
+            // Verificar si ya existe un comentario para esa reserva
+            var existingComment = await _context.ClassComments
+                .FirstOrDefaultAsync(c => c.ClassReservationId == classReservationId);
+
+            if (existingComment != null)
+            {
+                // Ya existe un comentario, mostrar advertencia en la vista
+                ModelState.AddModelError(string.Empty, "Ya existe un comentario para esta reserva.");
+                return View(classCommentViewModel);
+            }
             ClassComment classComment = new ClassComment(classReservationId, classCommentViewModel.Text, classCommentViewModel.Raiting);
             if (ModelState.IsValid)
             {
