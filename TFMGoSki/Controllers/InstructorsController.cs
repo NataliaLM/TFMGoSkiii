@@ -1,16 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TFMGoSki.Data;
 using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker")]
     public class InstructorsController : Controller
     {
         private readonly IInstructorService _instructorService;
+        private readonly TFMGoSkiDbContext _context;
 
-        public InstructorsController(IInstructorService instructorService)
+        public InstructorsController(IInstructorService instructorService, TFMGoSkiDbContext context)
         {
             _instructorService = instructorService;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -80,6 +86,21 @@ namespace TFMGoSki.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var classes = _context.Classes
+                                .Where(i => i.InstructorId == id)
+                                .ToList();
+
+            if (classes.Any())
+            {
+                // Recupera el modelo nuevamente
+                var instructorDto = await _instructorService.GetDetailsAsync(id);
+
+                // Agrega el error al modelo
+                ModelState.AddModelError(string.Empty, "The instructor cannot be deleted because it has associated classes.");
+
+                // Devuelve la vista Delete con el modelo y el error
+                return View("Delete", instructorDto);
+            }
             var deleted = await _instructorService.DeleteAsync(id);
             return deleted ? RedirectToAction(nameof(Index)) : NotFound();
         }
