@@ -127,7 +127,7 @@ namespace TFMGoSki.Controllers
                 Raiting = classComment.Raiting
             };
 
-            if (_userManager.GetUserId(User) != null)
+            if (User.IsInRole("Client"))
             {
                 ViewData["FromDetails"] = true;
             }
@@ -225,8 +225,14 @@ namespace TFMGoSki.Controllers
                 // Ya existe un comentario, mostrar advertencia en la vista
                 ModelState.AddModelError(string.Empty, "A comment already exists for this reservation.");
                 ViewData["FromDetails"] = true;
+                // En cualquier punto donde retornes la vista:
+                var reservation = await _context.ClassReservations.FirstOrDefaultAsync(r => r.Id == classReservationId);
+
+                classCommentViewModel.ClassReservationName = GenerarNombreDeClase(reservation);
+
                 return View(classCommentViewModel);
             }
+            ViewData["FromDetails"] = false;
             ClassComment classComment = new ClassComment(classReservationId, classCommentViewModel.Text, classCommentViewModel.Raiting);
             if (ModelState.IsValid)
             {
@@ -242,8 +248,24 @@ namespace TFMGoSki.Controllers
                     return RedirectToAction(nameof(Index));
                 }
             }
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
             return View(classCommentViewModel);
         }
+
+        private string GenerarNombreDeClase(ClassReservation reservation)
+        {
+            var @class = _context.Classes.First(c => c.Id == reservation.ClassId);
+            var range = _context.ReservationTimeRangeClasses.First(r => r.Id == reservation.ReservationTimeRangeClassId);
+            return $"{@class.Name} - {range.StartDateOnly} - {range.EndDateOnly}";
+        }
+
 
         // GET: ClassComments/Edit/5
         public async Task<IActionResult> Edit(int? id)

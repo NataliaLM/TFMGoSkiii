@@ -166,6 +166,15 @@ namespace TFMGoSki.Controllers
                 }
             };
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["FromDetails"] = true;
+            }
+            else
+            {
+                ViewData["FromDetails"] = false;
+            }
+
             return View(classReservationDto);
         }
 
@@ -342,13 +351,22 @@ namespace TFMGoSki.Controllers
 
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name");
 
-            ClassReservationViewModel classReservationViewModel = new ClassReservationViewModel()
+            var userId = _userManager.GetUserId(User);
+            var classItem = await _context.Classes.FindAsync(classReservation.ClassId);
+            var reservation = await _context.ReservationTimeRangeClasses.FindAsync(classReservation.ReservationTimeRangeClassId);
+            if (classItem == null || reservation == null || userId == null)
+            {
+                return NotFound();
+            }
+            var classReservationViewModel = new ClassReservationViewModel
             {
                 Id = classReservation.Id,
-                UserId = classReservation.UserId,
                 ClassId = classReservation.ClassId,
                 ReservationTimeRangeClassId = classReservation.ReservationTimeRangeClassId,
-                NumberPersonsBooked = classReservation.NumberPersonsBooked
+                NumberPersonsBooked = classReservation.NumberPersonsBooked,
+                UserId = int.Parse(userId),
+                ClassName = classItem.Name,
+                ReservationTimeRangeClassName = $"[{reservation.StartDateOnly} - {reservation.EndDateOnly}] [{reservation.StartTimeOnly} - {reservation.EndTimeOnly}]"
             };
 
             #region desplegable reservation time range
@@ -365,6 +383,15 @@ namespace TFMGoSki.Controllers
 
             #endregion
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["FromDetails"] = true;
+            }
+            else
+            {
+                ViewData["FromDetails"] = false;
+            }
+
             return View(classReservationViewModel);
         }
 
@@ -378,6 +405,14 @@ namespace TFMGoSki.Controllers
 
             if (classReservation == null)
             {
+                if (User.IsInRole("Client"))
+                {
+                    ViewData["FromDetails"] = true;
+                }
+                else
+                {
+                    ViewData["FromDetails"] = false;
+                }
                 return View(classReservationViewModel);
             }
 
@@ -404,6 +439,16 @@ namespace TFMGoSki.Controllers
                 ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
 
                 ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+                if (User.IsInRole("Client"))
+                {
+                    ViewData["FromDetails"] = true;
+                }
+                else
+                {
+                    ViewData["FromDetails"] = false;
+                }
+
                 return View(classReservationViewModel);
             }
 
@@ -417,6 +462,16 @@ namespace TFMGoSki.Controllers
                     ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
 
                     ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+                    if (User.IsInRole("Client"))
+                    {
+                        ViewData["FromDetails"] = true;
+                    }
+                    else
+                    {
+                        ViewData["FromDetails"] = false;
+                    }
+
                     return View(classReservationViewModel);
                 }
 
@@ -431,6 +486,16 @@ namespace TFMGoSki.Controllers
                     ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
 
                     ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+                    if (User.IsInRole("Client"))
+                    {
+                        ViewData["FromDetails"] = true;
+                    }
+                    else
+                    {
+                        ViewData["FromDetails"] = false;
+                    }
+
                     return View(classReservationViewModel);
                 }
 
@@ -468,6 +533,16 @@ namespace TFMGoSki.Controllers
                         ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
 
                         ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+                        if (User.IsInRole("Client"))
+                        {
+                            ViewData["FromDetails"] = true;
+                        }
+                        else
+                        {
+                            ViewData["FromDetails"] = false;
+                        }
+
                         return View(classReservationViewModel);
                     }
 
@@ -482,6 +557,16 @@ namespace TFMGoSki.Controllers
                         ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
 
                         ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+                        if (User.IsInRole("Client"))
+                        {
+                            ViewData["FromDetails"] = true;
+                        }
+                        else
+                        {
+                            ViewData["FromDetails"] = false;
+                        }
+
                         return View(classReservationViewModel);
                     }
 
@@ -540,6 +625,16 @@ namespace TFMGoSki.Controllers
 
             ViewBag.UserId = await GetReservasCliente(classReservationViewModel);
             ViewBag.ClassId = new SelectList(_context.Classes, "Id", "Name", classReservationViewModel.ClassId);
+
+            if (User.IsInRole("Client"))
+            {
+                ViewData["FromDetails"] = true;
+            }
+            else
+            {
+                ViewData["FromDetails"] = false;
+            }
+
             return View(classReservationViewModel);
         }
 
@@ -619,6 +714,15 @@ namespace TFMGoSki.Controllers
                 }
             };
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["FromDetails"] = true;
+            }
+            else
+            {
+                ViewData["FromDetails"] = false;
+            }
+
             return View(classReservationDto);
         }
 
@@ -657,6 +761,15 @@ namespace TFMGoSki.Controllers
 
                 // Agrega el error al modelo
                 ModelState.AddModelError(string.Empty, "The class reservation cannot be deleted because it has associated a comment.");
+
+                if (User.IsInRole("Client"))
+                {
+                    ViewData["FromDetails"] = true;
+                }
+                else
+                {
+                    ViewData["FromDetails"] = false;
+                }
 
                 // Devuelve la vista Delete con el modelo y el error
                 return View("Delete", classReservationDto);
