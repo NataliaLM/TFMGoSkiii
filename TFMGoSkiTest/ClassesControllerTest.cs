@@ -124,7 +124,7 @@ namespace TFMGoSkiTest
             responseClient.EnsureSuccessStatusCode();
 
             AuthenticateClientAsync();
-            var response = await _client.GetAsync("/Classes");
+            var response = await _client.GetAsync("/Classes/IndexUser");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 

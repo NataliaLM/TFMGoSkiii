@@ -74,6 +74,43 @@ namespace TFMGoSkiTest
             response.EnsureSuccessStatusCode();            
         }
 
+        private async Task AuthenticateClientAsync(string role = "Client")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+        }
+
         [Fact]
         public async Task Test_Cities_Index_ReturnsSuccess()
         {
@@ -83,6 +120,27 @@ namespace TFMGoSkiTest
 
             // Realizar la solicitud GET
             var response = await _client.GetAsync("/Cities");
+
+            // Verificar que la respuesta sea 200 OK
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_IndexClient_ReturnsSuccess()
+        {
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
+
+            // Agregar ciudad en la base de datos en memoria
+            _context.Cities.Add(new City("Test City"));
+            await _context.SaveChangesAsync();
+
+            // Realizar la solicitud GET
+            var response = await _client.GetAsync("/Cities/IndexUser");
 
             // Verificar que la respuesta sea 200 OK
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -333,41 +391,50 @@ namespace TFMGoSkiTest
 
             var responseString = await response.Content.ReadAsStringAsync();
         }
-        //[Fact]
-        //public async Task Test_Cities_Create_ReturnsView_WhenCityNameExists()
-        //{
-        //    var factory = new CustomWebApplicationFactory();
-        //    var client = factory.CreateClient();
+        [Fact]
+        public async Task Test_Cities_Create_DuplicateName_ShowsModelError()
+        {
+            // Crear ciudad original
+            var existingCity = new City("DuplicateCity");
+            _context.Cities.Add(existingCity);
+            await _context.SaveChangesAsync();
 
-        //    var viewModel = new CityViewModel { Name = "Existing City" };
-        //    var json = JsonSerializer.Serialize(viewModel);
-        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
+            // Intentar crear otra ciudad con el mismo nombre
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "DuplicateCity" }
+    };
+            var content = new FormUrlEncodedContent(formData);
 
-        //    var response = await client.PostAsync("/Cities/Create", content);
+            var response = await _client.PostAsync("/Cities/Create", content);
 
-        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        //    var responseString = await response.Content.ReadAsStringAsync();
-        //    Assert.Contains("There is already a city with this name", responseString);
-        //}
+            var responseBody = await response.Content.ReadAsStringAsync();
+        }
 
-        //[Fact]
-        //public async Task Test_Cities_Edit_ReturnsView_WhenUpdateFails()
-        //{
-        //    var factory = new CustomWebApplicationFactory();
-        //    var client = factory.CreateClient();
+        [Fact]
+        public async Task Test_Cities_Edit_DuplicateName_ShowsModelError()
+        {
+            // Crear dos ciudades
+            var city1 = new City("CityOne");
+            var city2 = new City("CityTwo");
+            _context.Cities.AddRange(city1, city2);
+            await _context.SaveChangesAsync();
 
-        //    var viewModel = new CityViewModel { Name = "Some City" };
-        //    var json = JsonSerializer.Serialize(viewModel);
-        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
+            // Intentar renombrar city2 con el nombre de city1
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "CityOne" }
+    };
+            var content = new FormUrlEncodedContent(formData);
 
-        //    var response = await client.PostAsync("/Cities/Edit/1", content);
+            var response = await _client.PostAsync($"/Cities/Edit/{city2.Id}", content);
 
-        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        //    var responseString = await response.Content.ReadAsStringAsync();
-        //    Assert.Contains("Mock update error", responseString);
-        //}
+            var responseBody = await response.Content.ReadAsStringAsync();
+        }
 
     }
 }

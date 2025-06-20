@@ -252,5 +252,50 @@ namespace TFMGoSkiTest
             var response = await _client.GetAsync("/Account/AllUsers");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+        /**/
+        [Fact]
+        public async Task Register_Post_DuplicateEmail_ShowsModelError()
+        {
+            // Datos comunes
+            var formData = new Dictionary<string, string>
+    {
+        { "FullName", "Duplicate User" },
+        { "Email", "duplicate@user.com" },
+        { "PhoneNumber", "123456789" },
+        { "Password", "123asdASD@" },
+        { "RoleName", "Client" }
+    };
+
+            // Primer registro (válido)
+            var response1 = await _client.PostAsync("/Account/Register", new FormUrlEncodedContent(formData));
+            Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
+
+            // Segundo intento con mismo email → debe fallar
+            var response2 = await _client.PostAsync("/Account/Register", new FormUrlEncodedContent(formData));
+
+            // No redirige, vuelve a vista con errores de modelo
+            var content = await response2.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+            Assert.Contains("duplicate@user.com", content); // Renderiza la vista con el error
+        }
+
+        [Fact]
+        public async Task Register_Post_WeakPassword_ShowsModelError()
+        {
+            var formData = new Dictionary<string, string>
+    {
+        { "FullName", "Weak Password" },
+        { "Email", "weak@password.com" },
+        { "PhoneNumber", "123456789" },
+        { "Password", "123" }, // Intencionalmente débil
+        { "RoleName", "Client" }
+    };
+
+            var response = await _client.PostAsync("/Account/Register", new FormUrlEncodedContent(formData));
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
     }
 }

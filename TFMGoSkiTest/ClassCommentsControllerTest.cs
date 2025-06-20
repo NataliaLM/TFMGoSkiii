@@ -198,7 +198,7 @@ namespace TFMGoSkiTest
             _context.ClassComments.Add(new ClassComment(classReservation.Id, "Great class", 5));
             await _context.SaveChangesAsync();
 
-            var response = await _client.GetAsync("/ClassComments");
+            var response = await _client.GetAsync("/ClassComments/IndexUser");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
