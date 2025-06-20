@@ -450,5 +450,59 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+        /**/
+        [Fact]
+        public async Task Test_Reservation_Create_Get_WithClassId_ReturnsSuccess()
+        {
+            var classId = 1; // Asegúrate de que este ID exista o lo creas antes
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Create?classId={classId}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        [Fact]
+        public async Task Test_Reservation_Create_Post_InvalidModel_WithClass()
+        {
+            var viewModel = new ReservationTimeRangeClassViewModel
+            {
+                Class = 123 // Valor cualquiera distinto de 0
+                            // Campos faltantes, forzando ModelState inválido
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        //[Fact]
+        //public async Task Test_Reservation_Delete_Post_WithAssociatedReservations_ShowsError()
+        //{
+        //    Instructor instructor = new Instructor("Name Instructor");
+        //    _context.Instructors.Add(instructor);
+        //    _context.SaveChanges();
+
+        //    City city = new City("City Name");
+        //    _context.Cities.Add(city);
+        //    _context.SaveChanges();
+
+        //    Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+        //    _context.Classes.Add(@class);
+        //    _context.SaveChanges();
+
+        //    var timeRange = new ReservationTimeRangeClass(new DateOnly(2027, 01, 01), new DateOnly(2027, 01, 10),
+        //        new TimeOnly(9, 0), new TimeOnly(10, 0), 10, @class.Id);
+        //    _context.ReservationTimeRangeClasses.Add(timeRange);
+        //    _context.SaveChanges();
+
+        //    var reservation = new ClassReservation(user.Id, @class.Id, timeRange.Id, 1);
+            
+        //    _context.ClassReservations.Add(reservation);
+        //    _context.SaveChanges();
+
+        //    var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Delete/{timeRange.Id}", new StringContent(""));
+
+        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //    var content = await response.Content.ReadAsStringAsync();
+        //    Assert.Contains("cannot be deleted", content); // o lo que diga tu error exacto
+        //}
     }
 }

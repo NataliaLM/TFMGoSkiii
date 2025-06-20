@@ -149,6 +149,51 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_ClassReservations_IndexUser_ReturnsSuccess()
+        {
+            var user = new User
+            {
+                UserName = "email@email.com",
+                FullName = "email@email.com",
+                Email = "email@email.com",
+                PhoneNumber = "1234456789"
+            };
+
+            //_context.Users.Add(user);
+            //_context.SaveChanges();
+
+            Instructor instructor = new Instructor("Name Instructor ClassReservation");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            _context.ClassReservations.Add(new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1));
+            await _context.SaveChangesAsync();
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
+
+            var response = await _client.GetAsync("/ClassReservations/IndexUser");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_ClassReservations_Details_ValidId_ReturnsSuccess()
         {
             var user = new User { UserName = "InvalidEditUser" };
@@ -534,6 +579,27 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
 
             // Esperamos que la vista se devuelva con errores, no redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        /**/
+
+        [Fact]
+        public async Task Create_ReturnsOK_WhenClientIsNull()
+        {
+            // Arrange
+            await AuthenticateClientAsync();
+
+            var invalidUserId = 9999; // un ID que no exista
+            var classId = 1;
+            var reservationId = 1;
+
+            // Act
+            var response = await _client.GetAsync($"/ClassReservations/Create?classId={classId}&reservationTimeRangeClassId={reservationId}");
+
+            // El controller internamente buscaría al usuario y no lo encontraría.
+
+            // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 

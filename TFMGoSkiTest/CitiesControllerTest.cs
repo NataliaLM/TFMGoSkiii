@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Text;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
@@ -313,5 +314,60 @@ namespace TFMGoSkiTest
         {            
             _client.PostAsync("/Account/Logout", new StringContent("")).Wait();
         }
+        /**/
+        [Fact]
+        public async Task Test_Cities_Create_ReturnsView_WhenModelInvalid()
+        {
+            // Enviar formulario sin el campo "Name" o vacío para invalidar ModelState
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "" }  // campo obligatorio vacío
+    };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync("/Cities/Create", content);
+
+            // La respuesta debe contener la vista (normalmente código 200 OK)
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+        }
+        //[Fact]
+        //public async Task Test_Cities_Create_ReturnsView_WhenCityNameExists()
+        //{
+        //    var factory = new CustomWebApplicationFactory();
+        //    var client = factory.CreateClient();
+
+        //    var viewModel = new CityViewModel { Name = "Existing City" };
+        //    var json = JsonSerializer.Serialize(viewModel);
+        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        //    var response = await client.PostAsync("/Cities/Create", content);
+
+        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        //    var responseString = await response.Content.ReadAsStringAsync();
+        //    Assert.Contains("There is already a city with this name", responseString);
+        //}
+
+        //[Fact]
+        //public async Task Test_Cities_Edit_ReturnsView_WhenUpdateFails()
+        //{
+        //    var factory = new CustomWebApplicationFactory();
+        //    var client = factory.CreateClient();
+
+        //    var viewModel = new CityViewModel { Name = "Some City" };
+        //    var json = JsonSerializer.Serialize(viewModel);
+        //    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        //    var response = await client.PostAsync("/Cities/Edit/1", content);
+
+        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        //    var responseString = await response.Content.ReadAsStringAsync();
+        //    Assert.Contains("Mock update error", responseString);
+        //}
+
     }
 }

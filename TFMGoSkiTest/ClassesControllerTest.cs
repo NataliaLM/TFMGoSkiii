@@ -71,9 +71,59 @@ namespace TFMGoSkiTest
             response.EnsureSuccessStatusCode();
         }
 
+        private async Task AuthenticateClientAsync(string role = "Client")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+        }
+
         [Fact]
         public async Task Test_Classes_Index_ReturnsSuccess()
         {
+            var response = await _client.GetAsync("/Classes");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Classes_IndexUser_ReturnsSuccess()
+        {
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
             var response = await _client.GetAsync("/Classes");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -361,5 +411,43 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync($"/Classes/Delete/999", new StringContent(""));
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+        /**/
+        [Fact]
+        public async Task Test_Classes_Create_Post_ReturnsView_WhenNameExists()
+        {
+            // Arrange: Crear una clase en la DB
+            var instructor = new Instructor("Test Instructor");
+            var city = new City("Test City");
+            _context.Instructors.Add(instructor);
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var existingClass = new Class("DuplicatedName", 50, 10, ClassLevel.Beginner, instructor.Id, city.Id);
+            _context.Classes.Add(existingClass);
+            await _context.SaveChangesAsync();
+
+            // Intentar crear una clase con el mismo nombre
+            var formData = new Dictionary<string, string>
+            {
+                { "Name", "DuplicatedName" }, // Mismo nombre
+                { "Price", "60" },
+                { "StudentQuantity", "12" },
+                { "ClassLevel", ((int)ClassLevel.Beginner).ToString() },
+                { "Instructor", instructor.Id.ToString() },
+                { "City", city.Id.ToString() }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            // Act
+            var response = await _client.PostAsync("/Classes/Create", content);
+
+            // Assert
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains("A class with this name already exists.", responseString);
+        }
+
     }
 }
