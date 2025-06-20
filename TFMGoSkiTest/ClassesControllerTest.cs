@@ -123,10 +123,30 @@ namespace TFMGoSkiTest
             var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
             responseClient.EnsureSuccessStatusCode();
 
-            AuthenticateClientAsync();
-            var response = await _client.GetAsync("/Classes/IndexUser");
+            // Autenticar con rol Client
+            Task.Run(() => AuthenticateClientAsync()).Wait();
+
+            var query = new Dictionary<string, string?>
+            {
+                ["finalizadas"] = "false",
+                ["name"] = "Yoga",
+                ["minPrice"] = "10",
+                ["maxPrice"] = "100",
+                ["classLevel"] = "Beginner",
+                ["cityName"] = "Madrid",
+                ["minDate"] = "2025-06-20",
+                ["maxDate"] = "2025-07-20",
+                ["minRating"] = "3"
+            };
+
+            var queryString = string.Join("&", query
+                .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
+                .Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+
+            var response = await _client.GetAsync($"/Classes/IndexUser?{queryString}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
 
         [Fact]
         public async Task Test_Classes_Details_ReturnsView()

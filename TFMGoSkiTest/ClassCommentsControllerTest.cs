@@ -164,7 +164,7 @@ namespace TFMGoSkiTest
             var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
             responseClient.EnsureSuccessStatusCode();
 
-            AuthenticateClientAsync();
+            Task.Run(() => AuthenticateClientAsync()).Wait();
 
             Instructor instructor = new Instructor("InstructorName");
             _context.Instructors.Add(instructor);

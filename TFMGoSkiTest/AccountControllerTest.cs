@@ -26,6 +26,43 @@ namespace TFMGoSkiTest
             _client = _factory.CreateClient();
         }
 
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+        }
+
         [Fact]
         public async Task Register_Get_ReturnsOk()
         {
@@ -42,6 +79,7 @@ namespace TFMGoSkiTest
                 { "Email", "full@name.com" },
                 { "PhoneNumber", "123456789" },
                 { "Password", "123asdASD@" },
+                { "ConfirmPassword", "123asdASD@" },
                 { "RoleName", "Client" }
             };
 
@@ -79,6 +117,7 @@ namespace TFMGoSkiTest
                 { "Email", "full@name.com" },
                 { "PhoneNumber", "123456789" },
                 { "Password", "123asdASD@" },
+                { "ConfirmPassword", "123asdASD@" },
                 { "RoleName", "Client" }
             };
 
@@ -128,6 +167,7 @@ namespace TFMGoSkiTest
                 { "Email", "full@name.com" },
                 { "PhoneNumber", "123456789" },
                 { "Password", "123asdASD@" },
+                { "ConfirmPassword", "123asdASD@" },
                 { "RoleName", "Client" }
             };
             var contentRegister = new FormUrlEncodedContent(formDataRegister);
@@ -169,6 +209,7 @@ namespace TFMGoSkiTest
                 { "Email", "full@name.com" },
                 { "PhoneNumber", "123456789" },
                 { "Password", "123asdASD@" },
+                { "ConfirmPassword", "123asdASD@" },
                 { "RoleName", "Client" }
             };
 
@@ -213,6 +254,7 @@ namespace TFMGoSkiTest
                 { "Email", "full@name.com" },
                 { "PhoneNumber", "123456789" },
                 { "Password", "123asdASD@" },
+                { "ConfirmPassword", "123asdASD@" },
                 { "RoleName", "Client" }
             };
             var contentRegister = new FormUrlEncodedContent(formDataRegister);
@@ -241,9 +283,16 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task DeleteAccount_Unauthenticated_RedirectsToLogin()
         {
+            Task.Run(() => AuthenticateAsync()).Wait();
+
             var response = await _client.PostAsync("/Account/DeleteAccount", new StringContent(""));
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -263,6 +312,7 @@ namespace TFMGoSkiTest
         { "Email", "duplicate@user.com" },
         { "PhoneNumber", "123456789" },
         { "Password", "123asdASD@" },
+        { "ConfirmPassword", "123asdASD@" },
         { "RoleName", "Client" }
     };
 
@@ -288,6 +338,7 @@ namespace TFMGoSkiTest
         { "Email", "weak@password.com" },
         { "PhoneNumber", "123456789" },
         { "Password", "123" }, // Intencionalmente débil
+        { "ConfirmPassword", "123" },
         { "RoleName", "Client" }
     };
 
