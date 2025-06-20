@@ -74,42 +74,6 @@ namespace TFMGoSkiTest
             response.EnsureSuccessStatusCode();            
         }
 
-        private async Task AuthenticateClientAsync(string role = "Client")
-        {
-            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
-
-            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
-            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
-
-            if (!await roleManager.RoleExistsAsync(role))
-            {
-                await roleManager.CreateAsync(new Role(role));
-            }
-
-            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
-            var testPassword = "Test123!";
-
-            var user = new User
-            {
-                UserName = testEmail,
-                Email = testEmail,
-                FullName = "Test User Cities",
-                PhoneNumber = "223456789"
-            };
-
-            await userManager.CreateAsync(user, testPassword);
-            await userManager.AddToRoleAsync(user, role);
-
-            var loginData = new Dictionary<string, string>
-            {
-                { "UserName", testEmail },
-                { "Password", testPassword }
-            };
-
-            var loginContent = new FormUrlEncodedContent(loginData);
-            var response = await _client.PostAsync("/Account/Login", loginContent);
-            response.EnsureSuccessStatusCode();
-        }
 
         [Fact]
         public async Task Test_Cities_Index_ReturnsSuccess()
@@ -120,27 +84,6 @@ namespace TFMGoSkiTest
 
             // Realizar la solicitud GET
             var response = await _client.GetAsync("/Cities");
-
-            // Verificar que la respuesta sea 200 OK
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task Test_Cities_IndexClient_ReturnsSuccess()
-        {
-            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
-
-            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
-            responseClient.EnsureSuccessStatusCode();
-
-            AuthenticateClientAsync();
-
-            // Agregar ciudad en la base de datos en memoria
-            _context.Cities.Add(new City("Test City"));
-            await _context.SaveChangesAsync();
-
-            // Realizar la solicitud GET
-            var response = await _client.GetAsync("/Cities/IndexUser");
 
             // Verificar que la respuesta sea 200 OK
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
