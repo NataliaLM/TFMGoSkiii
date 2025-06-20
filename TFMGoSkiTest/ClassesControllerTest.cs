@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
@@ -9,22 +10,65 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class ClassesControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
+        private readonly WebApplicationFactory<Program> _factory;
         private readonly TFMGoSkiDbContext _context;
 
         public ClassesControllerTest(WebApplicationFactory<Program> factory)
         {
-            var webApp = factory.WithWebHostBuilder(builder =>
+            // Configurar el entorno para usar la base de datos en memoria en las pruebas
+            _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Test");
             });
 
-            _client = webApp.CreateClient();
+            // Crear cliente HTTP para realizar las pruebas
+            _client = _factory.CreateClient();
 
-            var scope = webApp.Services.CreateScope();
+            // Crear el contexto con la base de datos en memoria
+            var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+            Task.Run(() => AuthenticateAsync()).Wait();
+        }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Classes@exampleClasses.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Classes",
+                PhoneNumber = "133456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -216,7 +260,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync("/Classes/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]

@@ -58,6 +58,7 @@
                     <th>End Date</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,6 +70,20 @@
                         <td>@reservation.EndDateOnly</td>
                         <td>@reservation.StartTimeOnly</td>
                         <td>@reservation.EndTimeOnly</td>
+                        @if(@reservation.RemainingStudentsQuantity != 0)
+                        {
+                            <td>
+                                <a asp-controller="ClassReservations"
+                                   asp-action="Create"
+                                   asp-route-classId="@Model.Id"
+                                   asp-route-reservationTimeRangeClassId="@reservation.Id"
+                                   class="btn btn-primary btn-sm">
+                                    Reservar clase
+                                </a>
+                            </td>
+                        } else {
+                            <td></td>
+                        }
                     </tr>
                 }
             </tbody>
@@ -78,9 +93,41 @@
     {
         <p>No reservations found for this class.</p>
     }
+
+    <h4>Class Comments</h4>
+    <hr />
+    @if (Model.Comments != null && Model.Comments.Any())
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Text</th>
+                    <th>Raiting</th>
+                    <th>User Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var reservation in Model.Comments)
+                {
+                    <tr>
+                        <td>@reservation.Text</td>
+                        <td>@reservation.Raiting</td>
+                        <td>@reservation.UserName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No comments found for this class.</p>
+    }
 </div>
 
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index">Back to List</a> 
+    <a asp-controller="ReservationTimeRangeClasses" asp-action="Create" asp-route-classId="@Model.Id" class="btn btn-success">
+        Create a booking timetable
+    </a>
 </div>

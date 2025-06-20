@@ -8,7 +8,7 @@ namespace TFMGoSki.ViewModels
         public string FullName { get; init; } = default!;
         [Required, EmailAddress]
         public string Email { get; init; } = default!;
-        [Required]
+        [Required, Phone]
         public string PhoneNumber { get; init; } = default!;
         [Required, DataType(DataType.Password)]
         public string Password { get; init; } = default!;

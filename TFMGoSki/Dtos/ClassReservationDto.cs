@@ -9,5 +9,8 @@ namespace TFMGoSki.Dtos
         public string ClientName { get; set; }
         [Display(Name = "Class Name")]
         public string ClassName { get; set; }
+        [Display(Name = "NumberPersonsBooked")]
+        public int NumberPersonsBooked { get; set; }
+        public ReservationTimeRangeClassDto ReservationTimeRangeClassDto { get; set; }
     }
 }

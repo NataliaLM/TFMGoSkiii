@@ -11,5 +11,7 @@ namespace TFMGoSki.Dtos
         public string Text { get; set; }
         [Display(Name = "Raiting")]
         public int Raiting { get; set; }
+        [Display(Name = "User Name")]
+        public string UserName { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -37,11 +38,18 @@ namespace TFMGoSki.Services
             };
         }
 
-        public async Task CreateAsync(InstructorViewModel viewModel)
+        public async Task<bool> CreateAsync(InstructorViewModel viewModel)
         {
+            var instructorFound = _context.Instructors.FirstOrDefault(i => i.Name == viewModel.Name);
+            if(instructorFound != null)
+            {
+                return false;
+            }
+
             var instructor = new Instructor(viewModel.Name);
             _context.Instructors.Add(instructor);
             await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<InstructorViewModel?> GetEditViewModelAsync(int id)
@@ -56,15 +64,27 @@ namespace TFMGoSki.Services
             };
         }
 
-        public async Task<bool> UpdateAsync(int id, InstructorViewModel viewModel)
-        {
+        public async Task<UpdateResult> UpdateAsync(int id, InstructorViewModel viewModel)
+        {            
+            var duplicate = _context.Instructors
+                .FirstOrDefault(c => c.Name.Equals(viewModel.Name) && c.Id != id);
+
+            if (duplicate != null)
+            {
+                return UpdateResult.Fail("An instructor with that name already exists.");
+            }
+
             var instructor = await _context.Instructors.FindAsync(id);
-            if (instructor == null) return false;
+
+            if (instructor == null)
+            {
+                return UpdateResult.Fail("Instructor not found.");
+            }
 
             instructor.Update(viewModel.Name);
             _context.Update(instructor);
             await _context.SaveChangesAsync();
-            return true;
+            return UpdateResult.Ok();
         }
 
         public async Task<bool> DeleteAsync(int id)

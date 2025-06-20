@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -36,22 +38,40 @@ namespace TFMGoSki.Services
             return await _context.Cities.FindAsync(id);
         }
 
-        public async Task CreateAsync(CityViewModel cityViewModel)
+        public async Task<bool> CreateAsync(CityViewModel cityViewModel)
         {
+            var cityFound = _context.Cities.FirstOrDefault(c => c.Name.Equals(cityViewModel.Name));
+
+            if (cityFound != null)
+            {
+                return false;
+            }
+
             City city = new City(cityViewModel.Name);
             _context.Add(city);
             await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<bool> UpdateAsync(int id, CityViewModel viewModel)
+        public async Task<UpdateResult> UpdateAsync(int id, CityViewModel viewModel)
         {
-            var city = await _context.Cities.FindAsync(id);
-            if (city == null) return false;
+            var duplicate = _context.Cities
+                .FirstOrDefault(c => c.Name.Equals(viewModel.Name) && c.Id != id);
 
+            if (duplicate != null)
+            {
+                return UpdateResult.Fail("A city with this name already exists.");
+            }
+
+            City? city = await _context.Cities.FindAsync(id);
+            if (city == null)
+            {
+                return UpdateResult.Fail("City not found.");
+            }
             city.Update(viewModel.Name);
             _context.Update(city);
             await _context.SaveChangesAsync();
-            return true;
+            return UpdateResult.Ok();
         }
 
         public async Task<bool> DeleteAsync(int id)

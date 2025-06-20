@@ -28,6 +28,13 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
+        @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+        {        
+            <a asp-action="IndexUser">Back to my comments List</a>
+        }
+        else
+        {
+            <a asp-action="Index">Back to List</a>
+        }
     </form>
 </div>

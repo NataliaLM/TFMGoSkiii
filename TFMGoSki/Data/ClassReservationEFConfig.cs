@@ -10,6 +10,9 @@ namespace TFMGoSki.Data
         {
             builder.ToTable("ClassReservation");
 
+            builder.Property(c => c.NumberPersonsBooked)
+                .IsRequired();
+
             builder.HasOne<User>()
                .WithMany()
                .HasForeignKey(c => c.UserId)
@@ -18,6 +21,11 @@ namespace TFMGoSki.Data
             builder.HasOne<Class>()
                .WithMany()
                .HasForeignKey(c => c.ClassId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne<ReservationTimeRangeClass>()
+               .WithMany()
+               .HasForeignKey(c => c.ReservationTimeRangeClassId)
                .OnDelete(DeleteBehavior.Restrict);
         }
     }

@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Dtos.ClassCommentDto
+@model TFMGoSki.Dtos.ClassCommentDto
 
 @{
     ViewData["Title"] = "Details";
@@ -9,6 +9,7 @@
 <div>
     <h4>ClassComment</h4>
     <hr />
+    <input type="hidden" asp-for="Id" />
     <dl class="row">
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.ClassReservationName)
@@ -32,5 +33,12 @@
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+    {        
+        <a asp-action="IndexUser">Back to my comments List</a>
+    }
+    else
+    {
+        <a asp-action="Index">Back to List</a>
+    }
 </div>

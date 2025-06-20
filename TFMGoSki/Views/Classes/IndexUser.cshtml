@@ -1,0 +1,129 @@
+﻿@model IEnumerable<TFMGoSki.Dtos.ClassDto>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Available Classes</h1>
+
+<form asp-action="IndexUser" method="get">
+    <div class="form-group">
+        <input type="text" name="name" value="@Context.Request.Query["name"]" class="form-control" placeholder="Filter by class name..." />
+    </div>
+    <div class="form-group">
+        <input type="number" name="minPrice" value="@Context.Request.Query["minPrice"]" class="form-control" placeholder="Min Price" />
+    </div>
+    <div class="form-group">
+        <input type="number" name="maxPrice" value="@Context.Request.Query["maxPrice"]" class="form-control" placeholder="Max Price" />
+    </div>
+    <div class="form-group">
+        <select name="classLevel">
+            <option value="">-- Filter by class level --</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <select name="cityName" class="form-control">
+            <option value="">-- Filter by city --</option>
+            @foreach (var city in (SelectList)ViewBag.CityList)
+            {
+                <option value="@city.Value" selected="@(Context.Request.Query["cityName"] == city.Value)">
+                    @city.Text
+                </option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="minDate">Start Date From:</label>
+        <input type="date" name="minDate" value="@Context.Request.Query["minDate"]" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="maxDate">Start Date To:</label>
+        <input type="date" name="maxDate" value="@Context.Request.Query["maxDate"]" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="minRating">Minimum Rating (1 to 5)</label>
+        <select name="minRating" class="form-control">
+            <option value="">-- Filter by rating --</option>
+            @for (int i = 1; i <= 5; i++)
+            {
+                <option value="@i" selected="@(Context.Request.Query["minRating"] == i.ToString())">@i+ stars</option>
+            }
+        </select>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a asp-action="IndexUser" class="btn btn-secondary">Clear</a>
+    </div> 
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Name)</th>
+            <th>@Html.DisplayNameFor(model => model.Price)</th>
+            <th>@Html.DisplayNameFor(model => model.StudentQuantity)</th>
+            <th>@Html.DisplayNameFor(model => model.ClassLevel)</th>
+            <th>@Html.DisplayNameFor(model => model.InstructorName)</th>
+            <th>@Html.DisplayNameFor(model => model.CityName)</th>
+            <th>Reservations Time Range</th>
+            <th>Comments</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Price)</td>
+                <td>@Html.DisplayFor(modelItem => item.StudentQuantity)</td>
+                <td>@Html.DisplayFor(modelItem => item.ClassLevel)</td>
+                <td>@Html.DisplayFor(modelItem => item.InstructorName)</td>
+                <td>@Html.DisplayFor(modelItem => item.CityName)</td>
+                <td>
+                    @if (item.ReservationTimeRangeClassDto != null && item.ReservationTimeRangeClassDto.Any())
+                    {
+                        <ul>
+                            @foreach (var res in item.ReservationTimeRangeClassDto)
+                            {
+                                <li>
+                                    <strong>@res.StartDateOnly</strong> - <strong>@res.EndDateOnly</strong><br />
+                                    @res.StartTimeOnly - @res.EndTimeOnly |
+                                    @res.RemainingStudentsQuantity remaining students
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>No Reservation Available</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Comments != null && item.Comments.Any())
+                    {
+                        <ul>
+                            @foreach (var comment in item.Comments)
+                            {
+                                <li>
+                                    <strong>@comment.UserName:</strong> "@comment.Text"
+                                    <span>(Rating: @comment.Raiting/5)</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>No comments available</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

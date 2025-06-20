@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TFMGoSki.Data;
 using TFMGoSki.Dtos;
 using TFMGoSki.Exceptions;
@@ -28,7 +29,7 @@ namespace TFMGoSki.Services
                 dtos.Add(new ReservationTimeRangeClassDto
                 {
                     Id = r.Id,
-                    RemainingStudentsQuantity = r.RemainingStudentsQuantity,
+                    RemainingStudentsQuantity = r.RemainingStudentsQuantity == -1 ? 0 : r.RemainingStudentsQuantity,
                     Class = @class?.Name ?? "(Unknown)",
                     StartDateOnly = r.StartDateOnly,
                     EndDateOnly = r.EndDateOnly,
@@ -50,7 +51,7 @@ namespace TFMGoSki.Services
             return new ReservationTimeRangeClassDto
             {
                 Id = reservation.Id,
-                RemainingStudentsQuantity = reservation.RemainingStudentsQuantity,
+                RemainingStudentsQuantity = reservation.RemainingStudentsQuantity == -1 ? 0 : reservation.RemainingStudentsQuantity,
                 Class = @class?.Name ?? "(Unknown)",
                 StartDateOnly = reservation.StartDateOnly,
                 EndDateOnly = reservation.EndDateOnly,
@@ -170,7 +171,7 @@ namespace TFMGoSki.Services
             _context.ReservationTimeRangeClasses.Remove(reservation);
             await _context.SaveChangesAsync();
             return true;
-        }
+        } //TODO: (Natalia) Hay que sumar Remaining Students si cancela la reserva.
 
         public bool Exists(int id)
         {
@@ -184,7 +185,7 @@ namespace TFMGoSki.Services
                 .Select(c => new
                 {
                     Id = c.Id,
-                    Description = c.Name + " (" + c.StudentQuantity + " estudiantes)"
+                    Description = c.Name + " (" + c.StudentQuantity + " students)"
                 })
                 .ToListAsync();
             return new SelectList(classes, "Id", "Description");

@@ -38,8 +38,16 @@ namespace TFMGoSki.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            ViewBag.Roles = _roleManager.Roles
-                            .Select(r => new SelectListItem(r.Name, r.Name));
+            //ViewBag.Roles = _roleManager.Roles
+            //                .Select(r => new SelectListItem(r.Name, r.Name));
+
+            ViewBag.Roles = new List<SelectListItem>
+            {
+                new SelectListItem("Client", "Client"),
+                new SelectListItem("Worker", "Worker"),
+                new SelectListItem("Admin", "Admin")
+            };
+
             return View();
         }
 
@@ -47,7 +55,17 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = new List<SelectListItem>
+                {
+                    new SelectListItem("Client", "Client"),
+                    new SelectListItem("Worker", "Worker"),
+                    new SelectListItem("Admin", "Admin")
+                };
+
+                return View(model);
+            }
 
             var user = new User
             {

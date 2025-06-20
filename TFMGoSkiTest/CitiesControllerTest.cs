@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using TFMGoSki.ViewModels;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class CitiesControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
@@ -29,6 +31,46 @@ namespace TFMGoSkiTest
             // Crear el contexto con la base de datos en memoria
             var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+            Task.Run(() => AuthenticateAsync()).Wait();
+        }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();            
         }
 
         [Fact]
@@ -195,7 +237,7 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
-        public async Task Test_Cities_Edit_Id_ReturnsNotFound()
+        public async Task Test_Cities_Edit_Id_ReturnsCityNotFound()
         { 
             var formData = new Dictionary<string, string>
             {
@@ -206,11 +248,11 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Cities/Edit?id=0", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
-        public async Task Test_Cities_Edit_ReturnsNotFound()
+        public async Task Test_Cities_Edit_ReturnsCityDoesntExist()
         {
             var formData = new Dictionary<string, string>
             {
@@ -221,7 +263,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/Cities/Edit/999", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -238,11 +280,7 @@ namespace TFMGoSkiTest
 
         [Fact]
         public async Task Test_Cities_Delete_Null()
-        {
-            var city = new City("Test City");
-            _context.Cities.Add(city);
-            await _context.SaveChangesAsync();
-
+        { 
             var response = await _client.DeleteAsync($"/Cities/Delete?");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -270,6 +308,10 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync($"/Cities/Delete/{city.Id}", new StringContent(""));
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        public void Dispose()
+        {            
+            _client.PostAsync("/Account/Logout", new StringContent("")).Wait();
         }
     }
 }

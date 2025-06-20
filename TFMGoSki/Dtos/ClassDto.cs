@@ -19,5 +19,6 @@ namespace TFMGoSki.Dtos
         [Display(Name = "City Name")]
         public string? CityName { get; set; }
         public List<ReservationTimeRangeClassDto>? ReservationTimeRangeClassDto { get; set; }
+        public List<ClassCommentDto> Comments { get; set; }
     }
 }

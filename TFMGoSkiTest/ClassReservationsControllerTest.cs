@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ using Xunit;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class ClassReservationsControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
@@ -29,14 +31,100 @@ namespace TFMGoSkiTest
 
             var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+            Task.Run(() => AuthenticateAsync()).Wait();
+        }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        private async Task AuthenticateClientAsync(string role = "Client")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Client@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Client",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
         public async Task Test_ClassReservations_Index_ReturnsSuccess()
         {
-            var user = new User { UserName = "InvalidEditUser" };
+            var user = new User
+            {
+                UserName = "email@email.com",
+                FullName = "email@email.com",
+                Email = "email@email.com",
+                PhoneNumber = "1234456789"
+            };
 
-            Instructor instructor = new Instructor("Name Instructor");
+            //_context.Users.Add(user);
+            //_context.SaveChanges();
+
+            Instructor instructor = new Instructor("Name Instructor ClassReservation");
             _context.Instructors.Add(instructor);
             _context.SaveChanges();
 
@@ -48,7 +136,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            _context.ClassReservations.Add(new ClassReservation(user.Id, @class.Id));
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            _context.ClassReservations.Add(new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1));
             await _context.SaveChangesAsync();
 
             var response = await _client.GetAsync("/ClassReservations");
@@ -73,7 +165,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -101,6 +197,13 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_ClassReservations_Create_Get_ReturnsSuccess()
         {
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
+
             var response = await _client.GetAsync("/ClassReservations/Create");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -132,6 +235,13 @@ namespace TFMGoSkiTest
                 { "ClassId", @class.Id.ToString() }
             };
 
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
+
             var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/ClassReservations/Create", content);
 
@@ -156,7 +266,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -182,7 +296,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -208,21 +326,27 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
-                Id = reservation.Id,
-                UserId = user.Id,
-                ClassId = @class.Id
+                { "Id", reservation.Id.ToString() },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClass.Id.ToString() },
+                { "NumberPersonsBooked", "1" } // Asegúrate de enviar todos los campos requeridos
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
 
             Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
         }
@@ -244,26 +368,35 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
+                ["Id"] = reservation.Id.ToString()
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
 
-            Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
+            Assert.True(response.StatusCode == HttpStatusCode.OK);
         }
 
         [Fact]
         public async Task Test_ClassReservations_Delete_Get_ReturnsSuccess()
         {
-            var user = new User { UserName = "InvalidEditUser" };
+            var user = new User { 
+                UserName = "asNewd@asdNew.com",
+                FullName = "FullName",
+                Email = "asNewd@asdNew.com",
+                PhoneNumber = "1234456789"
+            };
 
             Instructor instructor = new Instructor("Name Instructor");
             _context.Instructors.Add(instructor);
@@ -277,7 +410,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -303,7 +440,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -329,7 +470,11 @@ namespace TFMGoSkiTest
             _context.Users.Add(user);
             _context.Classes.Add(@class);
 
-            var reservation = new ClassReservation(user.Id, @class.Id);
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
@@ -370,19 +515,21 @@ namespace TFMGoSkiTest
             var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
             _context.Users.Add(user);
             _context.Classes.Add(@class);
-            var reservation = new ClassReservation(user.Id, @class.Id);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            // Enviar modelo inválido (UserId y ClassId vacíos)
-            var invalidModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
-                Id = reservation.Id
-                // UserId y ClassId omitidos a propósito
+                { "Id", reservation.Id.ToString() },
             };
 
-            var json = JsonSerializer.Serialize(invalidModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
 

@@ -11,26 +11,117 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <!--
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" asp-for="ClassId" />
+            <input type="hidden" asp-for="ReservationTimeRangeClassId" />
+            -->
+
+            @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+            {
+                <!-- Desde detalles, campos ocultos y deshabilitados -->
+                <div class="form-group">
+                    <label>User</label>
+                    <input class="form-control" value="@User.Identity.Name" disabled />
+                    <input type="hidden" asp-for="UserId" />
+                </div>
+    
+                <div class="form-group">
+                    <label>Class</label>
+                    <input class="form-control" value="@Model.ClassName" disabled />
+                    <input type="hidden" asp-for="ClassId" />
+                </div>
+    
+                <div class="form-group">
+                    <label>Time Range</label>
+                    <input class="form-control" value="@Model.ReservationTimeRangeClassName" disabled />
+                    <input type="hidden" asp-for="ReservationTimeRangeClassId" />
+                </div>
+            }
+            else
+            {
+                <!-- Formulario completo para seleccionar -->
+                <div class="form-group">
+                    <label asp-for="UserId" class="control-label"></label>
+                    <select asp-for="UserId" class="form-control" asp-items="ViewBag.UserId"></select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ClassId" class="control-label"></label>
+                    <select asp-for="ClassId" class="form-control" asp-items="ViewBag.ClassId" id="ClassId"></select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ReservationTimeRangeClassId" class="control-label"></label>
+                    <select asp-for="ReservationTimeRangeClassId" class="form-control" id="timeRangeSelect">
+                        <option value="">-- Select a time range --</option>
+                    </select>
+                </div>
+            }
+
             <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
+                <label asp-for="NumberPersonsBooked" class="control-label"></label>
+                <input asp-for="NumberPersonsBooked" class="form-control" min="1" />
+                <span asp-validation-for="NumberPersonsBooked" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="ClassId" class="control-label"></label>
-                <select asp-for="ClassId" class ="form-control" asp-items="ViewBag.ClassId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Book" class="btn btn-success" />
             </div>
         </form>
     </div>
 </div>
+@if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+{
+    <div>
+        <a asp-action="IndexUser">Back to my Class Reservation</a>
+    </div>
+}
+else
+{
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+}
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        $(document).ready(function () {
+            $('#ClassId').click(function () {
+                var classId = $(this).val();
+        var $timeRangeSelect = $('#timeRangeSelect');
+
+                // Limpiar select
+        $timeRangeSelect.empty().append('<option value="">-- Cargando rangos de tiempo --</option>');
+
+        if (classId) {
+            $.ajax({
+                url: '/ClassReservations/GetTimeRangesByClassId',
+                type: 'GET',
+                data: { classId: classId },
+                success: function (data) {
+                    $timeRangeSelect.empty().append('<option value="">-- Seleccione un rango de tiempo --</option>');
+                    $.each(data, function (i, range) {
+                                $timeRangeSelect.append($('<option>', {
+                            value: range.id,
+                            text: range.display
+                                }));
+                    });
+                },
+                error: function () {
+                    $timeRangeSelect.empty().append('<option value="">-- Error al cargar rangos --</option>');
+                }
+            });
+        } else {
+            $timeRangeSelect.empty().append('<option value="">-- Seleccione una clase primero --</option>');
+        }
+    });
+});
+    </script>
 }
+

@@ -1,16 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TFMGoSki.Data;
 using TFMGoSki.Services;
 using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
+    [Authorize(Roles = "Admin,Worker")]
     public class ReservationTimeRangeClassesController : Controller
     {
         private readonly IReservationTimeRangeClassService _service;
+        private readonly TFMGoSkiDbContext _context;
 
-        public ReservationTimeRangeClassesController(IReservationTimeRangeClassService service)
+        public ReservationTimeRangeClassesController(IReservationTimeRangeClassService service, TFMGoSkiDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         public async Task<IActionResult> Index()
@@ -27,11 +33,22 @@ namespace TFMGoSki.Controllers
             return reservation == null ? NotFound() : View(reservation);
         }
 
-        public async Task<IActionResult> Create()
+        public async Task<IActionResult> Create(int? classId)
         {
-            // Ahora el servicio maneja el SelectList
-            ViewBag.ClassId = await _service.GetClassSelectListAsync();
-            return View();
+            var model = new ReservationTimeRangeClassViewModel();
+
+            if (classId.HasValue)
+            {
+                model.Class = classId.Value;
+                ViewBag.FixedClass = true; // Indicador para la vista
+            }
+            else
+            {
+                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                ViewBag.FixedClass = false;
+            }
+
+            return View(model);
         }
 
         [HttpPost]
@@ -39,12 +56,41 @@ namespace TFMGoSki.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                if (model.Class != 0)
+                {
+                    ViewBag.FixedClass = true;
+                }
+                else
+                {
+                    ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                    ViewBag.FixedClass = false;
+                }
+
                 return View(model);
             }
-            
-            await _service.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+
+            var result = await _service.CreateAsync(model);
+            if (!result.Success)
+            {
+                ModelState.AddModelError(string.Empty, result.ErrorMessage);
+                if (model.Class != 0)
+                {
+                    ViewBag.FixedClass = true;
+                }
+                else
+                {
+                    ViewBag.ClassId = await _service.GetClassSelectListAsync();
+                    ViewBag.FixedClass = false;
+                }
+                return View(model);
+            }
+
+            if(model.Class != 0)
+            {
+                return RedirectToAction("Details", "Classes", new { id = model.Class });
+            }
+
+            return RedirectToAction(nameof(Index));            
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -91,6 +137,22 @@ namespace TFMGoSki.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var reservationTimeRange = _context.ClassReservations
+                                       .Where(r => r.ReservationTimeRangeClassId == id)
+                                       .ToList(); // Ejecuta la consulta
+
+            if (reservationTimeRange.Any())
+            {
+                // Recupera el modelo nuevamente
+                var reservationTimeRangeClassDto = await _service.GetByIdAsync(id);
+
+                // Agrega el error al modelo
+                ModelState.AddModelError(string.Empty, "The reservation time range class cannot be deleted because it has associated class reservations.");
+
+                // Devuelve la vista Delete con el modelo y el error
+                return View("Delete", reservationTimeRangeClassDto);
+            }
+
             var deleted = await _service.DeleteAsync(id);
             return deleted ? RedirectToAction(nameof(Index)) : NotFound();
         }

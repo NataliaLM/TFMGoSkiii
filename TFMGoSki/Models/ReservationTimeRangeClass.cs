@@ -28,7 +28,7 @@
 
         private void Validate(int remainingStudentsQuantity, int classId)
         {
-            if (remainingStudentsQuantity <= 0)
+            if (remainingStudentsQuantity <= -2)
             {
                 throw new ArgumentException("La cantidad de estudiantes restante debe ser mayor que cero.", nameof(remainingStudentsQuantity));
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TFMGoSki.Data;
 
@@ -11,9 +12,11 @@ using TFMGoSki.Data;
 namespace TFMGoSki.Migrations
 {
     [DbContext(typeof(TFMGoSkiDbContext))]
-    partial class TFMGoSkiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250609111921_UpdateClassReservation")]
+    partial class UpdateClassReservation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -192,9 +195,6 @@ namespace TFMGoSki.Migrations
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
-                    b.Property<int>("NumberPersonsBooked")
-                        .HasColumnType("int");
-
                     b.Property<int>("ReservationTimeRangeClassId")
                         .HasColumnType("int");
 
@@ -221,7 +221,6 @@ namespace TFMGoSki.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Discriminator")
-                        .IsRequired()
                         .HasMaxLength(13)
                         .HasColumnType("nvarchar(13)");
 
@@ -237,9 +236,7 @@ namespace TFMGoSki.Migrations
 
                     b.ToTable("Comment", (string)null);
 
-                    b.HasDiscriminator().HasValue("Comment");
-
-                    b.UseTphMappingStrategy();
+                    b.UseTptMappingStrategy();
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.Instructor", b =>
@@ -404,7 +401,7 @@ namespace TFMGoSki.Migrations
 
                     b.HasIndex("ClassReservationId");
 
-                    b.HasDiscriminator().HasValue("ClassComment");
+                    b.ToTable("ClassComment", (string)null);
                 });
 
             modelBuilder.Entity("TFMGoSki.Models.ReservationTimeRangeClass", b =>
@@ -515,6 +512,12 @@ namespace TFMGoSki.Migrations
                         .WithMany()
                         .HasForeignKey("ClassReservationId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TFMGoSki.Models.Comment", null)
+                        .WithOne()
+                        .HasForeignKey("TFMGoSki.Models.ClassComment", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
