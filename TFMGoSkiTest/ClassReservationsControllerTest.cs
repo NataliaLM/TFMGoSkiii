@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ using Xunit;
 
 namespace TFMGoSkiTest
 {
+    [Collection("Non-Parallel Tests")]
     public class ClassReservationsControllerTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
@@ -29,6 +31,83 @@ namespace TFMGoSkiTest
 
             var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+
+            //Llamada opcional si quieres que se loguee automáticamente
+            Task.Run(() => AuthenticateAsync()).Wait();
+        }
+
+        private async Task AuthenticateAsync(string role = "Admin")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+        }
+
+        private async Task AuthenticateClientAsync(string role = "Client")
+        {
+            //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Client@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Client",
+                PhoneNumber = "223456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
         }
 
         [Fact]
@@ -118,6 +197,13 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_ClassReservations_Create_Get_ReturnsSuccess()
         {
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
+
             var response = await _client.GetAsync("/ClassReservations/Create");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -148,6 +234,13 @@ namespace TFMGoSkiTest
                 { "UserId", user.Id.ToString() },
                 { "ClassId", @class.Id.ToString() }
             };
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            AuthenticateClientAsync();
 
             var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync("/ClassReservations/Create", content);
@@ -241,17 +334,19 @@ namespace TFMGoSkiTest
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
-                Id = reservation.Id,
-                UserId = user.Id,
-                ClassId = @class.Id
+                { "Id", reservation.Id.ToString() },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClass.Id.ToString() },
+                { "NumberPersonsBooked", "1" } // Asegúrate de enviar todos los campos requeridos
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
 
             Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
         }
@@ -281,16 +376,16 @@ namespace TFMGoSkiTest
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            var viewModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
+                ["Id"] = reservation.Id.ToString()
             };
 
-            var json = JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
 
-            Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
+            Assert.True(response.StatusCode == HttpStatusCode.OK);
         }
 
         [Fact]
@@ -429,15 +524,12 @@ namespace TFMGoSkiTest
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
 
-            // Enviar modelo inválido (UserId y ClassId vacíos)
-            var invalidModel = new ClassReservationViewModel
+            var formData = new Dictionary<string, string>
             {
-                Id = reservation.Id
-                // UserId y ClassId omitidos a propósito
+                { "Id", reservation.Id.ToString() },
             };
 
-            var json = JsonSerializer.Serialize(invalidModel);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
 

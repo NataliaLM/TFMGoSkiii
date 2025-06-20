@@ -64,7 +64,13 @@ namespace TFMGoSkiTest
                 };
 
                 await userManager.CreateAsync(user, testPassword);
-                await userManager.AddToRoleAsync(user, role);
+                //await userManager.AddToRoleAsync(user, role);
+
+                if (!await userManager.IsInRoleAsync(user, role))
+                {
+                    await userManager.AddToRoleAsync(user, role);
+                }
+
             }
 
             // Simular login real con el HttpClient
