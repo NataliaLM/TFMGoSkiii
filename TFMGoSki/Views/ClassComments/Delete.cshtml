@@ -28,7 +28,7 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Delete" class="btn btn-danger" /> |
-        @if (ViewData.ContainsKey("FromDetails") && (bool)ViewData["FromDetails"])
+        @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
         {        
             <a asp-action="IndexUser">Back to my comments List</a>
         }

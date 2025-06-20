@@ -314,6 +314,15 @@ namespace TFMGoSki.Controllers
                 Raiting = classComment.Raiting
             };
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             return View(classCommentViewModel);
         }
 
@@ -372,6 +381,15 @@ namespace TFMGoSki.Controllers
             //ViewBag.ClassReservationId = new SelectList(listaClienteClase, "Key", "Value", classComment.ClassReservationId);
             //#endregion
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             return View(classCommentViewModel);
         }
 
@@ -405,6 +423,15 @@ namespace TFMGoSki.Controllers
                 Raiting = classComment.Raiting
             };
 
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             return View(classCommentDto);
         }
 
@@ -419,6 +446,15 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
 
             if (User.IsInRole("Client"))
             {
