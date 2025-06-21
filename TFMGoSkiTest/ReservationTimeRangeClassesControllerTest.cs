@@ -202,9 +202,69 @@ namespace TFMGoSkiTest
             {
                 ["Class"] = @class.Id.ToString(),
                 ["StartDateOnly"] = "2025-08-21",
-                ["EndDateOnly"] = "2025-09-22",
+                ["EndDateOnly"] = "2025-08-21",
                 ["StartTimeOnly"] = "11:26:47",
                 ["EndTimeOnly"] = "12:25:46"
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_DateBeforeNow()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2024-08-21",
+                ["EndDateOnly"] = "2024-10-21",
+                ["StartTimeOnly"] = "11:26:47",
+                ["EndTimeOnly"] = "12:25:46"
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_MinValues()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = DateOnly.MinValue.ToString(),
+                ["EndDateOnly"] = DateOnly.MinValue.ToString(),
+                ["StartTimeOnly"] = TimeOnly.MinValue.ToString(),
+                ["EndTimeOnly"] = TimeOnly.MinValue.ToString()
             };
 
             var content = new FormUrlEncodedContent(formData);

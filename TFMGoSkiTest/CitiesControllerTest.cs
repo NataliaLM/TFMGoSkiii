@@ -206,13 +206,30 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
-            CityViewModel viewModel = new CityViewModel()
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test City Update"
+                ["Name"] = "Test City Update"
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_ReturnsSuccess_InvalidModel()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
 
