@@ -266,15 +266,31 @@ namespace TFMGoSkiTest
             _context.Classes.Add(@class);
             await _context.SaveChangesAsync();
 
+            #region user
+            string role = "Client";
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades123123.com"; // email único
+            var testPassword = "Test123!";
+
             var user = new User
             {
-                UserName = "email@user.com",
-                FullName = "Full Name",
-                Email = "email@user.com",
-                PhoneNumber = "123456789",
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities asd",
+                PhoneNumber = "223324389"
             };
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+            #endregion
 
             ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
