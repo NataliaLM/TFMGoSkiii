@@ -11,6 +11,8 @@ using TFMGoSki.Data;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 using Xunit;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TFMGoSkiTest
 {
@@ -20,9 +22,10 @@ namespace TFMGoSkiTest
         private readonly HttpClient _client;
         private readonly WebApplicationFactory<Program> _factory;
         private readonly TFMGoSkiDbContext _context;
+        private readonly UserManager<User> _userManager;
 
         public ClassReservationsControllerTest(WebApplicationFactory<Program> factory)
-        {
+        {            
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Test");
@@ -32,6 +35,8 @@ namespace TFMGoSkiTest
 
             var scope = _factory.Services.CreateScope();
             _context = scope.ServiceProvider.GetRequiredService<TFMGoSkiDbContext>();
+            _userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();  // <-- Fix here
+
 
             //Llamada opcional si quieres que se loguee automáticamente
             Task.Run(() => AuthenticateAsync()).Wait();
@@ -74,7 +79,7 @@ namespace TFMGoSkiTest
             response.EnsureSuccessStatusCode();
         }
 
-        private async Task AuthenticateClientAsync(string role = "Client")
+        private async Task<string> AuthenticateClientAsync(string role = "Client")
         {
             //var responseLogout = _client.PostAsync("/Account/Logout", new StringContent(""));
 
@@ -109,6 +114,8 @@ namespace TFMGoSkiTest
             var loginContent = new FormUrlEncodedContent(loginData);
             var response = await _client.PostAsync("/Account/Login", loginContent);
             response.EnsureSuccessStatusCode();
+
+            return testEmail;
         }
 
         [Fact]
@@ -179,16 +186,24 @@ namespace TFMGoSkiTest
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
 
-            _context.ClassReservations.Add(new ClassReservation(2, @class.Id, reservationTimeRangeClass.Id, 1));
-            await _context.SaveChangesAsync();
+            #region clienteUser
 
             var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
 
             var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
             responseClient.EnsureSuccessStatusCode();
 
-            Task.Run(() => AuthenticateClientAsync()).Wait();
+            string correo = await AuthenticateClientAsync();
 
+            var user = await _userManager.FindByEmailAsync(correo);
+            var userId = user.Id;
+
+            #endregion
+
+            _context.ClassReservations.Add(new ClassReservation(userId, @class.Id, reservationTimeRangeClass.Id, 1));
+            await _context.SaveChangesAsync();
+
+                    
             var response = await _client.GetAsync("/ClassReservations/IndexUser");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
