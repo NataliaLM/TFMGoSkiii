@@ -758,7 +758,15 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            if (User.IsInRole("Client"))
+            {
+                return RedirectToAction(nameof(IndexUser));
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private bool ClassReservationExists(int id)

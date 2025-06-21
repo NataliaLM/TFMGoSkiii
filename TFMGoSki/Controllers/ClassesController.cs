@@ -56,6 +56,15 @@ namespace TFMGoSki.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             if (id == null) return NotFound();
 
             var classDto = await _classService.GetClassDetailsAsync(id.Value);
