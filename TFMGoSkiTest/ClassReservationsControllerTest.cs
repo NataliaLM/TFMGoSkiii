@@ -240,6 +240,48 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_ClassReservations_Details_ValidId_ReturnsSuccess_Client()
+        {
+            #region clienteUser
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            string correo = await AuthenticateClientAsync();
+
+            #endregion
+
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ClassReservations/Details/{reservation.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+
+        [Fact]
         public async Task Test_ClassReservations_Details_NullId_ReturnsNotFound()
         {
             var response = await _client.GetAsync("/ClassReservations/Details");
@@ -312,6 +354,73 @@ namespace TFMGoSkiTest
             await _context.SaveChangesAsync();
 
             ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClass.Id.ToString() },
+                { "NumberPersonsBooked", "12" }
+            };
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            Task.Run(() => AuthenticateClientAsync()).Wait();
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ClassReservations/Create", content);
+
+            // Normalmente, en éxito se redirige al Index
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_ClassReservations_Create_Post_ReturnsRedirect_RemainingStudentQuantityZero()
+        {
+            var role = "Admin";
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities123@exampleCiudades.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities A",
+                PhoneNumber = "243456789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            var instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+
+            var city = new City("Name City");
+            _context.Cities.Add(city);
+
+            await _context.SaveChangesAsync();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+
+
+            _context.Classes.Add(@class);
+
+            await _context.SaveChangesAsync();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 0, @class.Id);
             _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
             await _context.SaveChangesAsync();
 
@@ -626,6 +735,50 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
+        [Fact]
+        public async Task Test_ClassReservations_Edit_Get_ReturnsSuccess_Client()
+        {
+            #region clienteUser
+
+            var contentClient = new FormUrlEncodedContent(new Dictionary<string, string> { });
+
+            var responseClient = await _client.PostAsync("/Account/Logout", contentClient);
+            responseClient.EnsureSuccessStatusCode();
+
+            string correo = await AuthenticateClientAsync();
+
+            var userLogin = await _userManager.FindByEmailAsync(correo);
+
+            #endregion
+
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/ClassReservations/Edit/{reservation.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
 
         [Fact]
         public async Task Test_ClassReservations_Edit_Get_Id_Null()
@@ -1025,45 +1178,6 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
-        public async Task Test_ClassReservations_Edit_Post_InvalidModel_ReturnsView()
-        {
-            // Preparar datos válidos en la BD
-            var user = new User { UserName = "InvalidEditUser" };
-
-            Instructor instructor = new Instructor("Name Instructor");
-            _context.Instructors.Add(instructor);
-            _context.SaveChanges();
-
-            City city = new City("Name City");
-            _context.Cities.Add(city);
-            _context.SaveChanges();
-
-            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
-            _context.Users.Add(user);
-            _context.Classes.Add(@class);
-
-            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
-            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
-            await _context.SaveChangesAsync();
-
-            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
-            _context.ClassReservations.Add(reservation);
-            await _context.SaveChangesAsync();
-
-            var formData = new Dictionary<string, string>
-            {
-                { "Id", reservation.Id.ToString() },
-            };
-
-            var content = new FormUrlEncodedContent(formData);
-
-            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
-
-            // Esperamos que la vista se devuelva con errores, no redirección
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
         public async Task Test_ClassReservations_Edit_Post_ValidModel_ReturnsView()
         {
             string role = "Admin";
@@ -1124,6 +1238,46 @@ namespace TFMGoSkiTest
             // Esperamos que la vista se devuelva con errores, no redirección
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+        [Fact]
+        public async Task Test_ClassReservations_Edit_Post_InvalidModel_ReturnsView()
+        {
+            // Preparar datos válidos en la BD
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", reservation.Id.ToString() },
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+            // Esperamos que la vista se devuelva con errores, no redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        
         [Fact]
         public async Task Test_ClassReservations_Edit_Post_ValidModel_ReturnsView_ClientLoged()
         {
@@ -1420,6 +1574,200 @@ namespace TFMGoSkiTest
                 { "ClassId", @class.Id.ToString() },
                 { "ReservationTimeRangeClassId", reservationTimeRangeClassUpdate.Id.ToString() },
                 { "NumberPersonsBooked", "1" }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+            // Esperamos que la vista se devuelva con errores, no redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_ClassReservations_Edit_Post_ValidModel_ReturnsView_InvalidId()
+        {
+            string role = "Admin";
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades321.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities B",
+                PhoneNumber = "223216789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", "123" },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClass.Id.ToString() },
+                { "NumberPersonsBooked", "1" }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+            // Esperamos que la vista se devuelva con errores, no redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_ClassReservations_Edit_Post_ValidModel_ReturnsView_RemainingStudentQuantityZero()
+        {
+            string role = "Admin";
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades321.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities B",
+                PhoneNumber = "223216789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            ReservationTimeRangeClass reservationTimeRangeClassUpdated = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 0, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClassUpdated);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", reservation.Id.ToString() },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClassUpdated.Id.ToString() },
+                { "NumberPersonsBooked", "1" }
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+            // Esperamos que la vista se devuelva con errores, no redirección
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_ClassReservations_Edit_Post_ValidModel_ReturnsView_NotEnoughPlaces()
+        {
+            string role = "Admin";
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades321.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities B",
+                PhoneNumber = "223216789"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 9, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            ReservationTimeRangeClass reservationTimeRangeClassUpdated = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 4, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClassUpdated);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", reservation.Id.ToString() },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClassUpdated.Id.ToString() },
+                { "NumberPersonsBooked", "8" }
             };
 
             var content = new FormUrlEncodedContent(formData);
