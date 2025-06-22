@@ -15,6 +15,9 @@ namespace TFMGoSki.Data
             builder.Property(mr => mr.Total)
                 .IsRequired();
 
+            builder.Property(mr => mr.Paid)
+                .IsRequired();
+
             builder.HasOne<User>()
                .WithMany()
                .HasForeignKey(c => c.UserId)
