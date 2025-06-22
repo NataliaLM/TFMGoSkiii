@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -50,19 +51,25 @@ namespace TFMGoSki.Controllers
         }
 
         // POST: MaterialTypes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] MaterialType materialType)
+        public async Task<IActionResult> Create(MaterialTypeViewModel materialTypeViewModel)
         {
+            var materialTypeFound = _context.MaterialTypes.FirstOrDefault(c => c.Name.Equals(materialTypeViewModel.Name));
+
+            if (materialTypeFound != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material type with this name.");
+                return View(materialTypeViewModel);
+            }
+
             if (ModelState.IsValid)
             {
+                MaterialType materialType = new MaterialType(materialTypeViewModel.Name);
                 _context.Add(materialType);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(materialType);
+            return View(materialTypeViewModel);
         }
 
         // GET: MaterialTypes/Edit/5
@@ -82,13 +89,18 @@ namespace TFMGoSki.Controllers
         }
 
         // POST: MaterialTypes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] MaterialType materialType)
+        public async Task<IActionResult> Edit(int id, MaterialTypeViewModel materialTypeViewModel)
         {
-            if (id != materialType.Id)
+            var materialTypeFound = _context.MaterialTypes.FirstOrDefault(c => c.Name.Equals(materialTypeViewModel.Name) && c.Id != id);
+
+            if (materialTypeFound != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material type with this name.");
+                return View(materialTypeViewModel);
+            }
+
+            if (id != materialTypeViewModel.Id)
             {
                 return NotFound();
             }
@@ -97,12 +109,19 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
+                    MaterialType? materialType = _context.MaterialTypes.FirstOrDefault(m => m.Id == materialTypeViewModel.Id);
+                    if (materialType == null)
+                    {
+                        return NotFound();
+                    }
+
+                    materialType.Update(materialTypeViewModel.Name);
                     _context.Update(materialType);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MaterialTypeExists(materialType.Id))
+                    if (!MaterialTypeExists(materialTypeViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +132,7 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(materialType);
+            return View(materialTypeViewModel);
         }
 
         // GET: MaterialTypes/Delete/5

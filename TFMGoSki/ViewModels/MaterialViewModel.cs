@@ -30,15 +30,15 @@ namespace TFMGoSki.ViewModels
         [Display(Name = "City")]
         [Required(ErrorMessage = "The city is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "The city must be greater than zero.")]
-        public int? City { get; set; }
+        public int? CityId { get; set; }
         [Display(Name = "Material Type")]
         [Required(ErrorMessage = "The material type is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "The material type must be greater than zero.")]
-        public int? MaterialType { get; set; }
+        public int? MaterialTypeId { get; set; }
         [Display(Name = "Material Status")]
         [Required(ErrorMessage = "The material status is required.")]
         [Range(1, int.MaxValue, ErrorMessage = "The material status must be greater than zero.")]
-        public int? MaterialStatus { get; set; }
+        public int? MaterialStatusId { get; set; }
 
     }
 }

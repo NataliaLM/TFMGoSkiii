@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -44,51 +45,71 @@ namespace TFMGoSki.Controllers
         }
 
         // GET: ReservationTimeRangeMaterials/Create
-        public IActionResult Create()
+        public IActionResult Create(int materialId)
         {
-            return View();
+            var material = _context.Materials.FirstOrDefault(m => m.Id == materialId);
+            if (material == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new ReservationTimeRangeMaterialViewModel
+            {
+                MaterialId = material.Id,
+                MaterialName = material.Name // debes agregar esta propiedad al ViewModel
+            };
+
+            return View(viewModel);
         }
 
+
         // POST: ReservationTimeRangeMaterials/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RemainingMaterialsQuantity,MaterialId,Id,StartDateOnly,EndDateOnly,StartTimeOnly,EndTimeOnly")] ReservationTimeRangeMaterial reservationTimeRangeMaterial)
+        public async Task<IActionResult> Create(int materialId, ReservationTimeRangeMaterialViewModel reservationTimeRangeMaterialViewModel)
         {
+            ViewBag.MaterialId = new SelectList(_context.Materials, "Id", "Name");
             if (ModelState.IsValid)
             {
+                Material? material = _context.Materials.FirstOrDefault(m => m.Id == materialId);
+                ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(reservationTimeRangeMaterialViewModel.StartDateOnly, reservationTimeRangeMaterialViewModel.EndDateOnly, reservationTimeRangeMaterialViewModel.StartTimeOnly, reservationTimeRangeMaterialViewModel.EndTimeOnly, material.QuantityMaterial, reservationTimeRangeMaterialViewModel.MaterialId);
                 _context.Add(reservationTimeRangeMaterial);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(reservationTimeRangeMaterial);
+            return View(reservationTimeRangeMaterialViewModel);
         }
 
         // GET: ReservationTimeRangeMaterials/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
-            var reservationTimeRangeMaterial = await _context.ReservationTimeRangeMaterials.FindAsync(id);
-            if (reservationTimeRangeMaterial == null)
+            var entity = await _context.ReservationTimeRangeMaterials.FindAsync(id);
+            if (entity == null) return NotFound();
+
+            ViewBag.MaterialId = new SelectList(_context.Materials, "Id", "Name", entity.MaterialId);
+            Material? material = _context.Materials.FirstOrDefault(m => m.Id == entity.MaterialId);
+            var viewModel = new ReservationTimeRangeMaterialViewModel
             {
-                return NotFound();
-            }
-            return View(reservationTimeRangeMaterial);
+                Id = entity.Id,
+                StartDateOnly = entity.StartDateOnly,
+                EndDateOnly = entity.EndDateOnly,
+                StartTimeOnly = entity.StartTimeOnly,
+                EndTimeOnly = entity.EndTimeOnly,
+                RemainingMaterialsQuantity = material.QuantityMaterial,
+                MaterialId = entity.MaterialId
+            };
+
+            return View(viewModel);
         }
 
+
         // POST: ReservationTimeRangeMaterials/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RemainingMaterialsQuantity,MaterialId,Id,StartDateOnly,EndDateOnly,StartTimeOnly,EndTimeOnly")] ReservationTimeRangeMaterial reservationTimeRangeMaterial)
+        public async Task<IActionResult> Edit(int id, ReservationTimeRangeMaterialViewModel reservationTimeRangeMaterialViewModel)
         {
-            if (id != reservationTimeRangeMaterial.Id)
+            if (id != reservationTimeRangeMaterialViewModel.Id)
             {
                 return NotFound();
             }
@@ -97,12 +118,17 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
+                    Material? material = _context.Materials.FirstOrDefault(m => m.Id == reservationTimeRangeMaterialViewModel.MaterialId);
+
+                    ReservationTimeRangeMaterial? reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials.FirstOrDefault(r => r.Id == reservationTimeRangeMaterialViewModel.Id);
+                    reservationTimeRangeMaterial.Update(reservationTimeRangeMaterialViewModel.StartDateOnly, reservationTimeRangeMaterialViewModel.EndDateOnly, reservationTimeRangeMaterialViewModel.StartTimeOnly, reservationTimeRangeMaterialViewModel.EndTimeOnly, material.QuantityMaterial, reservationTimeRangeMaterialViewModel.MaterialId);
+
                     _context.Update(reservationTimeRangeMaterial);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ReservationTimeRangeMaterialExists(reservationTimeRangeMaterial.Id))
+                    if (!ReservationTimeRangeMaterialExists(reservationTimeRangeMaterialViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +139,9 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(reservationTimeRangeMaterial);
+            ViewBag.MaterialId = new SelectList(_context.Materials, "Id", "Name", reservationTimeRangeMaterialViewModel.MaterialId);
+
+            return View(reservationTimeRangeMaterialViewModel);
         }
 
         // GET: ReservationTimeRangeMaterials/Delete/5

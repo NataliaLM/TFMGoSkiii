@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -24,6 +25,13 @@ namespace TFMGoSki.Controllers
         {
             return View(await _context.MaterialComments.ToListAsync());
         }
+
+        // GET: MaterialComments
+        public async Task<IActionResult> IndexUser()
+        {
+            return View(await _context.MaterialComments.ToListAsync());
+        }
+
 
         // GET: MaterialComments/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -44,25 +52,57 @@ namespace TFMGoSki.Controllers
         }
 
         // GET: MaterialComments/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(int? reservationMaterialCartId = null) //Viene de ReservationMaterialCart
         {
-            return View();
+            var reservation = await _context.ReservationMaterialCarts.FirstOrDefaultAsync(r => r.Id == reservationMaterialCartId);
+            if (reservation == null)
+                return NotFound();
+
+            var viewModel = new MaterialCommentViewModel
+            {
+                ReservationMaterialCartId = reservation.Id,
+                ReservationMaterialCartName = GenerarNombreDeMaterial(reservation)
+            };
+
+            return View(viewModel);
         }
 
         // POST: MaterialComments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ReservationMaterialCartId,Id,Text,Raiting")] MaterialComment materialComment)
+        [HttpPost] 
+        public async Task<IActionResult> Create(int reservationMaterialCartId, MaterialCommentViewModel materialCommentViewModel)
         {
+            var existingComment = await _context.MaterialComments
+                .FirstOrDefaultAsync(c => c.ReservationMaterialCartId == reservationMaterialCartId);
+
+            if (existingComment != null) //Error comentario ya existe
+            {
+                ModelState.AddModelError(string.Empty, "A comment already exists for this reservation.");
+
+                ReservationMaterialCart? reservationCommented = await _context.ReservationMaterialCarts.FirstOrDefaultAsync(r => r.Id == reservationMaterialCartId);
+
+                materialCommentViewModel.ReservationMaterialCartName = GenerarNombreDeMaterial(reservationCommented);
+
+                return View(materialCommentViewModel);
+            }
+
+            MaterialComment materialComment = new MaterialComment(materialCommentViewModel.ReservationMaterialCartId, materialCommentViewModel.Text, materialCommentViewModel.Raiting);
             if (ModelState.IsValid)
             {
                 _context.Add(materialComment);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(IndexUser));
             }
+           
             return View(materialComment);
+        }
+
+        private string GenerarNombreDeMaterial(ReservationMaterialCart reservation)
+        {
+            var material = _context.Materials.First(c => c.Id == reservation.MaterialId);
+            var range = _context.ReservationTimeRangeClasses.First(r => r.Id == reservation.ReservationTimeRangeMaterialId);
+            return $"{material.Name} - {range.StartDateOnly} - {range.EndDateOnly}";
         }
 
         // GET: MaterialComments/Edit/5
@@ -78,17 +118,29 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
-            return View(materialComment);
+
+            var reservationMaterialCart = await _context.ReservationMaterialCarts.FindAsync(materialComment.ReservationMaterialCartId);
+
+            var viewModel = new MaterialCommentViewModel
+            {
+                Id = materialComment.Id,
+                ReservationMaterialCartId = materialComment.ReservationMaterialCartId,
+                ReservationMaterialCartName = GenerarNombreDeMaterial(reservationMaterialCart),
+                Text = materialComment.Text,
+                Raiting = materialComment.Raiting
+            };
+
+            return View(viewModel);
         }
+
 
         // POST: MaterialComments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ReservationMaterialCartId,Id,Text,Raiting")] MaterialComment materialComment)
+        public async Task<IActionResult> Edit(int id, MaterialCommentViewModel viewModel)
         {
-            if (id != materialComment.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
@@ -97,12 +149,22 @@ namespace TFMGoSki.Controllers
             {
                 try
                 {
+                    var materialComment = await _context.MaterialComments.FindAsync(id);
+                    if (materialComment == null)
+                    {
+                        return NotFound();
+                    }
+
+                    materialComment.ReservationMaterialCartId = viewModel.ReservationMaterialCartId;
+                    materialComment.Text = viewModel.Text;
+                    materialComment.Raiting = viewModel.Raiting;
+
                     _context.Update(materialComment);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MaterialCommentExists(materialComment.Id))
+                    if (!MaterialCommentExists(viewModel.Id))
                     {
                         return NotFound();
                     }
@@ -111,10 +173,17 @@ namespace TFMGoSki.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(IndexUser));
             }
-            return View(materialComment);
+
+            var reservationMaterialCart = await _context.ReservationMaterialCarts.FindAsync(viewModel.ReservationMaterialCartId);
+
+            viewModel.ReservationMaterialCartName = GenerarNombreDeMaterial(reservationMaterialCart);
+
+            return View(viewModel);
         }
+
+
 
         // GET: MaterialComments/Delete/5
         public async Task<IActionResult> Delete(int? id)

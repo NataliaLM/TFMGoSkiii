@@ -1,4 +1,4 @@
-﻿@model TFMGoSki.Models.MaterialComment
+﻿@model TFMGoSki.ViewModels.MaterialCommentViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -13,20 +13,34 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="ReservationMaterialCartId" />
+
             <div class="form-group">
-                <label asp-for="ReservationMaterialCartId" class="control-label"></label>
-                <select asp-for="ReservationMaterialCartId" class ="form-control" asp-items="ViewBag.ReservationMaterialCartId"></select>
+                <label>Reserved material</label>
+                <p class="form-control-plaintext">@Model.ReservationMaterialCartName</p>
+                <input type="hidden" asp-for="ReservationMaterialCartName" />
             </div>
+ 
+
             <div class="form-group">
                 <label asp-for="Text" class="control-label"></label>
                 <input asp-for="Text" class="form-control" />
                 <span asp-validation-for="Text" class="text-danger"></span>
             </div>
+            
             <div class="form-group">
                 <label asp-for="Raiting" class="control-label"></label>
-                <input asp-for="Raiting" class="form-control" />
+                <select asp-for="Raiting" class="form-control">
+                    <option value="">-- Select Rating --</option>
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        <option value="@i" selected="@(Model.Raiting == i ? "selected" : null)">@i</option>
+                    }
+                </select>
                 <span asp-validation-for="Raiting" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -35,7 +49,8 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="IndexUser">Go to my class comments listing</a>
+    <a asp-controller="MaterialReservationCarts" asp-action="IndexUser" class="btn btn-secondary">Go to my reservations</a>
 </div>
 
 @section Scripts {

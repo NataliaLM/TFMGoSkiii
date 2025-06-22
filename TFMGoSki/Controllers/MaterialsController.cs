@@ -1,12 +1,14 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
+using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -46,23 +48,41 @@ namespace TFMGoSki.Controllers
         // GET: Materials/Create
         public IActionResult Create()
         {
+            ViewBag.CityId = new SelectList(_context.Cities, "Id", "Name");
+            ViewBag.MaterialTypeId = new SelectList(_context.MaterialTypes, "Id", "Name");
+            ViewBag.MaterialStatusId = new SelectList(_context.MaterialStatuses, "Id", "Name");
             return View();
         }
 
         // POST: Materials/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,QuantityMaterial,Price,CityId,MaterialTypeId,MaterialStatusId")] Material material)
+        public async Task<IActionResult> Create(MaterialViewModel materialViewModel)
         {
+            var duplicate = _context.Materials
+                .FirstOrDefault(c => c.Name.Equals(materialViewModel.Name));
+
+            if (duplicate != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material type with this name.");
+                LoadSelectLists();
+                return View(materialViewModel);
+            }
+
             if (ModelState.IsValid)
             {
+                Material material = new Material(materialViewModel.Name, materialViewModel.Description, materialViewModel.QuantityMaterial.Value, materialViewModel.Price.Value, materialViewModel.Size, materialViewModel.CityId.Value, materialViewModel.MaterialTypeId.Value, materialViewModel.MaterialStatusId.Value);
                 _context.Add(material);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(material);
+            LoadSelectLists();
+            return View(materialViewModel);
+        }
+        private void LoadSelectLists()
+        {
+            ViewBag.CityId = new SelectList(_context.Cities, "Id", "Name");
+            ViewBag.MaterialTypeId = new SelectList(_context.MaterialTypes, "Id", "Name");
+            ViewBag.MaterialStatusId = new SelectList(_context.MaterialStatuses, "Id", "Name");
         }
 
         // GET: Materials/Edit/5
@@ -78,31 +98,56 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
-            return View(material);
+
+            MaterialViewModel materialViewModel = new MaterialViewModel()
+            {
+                Id = material.Id,
+                Name = material.Name,
+                Description = material.Description,
+                QuantityMaterial = material.QuantityMaterial,
+                Price = material.Price,
+                Size = material.Size,
+                CityId = material.CityId,
+                MaterialTypeId = material.MaterialTypeId,
+                MaterialStatusId = material.MaterialStatusId
+            };
+
+            LoadSelectLists();
+
+            return View(materialViewModel);
         }
 
         // POST: Materials/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,QuantityMaterial,Price,CityId,MaterialTypeId,MaterialStatusId")] Material material)
+        public async Task<IActionResult> Edit(int id, MaterialViewModel materialViewModel)
         {
-            if (id != material.Id)
+            if (id != materialViewModel.Id)
             {
                 return NotFound();
+            }
+
+            var duplicate = _context.Materials
+                .FirstOrDefault(c => c.Name.Equals(materialViewModel.Name) && c.Id != id);
+
+            if (duplicate != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material type with this name.");
+                LoadSelectLists();
+                return View(materialViewModel);
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    Material material = _context.Materials.FirstOrDefault(m => m.Id == materialViewModel.Id);
+                    material.Update(materialViewModel.Name, materialViewModel.Description, materialViewModel.QuantityMaterial.Value, materialViewModel.Price.Value, materialViewModel.Size, materialViewModel.CityId.Value, materialViewModel.MaterialTypeId.Value, materialViewModel.MaterialStatusId.Value);
                     _context.Update(material);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MaterialExists(material.Id))
+                    if (!MaterialExists(materialViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -113,7 +158,8 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(material);
+            LoadSelectLists();
+            return View(materialViewModel);
         }
 
         // GET: Materials/Delete/5

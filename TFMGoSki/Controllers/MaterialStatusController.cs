@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
+using TFMGoSki.ViewModels;
 
 namespace TFMGoSki.Controllers
 {
@@ -50,20 +51,26 @@ namespace TFMGoSki.Controllers
         }
 
         // POST: MaterialStatus/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string name)
+        [HttpPost] 
+        public async Task<IActionResult> Create(MaterialStatusViewModel materialStatusViewModel)
         {
-            MaterialStatus materialStatus = new MaterialStatus(name);
+            var materialStatusFound = _context.MaterialStatuses.FirstOrDefault(c => c.Name.Equals(materialStatusViewModel.Name));
+
+            if (materialStatusFound != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material status with this name.");
+                return View(materialStatusViewModel);
+            }
+
+            MaterialStatus materialStatus = new MaterialStatus(materialStatusViewModel.Name);
             if (ModelState.IsValid)
             {
                 _context.Add(materialStatus);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(materialStatus);
+
+            return View(materialStatusViewModel);
         }
 
         // GET: MaterialStatus/Edit/5
@@ -79,31 +86,45 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
-            return View(materialStatus);
+
+            MaterialStatusViewModel materialStatusViewModel = new MaterialStatusViewModel()
+            {
+                Id = materialStatus.Id,
+                Name = materialStatus.Name
+            };
+
+            return View(materialStatusViewModel);
         }
 
         // POST: MaterialStatus/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] MaterialStatus materialStatus)
+        public async Task<IActionResult> Edit(int id, MaterialStatusViewModel materialStatusViewModel)
         {
-            if (id != materialStatus.Id)
+            if (id != materialStatusViewModel.Id)
             {
                 return NotFound();
+            }
+
+            var materialStatusFound = _context.MaterialTypes.FirstOrDefault(c => c.Name.Equals(materialStatusViewModel.Name) && c.Id != id);
+
+            if (materialStatusFound != null)
+            {
+                ModelState.AddModelError("Name", "There is already a material status with this name.");
+                return View(materialStatusViewModel);
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    MaterialStatus? materialStatus = _context.MaterialStatuses.FirstOrDefault(x => x.Id == id);
+                    materialStatus.Update(materialStatusViewModel.Name);
                     _context.Update(materialStatus);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!MaterialStatusExists(materialStatus.Id))
+                    if (!MaterialStatusExists(materialStatusViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -114,7 +135,7 @@ namespace TFMGoSki.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(materialStatus);
+            return View(materialStatusViewModel);
         }
 
         // GET: MaterialStatus/Delete/5

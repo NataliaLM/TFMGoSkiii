@@ -14,6 +14,8 @@ namespace TFMGoSki.ViewModels
         [Display(Name = "User")]
         [Required(ErrorMessage = "The user is required.")]
         public int UserId { get; set; }
+        [Display(Name = "User")]
+        public string UserName { get; set; }
         [Display(Name = "Reservation Time Range Material")]
         [Required(ErrorMessage = "The  Reservation Time Range Material is required.")]
         public int ReservationTimeRangeMaterialId { get; set; }
