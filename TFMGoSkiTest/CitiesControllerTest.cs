@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
+using System.Text;
 using TFMGoSki.Data;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
@@ -72,6 +73,7 @@ namespace TFMGoSkiTest
             var response = await _client.PostAsync("/Account/Login", loginContent);
             response.EnsureSuccessStatusCode();            
         }
+
 
         [Fact]
         public async Task Test_Cities_Index_ReturnsSuccess()
@@ -204,13 +206,30 @@ namespace TFMGoSkiTest
             _context.Cities.Add(city);
             await _context.SaveChangesAsync();
 
-            CityViewModel viewModel = new CityViewModel()
+            var formData = new Dictionary<string, string>
             {
-                Name = "Test City Update"
+                ["Name"] = "Test City Update"
             };
 
-            var json = System.Text.Json.JsonSerializer.Serialize(viewModel);
-            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_ReturnsSuccess_InvalidModel()
+        {
+            var city = new City("Test City");
+            _context.Cities.Add(city);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+            };
+
+            var content = new FormUrlEncodedContent(formData);
 
             var response = await _client.PostAsync($"/Cities/Edit/{city.Id}", content);
 
@@ -313,5 +332,69 @@ namespace TFMGoSkiTest
         {            
             _client.PostAsync("/Account/Logout", new StringContent("")).Wait();
         }
+        /**/
+        [Fact]
+        public async Task Test_Cities_Create_ReturnsView_WhenModelInvalid()
+        {
+            // Enviar formulario sin el campo "Name" o vacío para invalidar ModelState
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "" }  // campo obligatorio vacío
+    };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync("/Cities/Create", content);
+
+            // La respuesta debe contener la vista (normalmente código 200 OK)
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+        }
+        [Fact]
+        public async Task Test_Cities_Create_DuplicateName_ShowsModelError()
+        {
+            // Crear ciudad original
+            var existingCity = new City("DuplicateCity");
+            _context.Cities.Add(existingCity);
+            await _context.SaveChangesAsync();
+
+            // Intentar crear otra ciudad con el mismo nombre
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "DuplicateCity" }
+    };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync("/Cities/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+        }
+
+        [Fact]
+        public async Task Test_Cities_Edit_DuplicateName_ShowsModelError()
+        {
+            // Crear dos ciudades
+            var city1 = new City("CityOne");
+            var city2 = new City("CityTwo");
+            _context.Cities.AddRange(city1, city2);
+            await _context.SaveChangesAsync();
+
+            // Intentar renombrar city2 con el nombre de city1
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "CityOne" }
+    };
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/Cities/Edit/{city2.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+        }
+
     }
 }

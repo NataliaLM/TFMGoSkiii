@@ -303,5 +303,89 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+
+        /**/
+
+        [Fact]
+        public async Task Test_Instructors_Create_Post_ReturnsView_WhenCreationFails()
+        {
+            // Simula fallo por nombre ya existente
+            var instructor = new Instructor("Duplicate Name");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+    {
+        { "Name", "Duplicate Name" } // Misma lógica de fallo que usaría tu servicio
+    };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/Instructors/Create", content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Instructors_Edit_Post_ReturnsView_WhenUpdateFails()
+        {
+            var instructor = new Instructor("Original Name");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            // Crea otro con nombre duplicado
+            var otherInstructor = new Instructor("Duplicated Name");
+            _context.Instructors.Add(otherInstructor);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", instructor.Id.ToString() },
+                { "Name", "Duplicated Name" } // nombre ya usado
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync($"/Instructors/Edit/{instructor.Id}", content);
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+
+        //[Fact]
+        //public async Task Test_Instructors_Delete_Post_RedirectsToIndex_WhenSuccessful()
+        //{
+        //    var instructor = new Instructor("DeleteMe");
+        //    _context.Instructors.Add(instructor);
+        //    await _context.SaveChangesAsync();
+
+        //    var response = await _client.PostAsync($"/Instructors/Delete/{instructor.Id}", new StringContent(""));
+
+        //    Assert.Equal(HttpStatusCode.Redirection, response.StatusCode); // o 302
+        //    Assert.Equal("/Instructors", response.Headers.Location.ToString()); // redirige a Index
+        //}
+
+
+        [Fact]
+        public async Task Test_Instructors_Delete_Post_ReturnsView_WhenHasClasses()
+        {
+            var instructor = new Instructor("Instructor With Class");
+            _context.Instructors.Add(instructor);
+            await _context.SaveChangesAsync();
+
+            var city = new City("City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("Skiing 101", 120, 2, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/Instructors/Delete/{instructor.Id}", new StringContent(""));
+
+            var responseString = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
     }
 }

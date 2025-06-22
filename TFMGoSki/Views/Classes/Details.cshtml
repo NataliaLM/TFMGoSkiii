@@ -124,10 +124,13 @@
     }
 </div>
 
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a> 
-    <a asp-controller="ReservationTimeRangeClasses" asp-action="Create" asp-route-classId="@Model.Id" class="btn btn-success">
-        Create a booking timetable
-    </a>
-</div>
+@if (!ViewData.ContainsKey("IsClient") && !(bool)ViewData["IsClient"])
+{
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+        <a asp-action="Index">Back to List</a> 
+        <a asp-controller="ReservationTimeRangeClasses" asp-action="Create" asp-route-classId="@Model.Id" class="btn btn-success">
+            Create a booking timetable
+        </a>
+    </div>
+}

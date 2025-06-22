@@ -51,9 +51,21 @@
             {
                 throw new ArgumentException("La fecha de inicio debe ser anterior a la fecha de fin.", nameof(startDateOnly));
             }
-            if (startTimeOnly >= endTimeOnly)
+            TimeSpan duration;
+
+            if (startTimeOnly < endTimeOnly)
             {
-                throw new ArgumentException("La hora de inicio debe ser anterior a la hora de fin.", nameof(startTimeOnly));
+                duration = endTimeOnly - startTimeOnly;
+            }
+            else
+            {
+                // Cruza la medianoche
+                duration = (TimeOnly.MaxValue - startTimeOnly) + (endTimeOnly - TimeOnly.MinValue) + TimeSpan.FromMinutes(1);
+            }
+
+            if (duration <= TimeSpan.Zero)
+            {
+                throw new ArgumentException("La hora de inicio debe ser anterior a la hora de fin.");
             }
         }
     }

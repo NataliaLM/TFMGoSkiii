@@ -154,6 +154,126 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_DateBefore()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2025-09-22",
+                ["EndDateOnly"] = "2025-08-21",
+                ["StartTimeOnly"] = "11:25:46",
+                ["EndTimeOnly"] = "12:26:47"
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_InvalidModelHoure()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2025-08-21",
+                ["EndDateOnly"] = "2025-08-21",
+                ["StartTimeOnly"] = "11:26:47",
+                ["EndTimeOnly"] = "12:25:46"
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_DateBeforeNow()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = "2024-08-21",
+                ["EndDateOnly"] = "2024-10-21",
+                ["StartTimeOnly"] = "11:26:47",
+                ["EndTimeOnly"] = "12:25:46"
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Test_Reservation_Create_Post_RedirectsToIndex_MinValues()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            var formData = new Dictionary<string, string>
+            {
+                ["Class"] = @class.Id.ToString(),
+                ["StartDateOnly"] = DateOnly.MinValue.ToString(),
+                ["EndDateOnly"] = DateOnly.MinValue.ToString(),
+                ["StartTimeOnly"] = TimeOnly.MinValue.ToString(),
+                ["EndTimeOnly"] = TimeOnly.MinValue.ToString()
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Test_Reservation_Create_Post_InvalidModel()
         {
             Instructor instructor = new Instructor("Name Instructor");
@@ -425,6 +545,60 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+        [Fact]
+        public async Task Test_Reservation_Delete_Post_Redirects_TieneClassReservation()
+        {
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("City Name");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(new DateOnly(2027, 04, 21), new DateOnly(2027, 05, 22), new TimeOnly(11, 25, 46), new TimeOnly(12, 26, 47), 15, @class.Id);
+
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            #region user
+            string role = "Admin";
+
+            var userManager = _factory.Services.GetRequiredService<UserManager<User>>();
+            var roleManager = _factory.Services.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new Role(role));
+            }
+
+            var testEmail = $"testuser{Guid.NewGuid()}Cities@exampleCiudades123123.com"; // email único
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User Cities asd",
+                PhoneNumber = "223324389"
+            };
+
+            await userManager.CreateAsync(user, testPassword);
+            await userManager.AddToRoleAsync(user, role);
+            #endregion
+
+            ClassReservation classReservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 12);
+            _context.ClassReservations.Add(classReservation);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Delete/{reservationTimeRangeClass.Id}", new StringContent(""));
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
 
         [Fact]
         public async Task Test_Reservation_Delete_Post_NotFound()
@@ -450,5 +624,59 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
+        /**/
+        [Fact]
+        public async Task Test_Reservation_Create_Get_WithClassId_ReturnsSuccess()
+        {
+            var classId = 1; // Asegúrate de que este ID exista o lo creas antes
+            var response = await _client.GetAsync($"/ReservationTimeRangeClasses/Create?classId={classId}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        [Fact]
+        public async Task Test_Reservation_Create_Post_InvalidModel_WithClass()
+        {
+            var viewModel = new ReservationTimeRangeClassViewModel
+            {
+                Class = 123 // Valor cualquiera distinto de 0
+                            // Campos faltantes, forzando ModelState inválido
+            };
+
+            var json = JsonSerializer.Serialize(viewModel);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _client.PostAsync("/ReservationTimeRangeClasses/Create", content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        //[Fact]
+        //public async Task Test_Reservation_Delete_Post_WithAssociatedReservations_ShowsError()
+        //{
+        //    Instructor instructor = new Instructor("Name Instructor");
+        //    _context.Instructors.Add(instructor);
+        //    _context.SaveChanges();
+
+        //    City city = new City("City Name");
+        //    _context.Cities.Add(city);
+        //    _context.SaveChanges();
+
+        //    Class @class = new Class("Class Name", 150, 15, ClassLevel.Advanced, instructor.Id, city.Id);
+        //    _context.Classes.Add(@class);
+        //    _context.SaveChanges();
+
+        //    var timeRange = new ReservationTimeRangeClass(new DateOnly(2027, 01, 01), new DateOnly(2027, 01, 10),
+        //        new TimeOnly(9, 0), new TimeOnly(10, 0), 10, @class.Id);
+        //    _context.ReservationTimeRangeClasses.Add(timeRange);
+        //    _context.SaveChanges();
+
+        //    var reservation = new ClassReservation(user.Id, @class.Id, timeRange.Id, 1);
+            
+        //    _context.ClassReservations.Add(reservation);
+        //    _context.SaveChanges();
+
+        //    var response = await _client.PostAsync($"/ReservationTimeRangeClasses/Delete/{timeRange.Id}", new StringContent(""));
+
+        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        //    var content = await response.Content.ReadAsStringAsync();
+        //    Assert.Contains("cannot be deleted", content); // o lo que diga tu error exacto
+        //}
     }
 }

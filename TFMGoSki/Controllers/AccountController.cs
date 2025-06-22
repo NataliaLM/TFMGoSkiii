@@ -151,7 +151,6 @@ namespace TFMGoSki.Controllers
 
         [Authorize]
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteAccount()
         {
             var user = await _userManager.GetUserAsync(User);

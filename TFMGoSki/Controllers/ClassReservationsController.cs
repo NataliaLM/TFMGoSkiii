@@ -40,19 +40,7 @@ namespace TFMGoSki.Controllers
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
                 var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == reservation.ReservationTimeRangeClassId);
 
-                if (client == null)
-                {
-                    return NotFound();
-                }
-                if (client.UserName == null)
-                {
-                    return NotFound();
-                }
-                if (@class == null)
-                {
-                    return NotFound();
-                }
-                if (reservationTimeRangeClass == null)
+                if (client == null || client.UserName == null || @class == null || reservationTimeRangeClass == null)
                 {
                     return NotFound();
                 }
@@ -95,19 +83,7 @@ namespace TFMGoSki.Controllers
                 var @class = await _context.Classes.FirstOrDefaultAsync(c => c.Id == reservation.ClassId);
                 var reservationTimeRangeClass = await _context.ReservationTimeRangeClasses.FirstOrDefaultAsync(r => r.Id == reservation.ReservationTimeRangeClassId);
 
-                if (client == null)
-                {
-                    return NotFound();
-                }
-                if (client.UserName == null)
-                {
-                    return NotFound();
-                }
-                if (@class == null)
-                {
-                    return NotFound();
-                }
-                if (reservationTimeRangeClass == null)
+                if (client == null || client.UserName == null || @class == null || reservationTimeRangeClass == null)
                 {
                     return NotFound();
                 }
@@ -782,7 +758,15 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+
+            if (User.IsInRole("Client"))
+            {
+                return RedirectToAction(nameof(IndexUser));
+            }
+            else
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private bool ClassReservationExists(int id)
