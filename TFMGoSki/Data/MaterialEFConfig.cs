@@ -27,6 +27,9 @@ namespace TFMGoSki.Data
                 .IsRequired()
                 .HasPrecision(18, 2);
 
+            builder.Property(m => m.Size)
+                .IsRequired();
+
             builder.HasOne<City>()
                 .WithMany()
                 .HasForeignKey(m => m.CityId)
