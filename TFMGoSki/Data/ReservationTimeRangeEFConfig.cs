@@ -13,7 +13,8 @@ namespace TFMGoSki.Data
             builder.HasKey(c => c.Id);
 
             builder.HasDiscriminator<string>("Discriminator")
-                .HasValue<ReservationTimeRangeClass>("ReservationTimeRangeClass");
+                .HasValue<ReservationTimeRangeClass>("ReservationTimeRangeClass")
+                .HasValue<ReservationTimeRangeMaterial>("ReservationTimeRangeMaterial");
 
             builder.Property(c => c.StartDateOnly)
                 .IsRequired();
