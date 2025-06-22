@@ -9,12 +9,12 @@ namespace TFMGoSki.Models
         public string Description { get; set; }
         public int QuantityMaterial { get; set; }
         public decimal Price {  get; set; }
-        public int Size { get; set; }
+        public string Size { get; set; }
         public int CityId { get; set; }
         public int MaterialTypeId { get; set; }
         public int MaterialStatusId { get; set; }
 
-        public Material(string name, string description, int quantityMaterial, decimal price, int size, int cityId, int materialTypeId, int materialStatusId)
+        public Material(string name, string description, int quantityMaterial, decimal price, string size, int cityId, int materialTypeId, int materialStatusId)
         {
             Validate(name, description, quantityMaterial, price, size, cityId, materialTypeId, materialStatusId);
 
@@ -28,7 +28,7 @@ namespace TFMGoSki.Models
             MaterialStatusId = materialStatusId;
         }
 
-        public Material Update(string name, string description, int quantityMaterial, decimal price, int size, int cityId, int materialTypeId, int materialStatusId)
+        public Material Update(string name, string description, int quantityMaterial, decimal price, string size, int cityId, int materialTypeId, int materialStatusId)
         {
             Validate(name, description, quantityMaterial, price, size, cityId, materialTypeId, materialStatusId);
             Name = name;
@@ -42,7 +42,7 @@ namespace TFMGoSki.Models
             return this;
         }
 
-        private void Validate(string name, string description, int quantityMaterial, decimal price, int size, int cityId, int materialTypeId, int materialStatusId)
+        private void Validate(string name, string description, int quantityMaterial, decimal price, string size, int cityId, int materialTypeId, int materialStatusId)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -60,7 +60,7 @@ namespace TFMGoSki.Models
             {
                 throw new ArgumentException("The price cannot be less than zero.", nameof(price));
             }
-            if (size <= 0)
+            if (string.IsNullOrWhiteSpace(size))
             {
                 throw new ArgumentException("The size cannot be less than zero.", nameof(size));
             }
