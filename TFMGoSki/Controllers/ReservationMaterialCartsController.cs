@@ -464,8 +464,7 @@ namespace TFMGoSki.Controllers
         }
 
         // POST: ReservationMaterialCarts/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ActionName("Delete")] 
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var reservationMaterialCart = await _context.ReservationMaterialCarts.FindAsync(id);

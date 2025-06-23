@@ -122,7 +122,6 @@ namespace TFMGoSki.Controllers
 
         // POST: ReservationTimeRangeMaterials/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, ReservationTimeRangeMaterialViewModel reservationTimeRangeMaterialViewModel)
         {
             if (id != reservationTimeRangeMaterialViewModel.Id)
@@ -179,8 +178,7 @@ namespace TFMGoSki.Controllers
         }
 
         // POST: ReservationTimeRangeMaterials/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ActionName("Delete")] 
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var reservationTimeRangeMaterial = await _context.ReservationTimeRangeMaterials.FindAsync(id);
