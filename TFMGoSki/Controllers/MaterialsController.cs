@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Exceptions;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
@@ -37,12 +38,45 @@ namespace TFMGoSki.Controllers
 
             var material = await _context.Materials
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (material == null)
             {
                 return NotFound();
             }
 
-            return View(material);
+            // Buscar las disponibilidades asociadas manualmente
+            var reservations = await _context.ReservationTimeRangeMaterials
+                .Where(r => r.MaterialId == material.Id)
+                .ToListAsync();
+
+            // Mapear a DTOs
+            var reservationDtos = reservations.Select(r => new ReservationTimeRangeMaterialDto
+            {
+                Id = r.Id,
+                StartDateOnly = r.StartDateOnly,
+                EndDateOnly = r.EndDateOnly,
+                StartTimeOnly = r.StartTimeOnly,
+                EndTimeOnly = r.EndTimeOnly,
+                RemainingMaterialsQuantity = r.RemainingMaterialsQuantity,
+                MaterialId = r.MaterialId.ToString()
+            }).ToList();
+
+            // Crear DTO de Material
+            var materialDto = new MaterialDto
+            {
+                Id = material.Id,
+                Name = material.Name,
+                Description = material.Description,
+                QuantityMaterial = material.QuantityMaterial,
+                Price = material.Price,
+                Size = material.Size,
+                CityId = material.CityId.ToString(),
+                MaterialTypeId = material.MaterialTypeId.ToString(),
+                MaterialStatusId = material.MaterialStatusId.ToString(),
+                ReservationTimeRangeMaterialDto = reservationDtos
+            };
+
+            return View(materialDto);
         }
 
         // GET: Materials/Create

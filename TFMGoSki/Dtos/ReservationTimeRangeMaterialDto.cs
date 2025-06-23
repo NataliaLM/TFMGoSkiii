@@ -4,8 +4,8 @@ namespace TFMGoSki.Dtos
 {
     public class ReservationTimeRangeMaterialDto : ReservationTimeRangeDto
     {
-        [Display(Name = "Remaining Students Quantity")]
-        public int RemainingStudentsQuantity { get; set; }
+        [Display(Name = "Remaining Materials Quantity")]
+        public int RemainingMaterialsQuantity { get; set; }
         [Display(Name = "Material Name")]
         public string? MaterialId { get; set; }
     }

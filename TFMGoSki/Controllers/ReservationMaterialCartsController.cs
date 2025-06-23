@@ -60,7 +60,7 @@ namespace TFMGoSki.Controllers
                 UserId = int.Parse(_userManager.GetUserId(User)),
                 UserName = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email
             };
-            return View();
+            return View(reservationMaterialCartViewModel);
         }
 
         // POST: ReservationMaterialCarts/Create
@@ -135,8 +135,8 @@ namespace TFMGoSki.Controllers
         private void LoadSelectLists()
         {
             ViewBag.MaterialId = new SelectList(_context.Materials, "Id", "Name");
-            ViewBag.MaterialReservationId = new SelectList(_context.MaterialReservations, "Id", "Name");
-            ViewBag.ReservationTimeRangeMaterialId = new SelectList(_context.ReservationTimeRangeMaterials, "Id", "Name");
+            ViewBag.MaterialReservationId = new SelectList(_context.MaterialReservations, "Id", "Paid");
+            ViewBag.ReservationTimeRangeMaterialId = new SelectList(_context.ReservationTimeRangeMaterials, "Id", "StartDateOnly");
         }
 
         // GET: ReservationMaterialCarts/Edit/5
