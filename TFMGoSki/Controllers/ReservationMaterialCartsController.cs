@@ -148,10 +148,14 @@ namespace TFMGoSki.Controllers
 
                 #endregion
 
+                #region Total
+
                 var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCartViewModel.MaterialReservationId);
-                userReservation.Total = userReservation.Total + (material.Price * material.QuantityMaterial);
+                userReservation.Total = userReservation.Total + (material.Price * reservationMaterialCartViewModel.NumberMaterialsBooked);
                 _context.Update(userReservation);
                 await _context.SaveChangesAsync();
+
+                #endregion
 
                 ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(reservationMaterialCartViewModel.MaterialId, reservationMaterialCartViewModel.MaterialReservationId, reservationMaterialCartViewModel.UserId, reservationMaterialCartViewModel.ReservationTimeRangeMaterialId, reservationMaterialCartViewModel.NumberMaterialsBooked);
                 _context.Add(reservationMaterialCart);
@@ -184,30 +188,23 @@ namespace TFMGoSki.Controllers
                 return NotFound();
             }
 
-            #region desplegable reservation time range
+            var material = await _context.Materials.FirstOrDefaultAsync(m => m.Id == reservationMaterialCart.MaterialId);
+            var timeRange = await _context.ReservationTimeRangeMaterials.FirstOrDefaultAsync(r => r.Id == reservationMaterialCart.ReservationTimeRangeMaterialId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == reservationMaterialCart.UserId);
 
-            var timeRanges = _context.ReservationTimeRangeMaterials
-                .Where(r => r.MaterialId == reservationMaterialCart.MaterialId)
-                .Select(r => new SelectListItem
-                {
-                    Value = r.Id.ToString(),
-                    Text = $"{r.StartDateOnly:dd/MM/yyyy} {r.StartTimeOnly:hh\\:mm} - {r.EndDateOnly:dd/MM/yyyy} {r.EndTimeOnly:hh\\:mm}"
-                }).ToList();
+            var viewModel = new ReservationMaterialCartViewModel
+            {
+                Id = reservationMaterialCart.Id,
+                MaterialId = reservationMaterialCart.MaterialId,
+                MaterialName = $"{material.Name} - {material.Size} - {material.Price} - {material.Description}",
+                MaterialReservationId = reservationMaterialCart.MaterialReservationId,
+                ReservationTimeRangeMaterialId = reservationMaterialCart.ReservationTimeRangeMaterialId,
+                ReservationTimeRangeMaterialName = $"{timeRange.StartDateOnly:dd/MM/yyyy} - {timeRange.EndDateOnly:dd/MM/yyyy} ({timeRange.StartTimeOnly:hh\\:mm} - {timeRange.EndTimeOnly:hh\\:mm})",
+                UserId = reservationMaterialCart.UserId,
+                UserName = user?.Email,
+                NumberMaterialsBooked = reservationMaterialCart.NumberMaterialsBooked
+            };
 
-            ViewBag.TimeRanges = timeRanges;
-
-            #endregion
-
-            LoadSelectLists();
-            ReservationMaterialCartViewModel viewModel = new ReservationMaterialCartViewModel();
-            
-            viewModel.Id = reservationMaterialCart.Id;
-            viewModel.MaterialId = reservationMaterialCart.MaterialId;
-            viewModel.MaterialReservationId = reservationMaterialCart.MaterialReservationId;
-            viewModel.UserId = int.Parse(_userManager.GetUserId(User));
-            viewModel.UserName = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
-            viewModel.ReservationTimeRangeMaterialId = reservationMaterialCart.ReservationTimeRangeMaterialId;
-            viewModel.NumberMaterialsBooked = reservationMaterialCart.NumberMaterialsBooked;
             return View(viewModel);
         }
 
@@ -350,7 +347,22 @@ namespace TFMGoSki.Controllers
 
                     #endregion
 
-                
+                    #region Total
+
+                    var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCart.MaterialReservationId);
+
+                    int differenceChangeReservation = newNumberBooked - originalNumberBooked;
+
+                    if (differenceChangeReservation != 0)
+                    {
+                        decimal totalChange = material.Price * differenceChangeReservation;
+                        userReservation.Total += totalChange;
+                        _context.Update(userReservation);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    #endregion
+
                     reservationMaterialCart.Update(reservationMaterialCartViewModel.MaterialId, reservationMaterialCartViewModel.MaterialReservationId, reservationMaterialCartViewModel.UserId, reservationMaterialCartViewModel.ReservationTimeRangeMaterialId, reservationMaterialCartViewModel.NumberMaterialsBooked);
 
                     _context.Update(reservationMaterialCart);
@@ -401,6 +413,18 @@ namespace TFMGoSki.Controllers
             {
                 _context.ReservationMaterialCarts.Remove(reservationMaterialCart);
             }
+
+            #region Total
+
+            var material = _context.Materials
+                    .FirstOrDefault(c => c.Id == reservationMaterialCart.MaterialId);
+
+            var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCart.MaterialReservationId);
+            userReservation.Total = userReservation.Total - (material.Price * reservationMaterialCart.NumberMaterialsBooked);
+            _context.Update(userReservation);
+            await _context.SaveChangesAsync();
+
+            #endregion
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
