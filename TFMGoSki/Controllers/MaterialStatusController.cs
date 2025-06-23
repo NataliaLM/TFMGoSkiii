@@ -158,7 +158,6 @@ namespace TFMGoSki.Controllers
 
         // POST: MaterialStatus/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var materialStatus = await _context.MaterialStatuses.FindAsync(id);
