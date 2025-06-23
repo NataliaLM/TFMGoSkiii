@@ -96,7 +96,7 @@ namespace TFMGoSki.Controllers
                 EndDateOnly = entity.EndDateOnly,
                 StartTimeOnly = entity.StartTimeOnly,
                 EndTimeOnly = entity.EndTimeOnly,
-                RemainingMaterialsQuantity = material.QuantityMaterial,
+                RemainingMaterialsQuantity = entity.RemainingMaterialsQuantity == -1 ? 0 : entity.RemainingMaterialsQuantity,
                 MaterialId = entity.MaterialId
             };
 

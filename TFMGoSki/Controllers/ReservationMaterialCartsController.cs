@@ -156,7 +156,7 @@ namespace TFMGoSki.Controllers
                 await _context.SaveChangesAsync();
 
                 #endregion
-
+                 
                 ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(reservationMaterialCartViewModel.MaterialId, reservationMaterialCartViewModel.MaterialReservationId, reservationMaterialCartViewModel.UserId, reservationMaterialCartViewModel.ReservationTimeRangeMaterialId, reservationMaterialCartViewModel.NumberMaterialsBooked);
                 _context.Add(reservationMaterialCart);
                 await _context.SaveChangesAsync();
@@ -362,7 +362,7 @@ namespace TFMGoSki.Controllers
                     }
 
                     #endregion
-
+                     
                     reservationMaterialCart.Update(reservationMaterialCartViewModel.MaterialId, reservationMaterialCartViewModel.MaterialReservationId, reservationMaterialCartViewModel.UserId, reservationMaterialCartViewModel.ReservationTimeRangeMaterialId, reservationMaterialCartViewModel.NumberMaterialsBooked);
 
                     _context.Update(reservationMaterialCart);
@@ -409,11 +409,7 @@ namespace TFMGoSki.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var reservationMaterialCart = await _context.ReservationMaterialCarts.FindAsync(id);
-            if (reservationMaterialCart != null)
-            {
-                _context.ReservationMaterialCarts.Remove(reservationMaterialCart);
-            }
-
+            
             #region Total
 
             var material = _context.Materials
@@ -425,6 +421,29 @@ namespace TFMGoSki.Controllers
             await _context.SaveChangesAsync();
 
             #endregion
+
+            #region RemainigStudentsQuantity
+
+            ReservationTimeRangeMaterial? reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials.FirstOrDefault(rtrm => rtrm.Id == reservationMaterialCart.ReservationTimeRangeMaterialId);
+
+            if (reservationTimeRangeMaterial.RemainingMaterialsQuantity == -1)
+            {
+                reservationTimeRangeMaterial.RemainingMaterialsQuantity = reservationMaterialCart.NumberMaterialsBooked;
+            }
+            else
+            {
+                reservationTimeRangeMaterial.RemainingMaterialsQuantity += reservationMaterialCart.NumberMaterialsBooked;
+            }
+
+            _context.Update(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+
+            #endregion
+            
+            if (reservationMaterialCart != null)
+            {
+                _context.ReservationMaterialCarts.Remove(reservationMaterialCart);
+            }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

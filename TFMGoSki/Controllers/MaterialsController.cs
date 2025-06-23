@@ -57,7 +57,7 @@ namespace TFMGoSki.Controllers
                 EndDateOnly = r.EndDateOnly,
                 StartTimeOnly = r.StartTimeOnly,
                 EndTimeOnly = r.EndTimeOnly,
-                RemainingMaterialsQuantity = r.RemainingMaterialsQuantity,
+                RemainingMaterialsQuantity = r.RemainingMaterialsQuantity == -1 ? 0 : r.RemainingMaterialsQuantity,
                 MaterialId = r.MaterialId.ToString()
             }).ToList();
 
