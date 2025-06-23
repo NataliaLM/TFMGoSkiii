@@ -6,35 +6,49 @@
 }
 
 <h1>Create</h1>
-
 <h4>Reservation Material Cart</h4>
 <hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Material -->
             <div class="form-group">
-                <label asp-for="MaterialId" class="control-label"></label>
-                <select asp-for="MaterialId" class ="form-control" asp-items="ViewBag.MaterialId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="MaterialReservationId" class="control-label"></label>
-                <select asp-for="MaterialReservationId" class ="form-control" asp-items="ViewBag.MaterialReservationId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <input asp-for="UserId" class="form-control" readonly />
+                <label class="control-label">Material</label>
+                <input type="hidden" asp-for="MaterialId" />
+                <input class="form-control" value="@Model.MaterialName" readonly />
             </div>
 
+            <!-- Reserva del usuario -->
             <div class="form-group">
-                <label asp-for="ReservationTimeRangeMaterialId" class="control-label"></label>
-                <select asp-for="ReservationTimeRangeMaterialId" class ="form-control" asp-items="ViewBag.ReservationTimeRangeMaterialId"></select>
+                <label class="control-label">Reservation</label>
+                <input type="hidden" asp-for="MaterialReservationId" />
+                <input class="form-control" value="Reservation #@Model.MaterialReservationId" readonly />
             </div>
+
+            <!-- Usuario -->
+            <div class="form-group">
+                <label class="control-label">User</label>
+                <input type="hidden" asp-for="UserId" />
+                <input class="form-control" value="@Model.UserName" readonly />
+            </div>
+
+            <!-- Rango de disponibilidad -->
+            <div class="form-group">
+                <label class="control-label">Availability</label>
+                <input type="hidden" asp-for="ReservationTimeRangeMaterialId" />
+                <input class="form-control" value="@Model.ReservationTimeRangeMaterialName" readonly />
+            </div>
+
+            <!-- Solo campo editable -->
             <div class="form-group">
                 <label asp-for="NumberMaterialsBooked" class="control-label"></label>
                 <input asp-for="NumberMaterialsBooked" class="form-control" />
                 <span asp-validation-for="NumberMaterialsBooked" class="text-danger"></span>
             </div>
+
+            <!-- Botón de envío -->
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -45,35 +59,3 @@
 <div>
     <a asp-action="IndexUser">Back to List</a>
 </div>
-
-<script>
-    $('#MaterialId').click(function () {
-        var materialId = $(this).val();
-        var $timeRangeSelect = $('#ReservationTimeRangeMaterialId');
-
-        $timeRangeSelect.empty().append('<option value="">-- Cargando rangos de tiempo --</option>');
-
-        if (materialId) {
-            $.ajax({
-                url: '/ReservationMaterialCarts/GetTimeRangesByMaterialId',
-                type: 'GET',
-                data: { materialId: materialId },
-                success: function (data) {
-                    $timeRangeSelect.empty().append('<option value="">-- Seleccione un rango de tiempo --</option>');
-                    $.each(data, function (i, range) {
-                        $timeRangeSelect.append($('<option>', {
-                            value: range.id,
-                            text: range.display
-                        }));
-                    });
-                },
-                error: function () {
-                    $timeRangeSelect.empty().append('<option value="">-- Error al cargar rangos --</option>');
-                }
-            });
-        } else {
-            $timeRangeSelect.empty().append('<option value="">-- Seleccione un material primero --</option>');
-        }
-    });
-</script>
-
