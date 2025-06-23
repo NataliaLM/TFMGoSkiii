@@ -49,35 +49,52 @@ namespace TFMGoSki.Controllers
 
             var user = await _context.Users.FindAsync(materialReservation.UserId);
 
-            var carts = await _context.ReservationMaterialCarts
-                .Where(cart => cart.MaterialReservationId == materialReservation.Id)
-                .Select(cart => new ReservationMaterialCartDto
+            var cartsRaw = await _context.ReservationMaterialCarts
+                .Where(c => c.MaterialReservationId == materialReservation.Id)
+                .ToListAsync();
+
+            var materialIds = cartsRaw.Select(c => c.MaterialId).Distinct();
+            var timeRangeIds = cartsRaw.Select(c => c.ReservationTimeRangeMaterialId).Distinct();
+
+            var materials = await _context.Materials
+                .Where(m => materialIds.Contains(m.Id))
+                .ToDictionaryAsync(m => m.Id);
+
+            var timeRanges = await _context.ReservationTimeRangeMaterials
+                .Where(r => timeRangeIds.Contains(r.Id))
+                .ToDictionaryAsync(r => r.Id);
+
+            // Optionally, load material comments to check if one already exists
+            var commentIds = await _context.MaterialComments
+                .Select(c => c.ReservationMaterialCartId)
+                .ToListAsync();
+
+            var cartDtos = cartsRaw.Select(cart => new ReservationMaterialCartDto
+            {
+                Id = cart.Id,
+                MaterialName = materials[cart.MaterialId].Name,
+                MaterialPrice = materials[cart.MaterialId].Price,
+                UserName = user?.UserName ?? "Unknown",
+                NumberMaterialsBooked = cart.NumberMaterialsBooked,
+                HasComment = commentIds.Contains(cart.Id), // optional flag
+                ReservationTimeRangeMaterialDto = new ReservationTimeRangeMaterialDto
                 {
-                    Id = cart.Id,
-                    MaterialName = _context.Materials.FirstOrDefault(m => m.Id == cart.MaterialId)!.Name,
-                    MaterialPrice = _context.Materials.FirstOrDefault(m => m.Id == cart.MaterialId)!.Price,
-                    UserName = user.UserName,
-                    NumberMaterialsBooked = cart.NumberMaterialsBooked,
-                    ReservationTimeRangeMaterialDto = _context.ReservationTimeRangeMaterials
-                        .Where(r => r.Id == cart.ReservationTimeRangeMaterialId)
-                        .Select(r => new ReservationTimeRangeMaterialDto
-                        {
-                            Id = r.Id,
-                            StartDateOnly = r.StartDateOnly,
-                            EndDateOnly = r.EndDateOnly,
-                            StartTimeOnly = r.StartTimeOnly,
-                            EndTimeOnly = r.EndTimeOnly,
-                            RemainingMaterialsQuantity = r.RemainingMaterialsQuantity,
-                            MaterialId = _context.Materials.FirstOrDefault(m => m.Id == r.MaterialId)!.Name
-                        }).FirstOrDefault()
-                }).ToListAsync();
+                    Id = timeRanges[cart.ReservationTimeRangeMaterialId].Id,
+                    StartDateOnly = timeRanges[cart.ReservationTimeRangeMaterialId].StartDateOnly,
+                    EndDateOnly = timeRanges[cart.ReservationTimeRangeMaterialId].EndDateOnly,
+                    StartTimeOnly = timeRanges[cart.ReservationTimeRangeMaterialId].StartTimeOnly,
+                    EndTimeOnly = timeRanges[cart.ReservationTimeRangeMaterialId].EndTimeOnly,
+                    RemainingMaterialsQuantity = timeRanges[cart.ReservationTimeRangeMaterialId].RemainingMaterialsQuantity,
+                    MaterialId = materials[cart.MaterialId].Name // nombre en lugar de ID
+                }
+            }).ToList();
 
             var dto = new MaterialReservationDto
             {
                 Id = materialReservation.Id,
                 ClientName = user?.UserName ?? "Unknown",
                 Total = (int)materialReservation.Total,
-                reservationMaterialCartDto = carts
+                reservationMaterialCartDto = cartDtos
             };
 
             return View(dto);

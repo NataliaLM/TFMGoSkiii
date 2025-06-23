@@ -101,7 +101,7 @@ namespace TFMGoSki.Controllers
         private string GenerarNombreDeMaterial(ReservationMaterialCart reservation)
         {
             var material = _context.Materials.First(c => c.Id == reservation.MaterialId);
-            var range = _context.ReservationTimeRangeClasses.First(r => r.Id == reservation.ReservationTimeRangeMaterialId);
+            var range = _context.ReservationTimeRangeMaterials.First(r => r.Id == reservation.ReservationTimeRangeMaterialId);
             return $"{material.Name} - {range.StartDateOnly} - {range.EndDateOnly}";
         }
 

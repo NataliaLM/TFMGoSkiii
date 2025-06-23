@@ -19,6 +19,7 @@
             <th>Time Range</th>
             <th>Number</th>
             <th>Subtotal</th>
+            <th>Comment</th>
         </tr>
     </thead>
     <tbody>
@@ -32,6 +33,18 @@
             </td>
             <td>@cart.NumberMaterialsBooked</td>
             <td>@(cart.MaterialPrice * cart.NumberMaterialsBooked)</td>
+            <td>
+                @if (!cart.HasComment)
+                {
+                    <a asp-controller="MaterialComments" asp-action="Create" asp-route-reservationMaterialCartId="@cart.Id" class="btn btn-sm btn-outline-primary">
+                        Create Comment
+                    </a>
+                }
+                else
+                {
+                    <span class="text-muted">Already Commented</span>
+                }
+            </td>
         </tr>
     }
     </tbody>

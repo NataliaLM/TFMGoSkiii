@@ -16,5 +16,7 @@ namespace TFMGoSki.Dtos
         public ReservationTimeRangeMaterialDto? ReservationTimeRangeMaterialDto { get; set; }
         [Display(Name = "Numbre Materials Booked")]
         public int? NumberMaterialsBooked { get; set; }
+        [Display(Name = "Has Comment")]
+        public bool HasComment { get; set; }
     }
 }

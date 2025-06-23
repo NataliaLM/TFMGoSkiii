@@ -8,7 +8,7 @@ namespace TFMGoSki.Dtos
         [Display(Name = "Client Name")]
         public string? ClientName { get; set; }
         [Display(Name = "Total")]
-        public int Total { get; set; }
+        public int Total { get; set; }        
         public List<ReservationMaterialCartDto> reservationMaterialCartDto { get; set; }
     }
 }
