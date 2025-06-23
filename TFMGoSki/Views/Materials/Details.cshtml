@@ -40,8 +40,11 @@
             <th>End Date</th>
             <th>Start Time</th>
             <th>End Time</th>
-            <th>Remaining Qty</th>
-            <th></th> <!-- Para el botón -->
+            <th>Remaining Qty</th>            
+            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+            {
+            <th></th>
+            }    
         </tr>
     </thead>
     <tbody>
@@ -53,15 +56,18 @@
             <td>@res.StartTimeOnly</td>
             <td>@res.EndTimeOnly</td>
             <td>@res.RemainingMaterialsQuantity</td>
+            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+            {
             <td>
                 <a asp-controller="ReservationMaterialCarts" 
-                   asp-action="Create" 
-                   asp-route-materialId="@Model.Id" 
-                   asp-route-reservationTimeRangeMaterialId="@res.Id"
-                   class="btn btn-sm btn-primary">
+                    asp-action="Create" 
+                    asp-route-materialId="@Model.Id" 
+                    asp-route-reservationTimeRangeMaterialId="@res.Id"
+                    class="btn btn-sm btn-primary">
                     Make Reservation
                 </a>
             </td>
+            }            
         </tr>
     }
     </tbody>
@@ -76,7 +82,14 @@ else
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a> |
-    <a asp-controller="ReservationTimeRangeMaterials" asp-action="Create" asp-route-materialId="@Model.Id" class="btn btn-success">
+    
+</div>
+
+@if (!ViewData.ContainsKey("IsClient") && !(bool)ViewData["IsClient"])
+{
+<div>
+<a asp-controller="ReservationTimeRangeMaterials" asp-action="Create" asp-route-materialId="@Model.Id" class="btn btn-success">
         Add Availability
     </a>
 </div>
+}

@@ -454,7 +454,7 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(IndexUser));
         }
 
         private bool ReservationMaterialCartExists(int id)

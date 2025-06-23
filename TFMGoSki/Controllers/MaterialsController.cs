@@ -94,6 +94,15 @@ namespace TFMGoSki.Controllers
         // GET: Materials/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             if (id == null)
             {
                 return NotFound();

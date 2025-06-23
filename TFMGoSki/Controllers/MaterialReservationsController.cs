@@ -40,6 +40,15 @@ namespace TFMGoSki.Controllers
         // GET: MaterialReservations/Details/5
         public async Task<IActionResult> Details(int? id)
         {
+            if (User.IsInRole("Client"))
+            {
+                ViewData["IsClient"] = true;
+            }
+            else
+            {
+                ViewData["IsClient"] = false;
+            }
+
             if (id == null) return NotFound();
 
             var materialReservation = await _context.MaterialReservations
@@ -209,7 +218,7 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(IndexUser));
         }
 
         private bool MaterialReservationExists(int id)

@@ -215,7 +215,7 @@ namespace TFMGoSki.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(IndexUser));
         }
 
         private bool MaterialCommentExists(int id)
