@@ -1,0 +1,83 @@
+@model IEnumerable<TFMGoSki.Dtos.MaterialDto>
+
+@{
+    ViewData["Title"] = "Available Materials";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Available Materials</h1>
+
+<form asp-action="IndexUser" method="get">
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <input type="number" name="minPrice" value="@Context.Request.Query["minPrice"]" class="form-control" placeholder="Min Price" step="0.01" />
+        </div>
+        <div class="form-group col-md-3">
+            <input type="number" name="maxPrice" value="@Context.Request.Query["maxPrice"]" class="form-control" placeholder="Max Price" step="0.01" />
+        </div>
+        <div class="form-group col-md-3">
+            <select name="size" class="form-control">
+                <option value="">-- Filter by Size --</option>
+                @foreach (var s in (List<string>)ViewBag.Sizes)
+                {
+                    <option value="@s" selected="@(Context.Request.Query["size"] == s ? "selected" : null)">
+                        @s
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="form-group col-md-3">
+            <input type="number" name="minRating" value="@Context.Request.Query["minRating"]" class="form-control" placeholder="Minimum Rating (0–5)" step="0.1" min="0" max="5" />
+        </div>
+    </div>
+
+    <div class="form-row mt-2">
+        <div class="form-group col-md-6">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="IndexUser" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.First().Name)</th>
+            <th>@Html.DisplayNameFor(model => model.First().Description)</th>
+            <th>@Html.DisplayNameFor(model => model.First().QuantityMaterial)</th>
+            <th>@Html.DisplayNameFor(model => model.First().Price)</th>
+            <th>@Html.DisplayNameFor(model => model.First().Size)</th>
+            <th>Average Rating</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            var averageRating = item.Comments != null && item.Comments.Any()
+                ? item.Comments.Average(c => c.Raiting)
+                : (double?)null;
+
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.Description</td>
+                <td>@item.QuantityMaterial</td>
+                <td>@item.Price.ToString("C")</td>
+                <td>@item.Size</td>
+                <td>
+                    @if (averageRating.HasValue)
+                    {
+                        @($"{averageRating:F1} / 5")
+                    }
+                    else
+                    {
+                        <span class="text-muted">No ratings</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -28,6 +28,69 @@ namespace TFMGoSki.Controllers
             return View(await _context.Materials.ToListAsync());
         }
 
+        // GET: Materials Index User
+        public async Task<IActionResult> IndexUser(decimal? minPrice, decimal? maxPrice, string? size, double? minRating)
+        {
+            ViewBag.Sizes = await _context.Materials
+    .Select(m => m.Size)
+    .Distinct()
+    .Where(s => s != null)
+    .ToListAsync();
+
+            var materials = await _context.Materials.ToListAsync();
+
+            var materialIds = materials.Select(m => m.Id).ToList();
+
+            var materialComments = await _context.MaterialComments
+                .Join(_context.ReservationMaterialCarts,
+                      comment => comment.ReservationMaterialCartId,
+                      cart => cart.Id,
+                      (comment, cart) => new { comment, cart.MaterialId })
+                .Where(x => materialIds.Contains(x.MaterialId))
+                .ToListAsync();
+
+            var groupedComments = materialComments
+                .GroupBy(x => x.MaterialId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(x => new MaterialCommentDto
+                    {
+                        Text = x.comment.Text,
+                        Raiting = x.comment.Raiting
+                    }).ToList()
+                );
+
+            var dtoList = materials.Select(material => new MaterialDto
+            {
+                Id = material.Id,
+                Name = material.Name,
+                Description = material.Description,
+                QuantityMaterial = material.QuantityMaterial,
+                Price = material.Price,
+                Size = material.Size,
+                Comments = groupedComments.ContainsKey(material.Id)
+                    ? groupedComments[material.Id]
+                    : new List<MaterialCommentDto>()
+            }).ToList();
+
+            // Aplica filtros
+            if (minPrice.HasValue)
+                dtoList = dtoList.Where(m => m.Price >= minPrice.Value).ToList();
+
+            if (maxPrice.HasValue)
+                dtoList = dtoList.Where(m => m.Price <= maxPrice.Value).ToList();
+
+            if (!string.IsNullOrWhiteSpace(size))
+                dtoList = dtoList.Where(m => m.Size != null && m.Size.Equals(size, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (minRating.HasValue)
+                dtoList = dtoList.Where(m => m.Comments.Any() && m.Comments.Average(c => c.Raiting) >= minRating.Value).ToList();
+
+            return View(dtoList);
+        }
+
+
+
         // GET: Materials/Details/5
         public async Task<IActionResult> Details(int? id)
         {
