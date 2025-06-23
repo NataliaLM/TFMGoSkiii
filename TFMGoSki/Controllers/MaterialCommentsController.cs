@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -14,10 +16,12 @@ namespace TFMGoSki.Controllers
     public class MaterialCommentsController : Controller
     {
         private readonly TFMGoSkiDbContext _context;
+        private readonly UserManager<User> _userManager;
 
-        public MaterialCommentsController(TFMGoSkiDbContext context)
+        public MaterialCommentsController(TFMGoSkiDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: MaterialComments
@@ -29,7 +33,42 @@ namespace TFMGoSki.Controllers
         // GET: MaterialComments
         public async Task<IActionResult> IndexUser()
         {
-            return View(await _context.MaterialComments.ToListAsync());
+            var userId = int.Parse(_userManager.GetUserId(User));
+
+            var comments = await _context.MaterialComments
+                .Where(c => _context.ReservationMaterialCarts
+                    .Any(rmc => rmc.Id == c.ReservationMaterialCartId && rmc.UserId == userId))
+                .ToListAsync();
+
+            var cartIds = comments.Select(c => c.ReservationMaterialCartId).Distinct().ToList();
+
+            var carts = await _context.ReservationMaterialCarts
+                .Where(c => cartIds.Contains(c.Id))
+                .ToListAsync();
+
+            var materialIds = carts.Select(c => c.MaterialId).Distinct().ToList();
+
+            var materials = await _context.Materials
+                .Where(m => materialIds.Contains(m.Id))
+                .ToDictionaryAsync(m => m.Id);
+
+            var dtos = comments.Select(c =>
+            {
+                var cart = carts.FirstOrDefault(rmc => rmc.Id == c.ReservationMaterialCartId);
+                var materialName = cart != null && materials.ContainsKey(cart.MaterialId)
+                    ? materials[cart.MaterialId].Name
+                    : "Unknown";
+
+                return new MaterialCommentDto
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    Raiting = c.Raiting,
+                    ReservationMaterialCartName = materialName
+                };
+            }).ToList();
+
+            return View(dtos);
         }
 
 
@@ -205,7 +244,6 @@ namespace TFMGoSki.Controllers
 
         // POST: MaterialComments/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var materialComment = await _context.MaterialComments.FindAsync(id);

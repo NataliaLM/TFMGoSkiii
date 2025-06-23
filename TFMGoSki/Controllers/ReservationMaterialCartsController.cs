@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -32,13 +33,64 @@ namespace TFMGoSki.Controllers
         {
             var userId = int.Parse(_userManager.GetUserId(User));
 
-            var userActiveCartItems = await _context.ReservationMaterialCarts
+            // Obtiene los carts activos no pagados
+            var carts = await _context.ReservationMaterialCarts
                 .Where(cart => cart.UserId == userId &&
                                _context.MaterialReservations
                                    .Any(res => res.Id == cart.MaterialReservationId && !res.Paid))
                 .ToListAsync();
 
-            return View(userActiveCartItems);
+            var materialIds = carts.Select(c => c.MaterialId).Distinct().ToList();
+            var reservationIds = carts.Select(c => c.MaterialReservationId).Distinct().ToList();
+            var timeRangeIds = carts.Select(c => c.ReservationTimeRangeMaterialId).Distinct().ToList();
+
+            var materials = await _context.Materials
+                .Where(m => materialIds.Contains(m.Id))
+                .ToDictionaryAsync(m => m.Id);
+
+            var reservations = await _context.MaterialReservations
+                .Where(r => reservationIds.Contains(r.Id))
+                .ToDictionaryAsync(r => r.Id);
+
+            var timeRanges = await _context.ReservationTimeRangeMaterials
+                .Where(rt => timeRangeIds.Contains(rt.Id))
+                .ToDictionaryAsync(rt => rt.Id);
+
+            var user = await _userManager.GetUserAsync(User);
+
+            var dtos = new List<ReservationMaterialCartDto>();
+
+            foreach (var cart in carts)
+            {
+                var dto = new ReservationMaterialCartDto
+                {
+                    Id = cart.Id,
+                    MaterialName = materials.ContainsKey(cart.MaterialId) ? materials[cart.MaterialId].Name : null,
+                    MaterialPrice = materials.ContainsKey(cart.MaterialId) ? materials[cart.MaterialId].Price : null,
+                    MaterialReservationName = reservations.ContainsKey(cart.MaterialReservationId)
+                        ? $"Paid {reservations[cart.MaterialReservationId].Paid} - Total {reservations[cart.MaterialReservationId].Total}"
+                        : null,
+                    UserName = user.UserName,
+                    ReservationTimeRangeMaterialDto = timeRanges.ContainsKey(cart.ReservationTimeRangeMaterialId)
+                        ? new ReservationTimeRangeMaterialDto
+                        {
+                            StartDateOnly = timeRanges[cart.ReservationTimeRangeMaterialId].StartDateOnly,
+                            EndDateOnly = timeRanges[cart.ReservationTimeRangeMaterialId].EndDateOnly,
+                            StartTimeOnly = timeRanges[cart.ReservationTimeRangeMaterialId].StartTimeOnly,
+                            EndTimeOnly = timeRanges[cart.ReservationTimeRangeMaterialId].EndTimeOnly,
+                            RemainingMaterialsQuantity = timeRanges[cart.ReservationTimeRangeMaterialId].RemainingMaterialsQuantity
+                        }
+                        : null,
+                    NumberMaterialsBooked = cart.NumberMaterialsBooked,
+                    HasComment = await _context.MaterialComments
+                        .AnyAsync(c => c.ReservationMaterialCartId == cart.Id)
+                };
+
+                dtos.Add(dto);
+            }
+
+            return View(dtos);
+
         }
 
         // GET: ReservationMaterialCarts/Details/5
