@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TFMGoSki.Data;
+using TFMGoSki.Dtos;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 
@@ -23,8 +24,23 @@ namespace TFMGoSki.Controllers
         // GET: ReservationTimeRangeMaterials
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ReservationTimeRangeMaterials.ToListAsync());
+            var items = await _context.ReservationTimeRangeMaterials.ToListAsync();
+
+            var dtoList = items.Select(item => new ReservationTimeRangeMaterialDto
+            {
+                Id = item.Id,
+                StartDateOnly = item.StartDateOnly,
+                EndDateOnly = item.EndDateOnly,
+                StartTimeOnly = item.StartTimeOnly,
+                EndTimeOnly = item.EndTimeOnly,
+                RemainingMaterialsQuantity = item.RemainingMaterialsQuantity < 0 ? 0 : item.RemainingMaterialsQuantity,
+                MaterialId = _context.Materials
+                    .FirstOrDefault(m => m.Id == item.MaterialId)?.Name ?? "Unknown"
+            }).ToList();
+
+            return View(dtoList);
         }
+
 
         // GET: ReservationTimeRangeMaterials/Details/5
         public async Task<IActionResult> Details(int? id)

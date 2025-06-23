@@ -1,25 +1,40 @@
-﻿@model TFMGoSki.Models.MaterialReservation
+﻿@model TFMGoSki.Dtos.MaterialReservationDto
 
-@{
-    ViewData["Title"] = "Details";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+<h2>Reservation Details</h2>
 
-<h1>Details</h1>
+<dl class="row">
+    <dt class="col-sm-2">Client</dt>
+    <dd class="col-sm-10">@Model.ClientName</dd>
+    
+    <dt class="col-sm-2">Total</dt>
+    <dd class="col-sm-10">@Model.Total €</dd>
+</dl>
 
-<div>
-    <h4>MaterialReservation</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Total)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Total)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+<h4>Materials Reserved</h4>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Material</th>
+            <th>Price per Unit</th>
+            <th>Time Range</th>
+            <th>Number</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var cart in Model.reservationMaterialCartDto)
+    {
+        <tr>
+            <td>@cart.MaterialName</td>
+            <td>@cart.MaterialPrice?.ToString("C")</td>
+            <td>
+                @($"{cart.ReservationTimeRangeMaterialDto.StartDateOnly:dd/MM/yyyy} {cart.ReservationTimeRangeMaterialDto.StartTimeOnly:hh\\:mm} - {cart.ReservationTimeRangeMaterialDto.EndDateOnly:dd/MM/yyyy} {cart.ReservationTimeRangeMaterialDto.EndTimeOnly:hh\\:mm}")
+            </td>
+            <td>@cart.NumberMaterialsBooked</td>
+            <td>@(cart.MaterialPrice * cart.NumberMaterialsBooked)</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+

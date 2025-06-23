@@ -7,6 +7,8 @@ namespace TFMGoSki.Dtos
         public int Id { get; set; }
         [Display(Name = "Material Name")]
         public string? MaterialName { get; set; }
+        [Display(Name = "Material Price")]
+        public decimal? MaterialPrice { get; set; }
         [Display(Name = "Material Reservation Name")]
         public string? MaterialReservationName { get; set; }
         [Display(Name = "User Name")]

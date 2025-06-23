@@ -21,5 +21,10 @@ namespace TFMGoSki.Models
             Paid = paid;
             return this;
         }
+        public MaterialReservation UpdatePaid(bool paid)
+        {
+            Paid = paid;
+            return this;
+        }
     }
 }

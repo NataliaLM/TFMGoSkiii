@@ -8,7 +8,7 @@ namespace TFMGoSki.ViewModels
         [Display(Name = "User")]
         public int UserId { get; set; }
         [Display(Name = "Total")]
-        public int Total { get; set; }
+        public decimal Total { get; set; }
         [Display(Name = "Paid")]
         public bool Paid { get; set; }
     }

@@ -30,7 +30,15 @@ namespace TFMGoSki.Controllers
         }
         public async Task<IActionResult> IndexUser()
         {
-            return View(await _context.ReservationMaterialCarts.ToListAsync());
+            var userId = int.Parse(_userManager.GetUserId(User));
+
+            var userActiveCartItems = await _context.ReservationMaterialCarts
+                .Where(cart => cart.UserId == userId &&
+                               _context.MaterialReservations
+                                   .Any(res => res.Id == cart.MaterialReservationId && !res.Paid))
+                .ToListAsync();
+
+            return View(userActiveCartItems);
         }
 
         // GET: ReservationMaterialCarts/Details/5
