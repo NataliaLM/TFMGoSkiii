@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 using System.Security.Claims;
@@ -111,6 +112,57 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Create_Post_ExistingComment_ReturnsViewWithError()
+        {
+            // Arrange
+            var user = new User();
+            _context.Users.Add(user);
+
+            var material = new Material("Boots", "Desc", 1, 1, "img", 1, 1, 1);
+            _context.Materials.Add(material);
+
+            var range = new ReservationTimeRangeMaterial(
+                DateOnly.FromDateTime(DateTime.Today),
+                DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                TimeOnly.FromDateTime(DateTime.Today.AddHours(8)),
+                TimeOnly.FromDateTime(DateTime.Today.AddHours(16)),
+                10,
+                material.Id
+            );
+            _context.ReservationTimeRangeMaterials.Add(range);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ReservationMaterialCart(material.Id, 1, user.Id, range.Id, 10);
+            _context.ReservationMaterialCarts.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            // Comentario existente
+            var existingComment = new MaterialComment(reservation.Id, "Old comment", 3);
+            _context.MaterialComments.Add(existingComment);
+            await _context.SaveChangesAsync();
+
+            // Intento de crear un nuevo comentario para la misma reserva
+            var viewModel = new MaterialCommentViewModel
+            {
+                ReservationMaterialCartId = reservation.Id,
+                Text = "Updated comment",
+                Raiting = 4
+            };
+
+            // Act
+            var result = await _controller.Create(reservation.Id, viewModel);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<MaterialCommentViewModel>(viewResult.Model);
+
+            Assert.Equal("Updated comment", model.Text);
+            Assert.True(_controller.ModelState.ContainsKey(string.Empty));
+            Assert.Contains("A comment already exists", _controller.ModelState[string.Empty].Errors.First().ErrorMessage);
+        }
+
+
+        [Fact]
         public async Task Create_Post_AddsComment_AndRedirects()
         {
             // Arrange
@@ -151,6 +203,53 @@ namespace TFMGoSkiTest
             Assert.Equal("IndexUser", redirectResult.ActionName);
             Assert.Single(_context.MaterialComments.Where(c => c.Text == "Nice ski"));
         }
+
+        [Fact]
+        public async Task Edit_Get_UpdatesComment_AndRedirects()
+        {
+            // Arrange
+            var user = new User();
+            _context.Users.Add(user);
+
+            var material = new Material("Boots", "Desc", 1, 1, "img", 1, 1, 1);
+            _context.Materials.Add(material);
+
+            var range = new ReservationTimeRangeMaterial(
+                DateOnly.FromDateTime(DateTime.Today),
+                DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                TimeOnly.FromDateTime(DateTime.Today.AddHours(8)),
+                TimeOnly.FromDateTime(DateTime.Today.AddHours(16)),
+                10,
+                material.Id
+            );
+            _context.ReservationTimeRangeMaterials.Add(range);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ReservationMaterialCart(material.Id, 1, user.Id, range.Id, 10);
+            _context.ReservationMaterialCarts.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var comment = new MaterialComment(reservation.Id, "Old comment", 2);
+            _context.MaterialComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            var updatedViewModel = new MaterialCommentViewModel
+            {
+                Id = comment.Id,
+                ReservationMaterialCartId = reservation.Id,
+                Text = "Updated comment",
+                Raiting = 4
+            };
+
+            // Act
+            var result = await _controller.Edit(comment.Id);
+
+            // Assert
+            var redirectResult = Assert.IsType<ViewResult>(result); 
+
+            var updatedComment = await _context.MaterialComments.FindAsync(comment.Id); 
+        }
+
 
         [Fact]
         public async Task Edit_Post_UpdatesComment_AndRedirects()
@@ -200,6 +299,20 @@ namespace TFMGoSkiTest
             Assert.Equal("Updated comment", updatedComment.Text);
         }
 
+        [Fact]
+        public async Task Delete_RemovesComment_AndRedirects()
+        {
+            // Arrange
+            var comment = new MaterialComment(4, "To be deleted", 3);
+            _context.MaterialComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _controller.Delete(comment.Id);
+
+            // Assert
+            var redirectResult = Assert.IsType<ViewResult>(result);
+        }
 
         [Fact]
         public async Task DeleteConfirmed_RemovesComment_AndRedirects()

@@ -112,7 +112,7 @@ namespace TFMGoSkiTest
             _context.ReservationMaterialCarts.Add(reservationMaterialCart);
             _context.SaveChanges();
 
-            var url = $"/ReservationMaterialCarts/Details/{reservationTimeRangeMaterial?.Id}";
+            var url = $"/ReservationMaterialCarts/Details/{reservationMaterialCart?.Id}";
             var response = await _client.GetAsync(url);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }

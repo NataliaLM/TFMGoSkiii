@@ -149,6 +149,41 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Edit_Get_ReturnsReservationView_WhenExists()
+        {
+            // Arrange
+            var email = await AuthenticateClientAsync();
+            var user = await _userManager.FindByEmailAsync(email);
+
+            var reservation = new MaterialReservation(user.Id, 99.99m, false);
+            _context.MaterialReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var response = await _client.GetAsync($"/MaterialReservations/Edit/{reservation.Id}");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync(); 
+            Assert.Contains(reservation.Total.ToString(), content); // asume que total aparece como valor
+        }
+
+        [Fact]
+        public async Task Edit_Get_ReturnsNotFound_WhenReservationDoesNotExist()
+        {
+            // Arrange
+            await AuthenticateClientAsync();
+
+            // Act
+            var response = await _client.GetAsync("/MaterialReservations/Edit/999999");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+
+        [Fact]
         public async Task Edit_Post_UpdatesPaidStatus()
         {
             var email = await AuthenticateClientAsync();
