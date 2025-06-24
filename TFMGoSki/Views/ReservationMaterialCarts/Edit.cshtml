@@ -1,0 +1,52 @@
+﻿@model TFMGoSki.ViewModels.ReservationMaterialCartViewModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Edit</h1>
+<h4>Reservation Material Cart</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- IDs ocultos -->
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="MaterialId" />
+            <input type="hidden" asp-for="MaterialReservationId" />
+            <input type="hidden" asp-for="ReservationTimeRangeMaterialId" />
+            <input type="hidden" asp-for="UserId" />
+
+            <!-- Usuario -->
+            <div class="form-group">
+                <label class="control-label">User</label>
+                <input class="form-control" value="@Model.UserName" readonly />
+            </div>
+
+            <!-- Material -->
+            <div class="form-group">
+                <label class="control-label">Material</label>
+                <input class="form-control" value="@Model.MaterialName" readonly />
+            </div>
+
+            <!-- Rango -->
+            <div class="form-group">
+                <label class="control-label">Availability</label>
+                <input class="form-control" value="@Model.ReservationTimeRangeMaterialName" readonly />
+            </div>
+
+            <!-- Número reservado (editable) -->
+            <div class="form-group">
+                <label asp-for="NumberMaterialsBooked" class="control-label">Number of Materials</label>
+                <input asp-for="NumberMaterialsBooked" class="form-control" />
+                <span asp-validation-for="NumberMaterialsBooked" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+       </form>
+    </div>
+</div>

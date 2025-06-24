@@ -1,0 +1,95 @@
+﻿@model TFMGoSki.Dtos.MaterialDto
+
+@{
+    ViewData["Title"] = "Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Material</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Name)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Description)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Description)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.QuantityMaterial)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.QuantityMaterial)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Price)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Price)</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Size)</dt>
+        <dd class="col-sm-10">@Html.DisplayFor(model => model.Size)</dd>
+    </dl>
+</div>
+
+<hr />
+<h4>Availabilities</h4>
+
+@if (Model.ReservationTimeRangeMaterialDto != null && Model.ReservationTimeRangeMaterialDto.Any())
+{
+    <table class="table">
+    <thead>
+        <tr>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Remaining Qty</th>            
+            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+            {
+            <th></th>
+            }    
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var res in Model.ReservationTimeRangeMaterialDto)
+    {
+        <tr>
+            <td>@res.StartDateOnly</td>
+            <td>@res.EndDateOnly</td>
+            <td>@res.StartTimeOnly</td>
+            <td>@res.EndTimeOnly</td>
+            <td>@res.RemainingMaterialsQuantity</td>
+            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+            {
+            <td>
+                <a asp-controller="ReservationMaterialCarts" 
+                    asp-action="Create" 
+                    asp-route-materialId="@Model.Id" 
+                    asp-route-reservationTimeRangeMaterialId="@res.Id"
+                    class="btn btn-sm btn-primary">
+                    Make Reservation
+                </a>
+            </td>
+            }            
+        </tr>
+    }
+    </tbody>
+</table>
+
+}
+else
+{
+    <p>No availabilities for this material.</p>
+}
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a> |
+    
+</div>
+
+@if (!ViewData.ContainsKey("IsClient") && !(bool)ViewData["IsClient"])
+{
+<div>
+<a asp-controller="ReservationTimeRangeMaterials" asp-action="Create" asp-route-materialId="@Model.Id" class="btn btn-success">
+        Add Availability
+    </a>
+</div>
+}

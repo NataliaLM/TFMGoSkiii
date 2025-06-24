@@ -24,94 +24,90 @@
                 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        @* a *@
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Cities" asp-action="">City Management</a>
-                            </li>
-                        }                        
-                        @* a *@
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="">Class Management</a>
-                            </li>
-                        }     
-                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Client"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Classes" asp-action="IndexUser">Class Management Client</a>
-                            </li>
-                        }
-                        @* a *@
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Instructors" asp-action="">Instructor Management</a>
-                            </li>
-                        }                        
-                        @* a *@                        
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ReservationTimeRangeClasses" asp-action="">Reservation Time Range Classes Management</a>
-                            </li>
-                        }    
-                        @* a *@                        
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="">Class Comment Management</a>
-                            </li>
-                        }
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassComments" asp-action="IndexUser">My Comments</a>
-                            </li>
-                        } 
-                        <!--a-->
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="">Class Reservations Management</a>
-                            </li> 
-                        } 
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Client")))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="ClassReservations" asp-action="IndexUser">My Class Reservations</a>
-                            </li> 
-                        }                         
-                        @* a *@
-                        @if (SignInManager.IsSignedIn(User))
-                        {
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link text-dark" style="border: none; padding: 0;">Logout</button>
-                                </form>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
-                            </li>
-                        }
-                    </ul>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    </li>
+
+    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+    {
+        <!-- Class Management Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Class Management</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" asp-controller="Cities" asp-action="Index">Cities</a></li>
+                <li><a class="dropdown-item" asp-controller="Classes" asp-action="Index">Classes</a></li>
+                <li><a class="dropdown-item" asp-controller="Instructors" asp-action="Index">Instructors</a></li>
+                <li><a class="dropdown-item" asp-controller="ReservationTimeRangeClasses" asp-action="Index">Reservation Time Ranges</a></li>
+                <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="Index">Class Comments</a></li>
+                <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="Index">Class Reservations</a></li>
+            </ul>
+        </li>
+
+        <!-- Material Management Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Material Management</a>
+            <ul class="dropdown-menu">
+                <!-- <li><a class="dropdown-item" asp-controller="MaterialComments" asp-action="Index">Material Comments</a></li>
+                <li><a class="dropdown-item" asp-controller="MaterialReservations" asp-action="Index">Material Reservations</a></li> -->
+                <li><a class="dropdown-item" asp-controller="Materials" asp-action="Index">Materials</a></li>
+                <li><a class="dropdown-item" asp-controller="MaterialStatus" asp-action="Index">Material Status</a></li>
+                <li><a class="dropdown-item" asp-controller="MaterialTypes" asp-action="Index">Material Types</a></li>
+                <!--<li><a class="dropdown-item" asp-controller="ReservationMaterialCarts" asp-action="Index">Reservation Carts</a></li>-->
+                <li><a class="dropdown-item" asp-controller="ReservationTimeRangeMaterials" asp-action="Index">Reservation Time Ranges</a></li>
+            </ul>
+        </li>
+    }
+
+    @if (SignInManager.IsSignedIn(User) && User.IsInRole("Client"))
+    {
+        <!-- My Classes Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">My Classes</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" asp-controller="Classes" asp-action="IndexUser">View Classes</a></li>
+                <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="IndexUser">My Class Comments</a></li>
+                <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="IndexUser">My Class Reservations</a></li>
+            </ul>
+        </li>
+
+        <!-- My Materials Dropdown -->
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">My Materials</a>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" asp-controller="MaterialComments" asp-action="IndexUser">My Material Comments</a></li>
+                <li><a class="dropdown-item" asp-controller="MaterialReservations" asp-action="IndexUser">My Material Reservations</a></li>
+                <li><a class="dropdown-item" asp-controller="Materials" asp-action="IndexUser">My Materials</a></li>
+                <li><a class="dropdown-item" asp-controller="ReservationMaterialCarts" asp-action="IndexUser">My Reservation Cart</a></li>
+            </ul>
+        </li>
+    }
+
+    <!-- Profile & Account -->
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none; padding: 0;">Logout</button>
+            </form>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+        </li>
+    }
+</ul>
+
                 </div>
             </div>
         </nav>

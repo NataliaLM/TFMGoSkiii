@@ -20,7 +20,8 @@ namespace TFMGoSki.Data
                 .IsRequired();
 
             builder.HasDiscriminator<string>("Discriminator")
-                .HasValue<ClassComment>("ClassComment");
+                .HasValue<ClassComment>("ClassComment")
+                .HasValue<MaterialComment>("MaterialComment");
         }
     }
 }

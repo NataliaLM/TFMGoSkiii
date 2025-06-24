@@ -1,0 +1,61 @@
+﻿@model TFMGoSki.ViewModels.ReservationMaterialCartViewModel
+
+@{
+    ViewData["Title"] = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Create</h1>
+<h4>Reservation Material Cart</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Material -->
+            <div class="form-group">
+                <label class="control-label">Material</label>
+                <input type="hidden" asp-for="MaterialId" />
+                <input class="form-control" value="@Model.MaterialName" readonly />
+            </div>
+
+            <!-- Reserva del usuario -->
+            <div class="form-group">
+                <label class="control-label">Reservation</label>
+                <input type="hidden" asp-for="MaterialReservationId" />
+                <input class="form-control" value="Reservation #@Model.MaterialReservationId" readonly />
+            </div>
+
+            <!-- Usuario -->
+            <div class="form-group">
+                <label class="control-label">User</label>
+                <input type="hidden" asp-for="UserId" />
+                <input class="form-control" value="@Model.UserName" readonly />
+            </div>
+
+            <!-- Rango de disponibilidad -->
+            <div class="form-group">
+                <label class="control-label">Availability</label>
+                <input type="hidden" asp-for="ReservationTimeRangeMaterialId" />
+                <input class="form-control" value="@Model.ReservationTimeRangeMaterialName" readonly />
+            </div>
+
+            <!-- Solo campo editable -->
+            <div class="form-group">
+                <label asp-for="NumberMaterialsBooked" class="control-label"></label>
+                <input asp-for="NumberMaterialsBooked" class="form-control" />
+                <span asp-validation-for="NumberMaterialsBooked" class="text-danger"></span>
+            </div>
+
+            <!-- Botón de envío -->
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="IndexUser">Back to List</a>
+</div>

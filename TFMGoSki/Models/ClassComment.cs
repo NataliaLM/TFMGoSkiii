@@ -9,10 +9,10 @@
             Text = text;
             Raiting = raiting;
         }
-        public ClassComment Update(int classReserationId, string text, int raiting)
+        public ClassComment Update(int classReservationId, string text, int raiting)
         {
             base.Update(text, raiting);
-            ClassReservationId = classReserationId;
+            ClassReservationId = classReservationId;
             return this;
         }
     }

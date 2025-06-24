@@ -1,0 +1,45 @@
+@model IEnumerable<TFMGoSki.Dtos.ReservationMaterialCartDto>
+
+@{
+    ViewData["Title"] = "My Active Material Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>My Active Material Cart</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(m => m.First().MaterialName)</th>
+            <th>@Html.DisplayNameFor(m => m.First().MaterialPrice)</th>
+            <th>@Html.DisplayNameFor(m => m.First().MaterialReservationName)</th>
+            <th>@Html.DisplayNameFor(m => m.First().ReservationTimeRangeMaterialDto.StartDateOnly)</th>
+            <th>@Html.DisplayNameFor(m => m.First().ReservationTimeRangeMaterialDto.EndDateOnly)</th>
+            <th>@Html.DisplayNameFor(m => m.First().ReservationTimeRangeMaterialDto.StartTimeOnly)</th>
+            <th>@Html.DisplayNameFor(m => m.First().ReservationTimeRangeMaterialDto.EndTimeOnly)</th>
+            <th>@Html.DisplayNameFor(m => m.First().NumberMaterialsBooked)</th>
+            <th>@Html.DisplayNameFor(m => m.First().HasComment)</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.MaterialName</td>
+        <td>@item.MaterialPrice?.ToString("C")</td>
+        <td>@item.MaterialReservationName</td>
+        <td>@item.ReservationTimeRangeMaterialDto?.StartDateOnly.ToShortDateString()</td>
+        <td>@item.ReservationTimeRangeMaterialDto?.EndDateOnly.ToShortDateString()</td>
+        <td>@item.ReservationTimeRangeMaterialDto?.StartTimeOnly</td>
+        <td>@item.ReservationTimeRangeMaterialDto?.EndTimeOnly</td>
+        <td>@item.NumberMaterialsBooked</td>
+        <td>@(item.HasComment ? "Yes" : "No")</td>
+        <td>
+            <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+        </td>
+    </tr>
+}
+    </tbody>
+</table>

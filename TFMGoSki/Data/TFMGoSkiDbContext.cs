@@ -22,6 +22,15 @@ namespace TFMGoSki.Data
         public DbSet<Models.ClassReservation> ClassReservations { get; set; }
         public DbSet<Models.ClassComment> ClassComments { get; set; }
         public DbSet<Models.Comment> Comments { get; set; }
+        /**/
+        public DbSet<Models.MaterialComment> MaterialComments { get; set; }
+        public DbSet<Models.Material> Materials { get; set; }
+        public DbSet<Models.MaterialReservation> MaterialReservations { get; set; }
+        public DbSet<Models.MaterialStatus> MaterialStatuses { get; set; }
+        public DbSet<Models.MaterialType> MaterialTypes { get; set; }
+        public DbSet<Models.ReservationMaterialCart> ReservationMaterialCarts { get; set; }
+        public DbSet<Models.ReservationTimeRangeMaterial> ReservationTimeRangeMaterials { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new ClassEFConfig());
@@ -33,9 +42,16 @@ namespace TFMGoSki.Data
             modelBuilder.ApplyConfiguration(new ClassReservationEFConfig());
             modelBuilder.ApplyConfiguration(new ClassCommentEFConfig());
             modelBuilder.ApplyConfiguration(new CommentEFConfig());
+            /**/
+            modelBuilder.ApplyConfiguration(new MaterialCommentEFConfig());
+            modelBuilder.ApplyConfiguration(new MaterialEFConfig());
+            modelBuilder.ApplyConfiguration(new MaterialReservationEFConfig());
+            modelBuilder.ApplyConfiguration(new MaterialStatusEFConfig());
+            modelBuilder.ApplyConfiguration(new MaterialTypeEFConfig());
+            modelBuilder.ApplyConfiguration(new ReservationMaterialCartEFConfig());
+            modelBuilder.ApplyConfiguration(new ReservationTimeRangeMaterialEFConfig());
 
             base.OnModelCreating(modelBuilder);
         }
-        //public DbSet<TFMGoSki.Dtos.ClassCommentDto> ClassCommentDto { get; set; } = default!;
     }
 }
