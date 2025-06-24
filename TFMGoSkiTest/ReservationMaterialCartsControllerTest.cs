@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SqlServer.Server;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using TFMGoSki;
 using TFMGoSki.Data;
 using TFMGoSki.Models; 
@@ -85,12 +87,63 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Detail_Get_ReturnsView()
+        {
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.1m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Materials.Add(material);
+            _context.SaveChanges();
+            User user = new User();
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var url = $"/ReservationMaterialCarts/Details/{reservationTimeRangeMaterial?.Id}";
+            var response = await _client.GetAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Create_Get_ReturnsView()
         {
-            var material = _context.Materials.FirstOrDefault();
-            var range = _context.ReservationTimeRangeMaterials.FirstOrDefault();
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.1m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Materials.Add(material);
+            _context.SaveChanges();
+            User user = new User();
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
 
-            var url = $"/ReservationMaterialCarts/Create?materialId={material?.Id}&reservationTimeRangeMaterialId={range?.Id}";
+            var url = $"/ReservationMaterialCarts/Create?materialId={material?.Id}&reservationTimeRangeMaterialId={reservationTimeRangeMaterial?.Id}";
             var response = await _client.GetAsync(url);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -98,28 +151,151 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Create_Post_ValidModel_Redirects()
         {
-            var userId = _context.Users.FirstOrDefault()?.Id ?? 1;
-            var material = _context.Materials.FirstOrDefault();
-            var range = _context.ReservationTimeRangeMaterials.FirstOrDefault();
-            var reservation = _context.MaterialReservations.FirstOrDefault(r => r.UserId == userId && !r.Paid);
+            User user = new User();
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(user);
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.12m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Add(material);
+            _context.SaveChanges();
 
-            if (material == null || range == null || reservation == null)
-            {
-                return; // Setup incomplete
-            }
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
 
-            var model = new ReservationMaterialCartViewModel
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var reservationMaterialCartViewModel = new Dictionary<string, string>
             {
-                MaterialId = material.Id,
-                ReservationTimeRangeMaterialId = range.Id,
-                MaterialReservationId = reservation.Id,
-                NumberMaterialsBooked = 1,
-                UserId = userId,
-                UserName = _context.Users.Find(userId)?.Email
+                { "MaterialId", $"{material.Id}" },
+                { "ReservationTimeRangeMaterialId", $"{reservationTimeRangeMaterial.Id}" },
+                { "MaterialReservationId", $"{materialReservation.Id}" },
+                { "NumberMaterialsBooked", "5" },
+                { "UserId", $"{user.Id}" },
+                { "UserName", $"{user.Email}" }
             };
 
-            var response = await _client.PostAsJsonAsync("/ReservationMaterialCarts/Create", model);
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode); // Redirects on success
+            var content = new FormUrlEncodedContent(reservationMaterialCartViewModel);
+
+            var response = await _client.PostAsync("/ReservationMaterialCarts/Create", content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Get_ReturnsView()
+        {
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.1m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Materials.Add(material);
+            _context.SaveChanges();
+            User user = new User();
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var url = $"/ReservationMaterialCarts/Edit/{reservationMaterialCart?.Id}";
+            var response = await _client.GetAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Post_ValidModel_Redirects()
+        {
+            User user = new User();
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(user);
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.12m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Add(material);
+            _context.SaveChanges();
+
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var reservationMaterialCartViewModel = new Dictionary<string, string>
+            {
+                { "MaterialId", $"{material.Id}" },
+                { "ReservationTimeRangeMaterialId", $"{reservationTimeRangeMaterial.Id}" },
+                { "MaterialReservationId", $"asd@asd.com" },
+                { "NumberMaterialsBooked", "testPassword" },
+                { "UserId", $"asd@asd.com" },
+                { "UserName", "testPassword" },
+            };
+
+            var content = new FormUrlEncodedContent(reservationMaterialCartViewModel);
+
+            var response = await _client.PostAsJsonAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode); // Redirects on success
+        }
+
+        [Fact]
+        public async Task Delete_Get_ReturnsView()
+        {
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.1m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Materials.Add(material);
+            _context.SaveChanges();
+            User user = new User();
+            _context.Users.Add(user);
+            _context.SaveChanges();
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var url = $"/ReservationMaterialCarts/Delete/{reservationMaterialCart?.Id}";
+            var response = await _client.GetAsync(url);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
