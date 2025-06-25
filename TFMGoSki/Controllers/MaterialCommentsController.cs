@@ -194,9 +194,11 @@ namespace TFMGoSki.Controllers
                         return NotFound();
                     }
 
-                    materialComment.ReservationMaterialCartId = viewModel.ReservationMaterialCartId;
-                    materialComment.Text = viewModel.Text;
-                    materialComment.Raiting = viewModel.Raiting;
+                    //materialComment.ReservationMaterialCartId = viewModel.ReservationMaterialCartId;
+                    //materialComment.Text = viewModel.Text;
+                    //materialComment.Raiting = viewModel.Raiting;
+
+                    materialComment.Update(viewModel.ReservationMaterialCartId, viewModel.Text, viewModel.Raiting);
 
                     _context.Update(materialComment);
                     await _context.SaveChangesAsync();

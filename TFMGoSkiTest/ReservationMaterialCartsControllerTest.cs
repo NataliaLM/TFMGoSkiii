@@ -264,6 +264,51 @@ namespace TFMGoSkiTest
             var content = new FormUrlEncodedContent(reservationMaterialCartViewModel);
 
             var response = await _client.PostAsJsonAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Post_ValidModel_Redirects_Success()
+        {
+            User user = new User();
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("material type");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(user);
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            Material material = new Material("name", "description", 12, 12.12m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Add(material);
+            _context.SaveChanges();
+
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 11, material.Id);
+            _context.ReservationTimeRangeMaterials.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.MaterialReservations.Add(materialReservation);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 1);
+            _context.ReservationMaterialCarts.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            var reservationMaterialCartViewModel = new Dictionary<string, string>
+            {
+                { "MaterialId", $"{material.Id}" },
+                { "ReservationTimeRangeMaterialId", $"{reservationTimeRangeMaterial.Id}" },
+                { "MaterialReservationId", $"{materialReservation.Id}" },
+                { "NumberMaterialsBooked", "12" },
+                { "UserId", $"{user.Id}" },
+                { "UserName", "testPassword" },
+            };
+
+            var content = new FormUrlEncodedContent(reservationMaterialCartViewModel);
+
+            var response = await _client.PostAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
+
             Assert.Equal(HttpStatusCode.OK, response.StatusCode); // Redirects on success
         }
 

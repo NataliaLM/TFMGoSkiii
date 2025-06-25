@@ -14,13 +14,13 @@ namespace TFMGoSki.Models
             Total = total;
             Paid = paid;
         }
-        public MaterialReservation Update(int userId, decimal total, bool paid)
-        {
-            UserId = userId;
-            Total = total;
-            Paid = paid;
-            return this;
-        }
+        //public MaterialReservation Update(int userId, decimal total, bool paid)
+        //{
+        //    UserId = userId;
+        //    Total = total;
+        //    Paid = paid;
+        //    return this;
+        //}
         public MaterialReservation UpdatePaid(bool paid)
         {
             Paid = paid;
