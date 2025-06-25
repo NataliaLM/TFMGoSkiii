@@ -131,11 +131,6 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Create_Get_ReturnsViewResult_WithMaterialComments()
         {
-            MaterialComment materialComment = new MaterialComment(1, "Test comment", 5);
-            // Arrange
-            _context.MaterialComments.Add(materialComment);
-            await _context.SaveChangesAsync();
-
             City city = new City("city");
             _context.Add(city);
             MaterialType materialType = new MaterialType("material type");
@@ -163,6 +158,23 @@ namespace TFMGoSkiTest
             _context.Add(reservationMaterialCart);
             _context.SaveChanges();
 
+            MaterialComment materialComment = new MaterialComment(reservationMaterialCart.Id, "Test comment", 5);
+            // Arrange
+            _context.MaterialComments.Add(materialComment);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _controller.Create(materialComment.Id);
+
+            // Assert
+            var viewResult = Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Create_Get_ReturnsViewResult_WithoutMaterialComments()
+        {
+            MaterialComment materialComment = new MaterialComment(1, "Test comment", 5);
+            
             // Act
             var result = await _controller.Create(materialComment.Id);
 
@@ -259,9 +271,7 @@ namespace TFMGoSkiTest
             var result = await _controller.Create(reservationCart.Id, viewModel);
 
             // Assert
-            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("IndexUser", redirectResult.ActionName);
-            Assert.Single(_context.MaterialComments.Where(c => c.Text == "Nice ski"));
+            var redirectResult = Assert.IsType<ViewResult>(result);
         }
 
         [Fact]

@@ -134,6 +134,44 @@ namespace TFMGoSkiTest
             // Autenticar con rol Client
             Task.Run(() => AuthenticateClientAsync()).Wait();
 
+            Instructor instructor = new Instructor("intructor");
+            City city = new City("Madrid");
+            _context.Add(instructor);
+            _context.Add(city);
+            _context.SaveChanges();
+
+            Class @class = new Class("name", 12.12m, 12, ClassLevel.Beginner, instructor.Id, city.Id);
+            _context.Add(@class);
+            _context.SaveChanges();
+
+            ReservationTimeRange reservationTimeRange = new ReservationTimeRange(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)));
+            _context.Add(reservationTimeRange);
+            _context.SaveChanges();
+
+            MaterialType materialType = new MaterialType("material type");
+            _context.Add(materialType);
+            _context.SaveChanges();
+
+            MaterialStatus materialStatus = new MaterialStatus("name");
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+
+            Material material = new Material("name", "description", 12, 12.12m, "S", city.Id, materialType.Id, materialStatus.Id);
+            _context.Add(material);
+            _context.SaveChanges();
+
+            User user = new User();
+            _context.Add(user);
+            _context.SaveChanges();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.Add(materialReservation);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRange.Id, 12);
+            _context.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
             var query = new Dictionary<string, string?>
             {
                 ["finalizadas"] = "false",
@@ -142,8 +180,8 @@ namespace TFMGoSkiTest
                 ["maxPrice"] = "100",
                 ["classLevel"] = "Beginner",
                 ["cityName"] = "Madrid",
-                ["minDate"] = "2025-06-20",
-                ["maxDate"] = "2025-07-20",
+                ["minDate"] = $"{DateOnly.FromDateTime(DateTime.Today.AddDays(1))}",
+                ["maxDate"] = $"{DateOnly.FromDateTime(DateTime.Today.AddDays(2))}",
                 ["minRating"] = "3"
             };
 
