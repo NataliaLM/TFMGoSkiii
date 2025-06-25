@@ -138,16 +138,25 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Post_Create_ValidData_CreatesAndRedirects()
         {
-            var material = _context.Materials.FirstOrDefault();
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("name");
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+            var material = new Material("name", "description", 12, 12.12m, "size", city.Id, materialType.Id, materialStatus.Id);
+            _context.Materials.Add(material);
+            _context.SaveChanges();
 
             var formData = new Dictionary<string, string>
-    {
-        { "StartDateOnly", DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd") },
-        { "EndDateOnly", DateOnly.FromDateTime(DateTime.Today.AddDays(1)).ToString("yyyy-MM-dd") },
-        { "StartTimeOnly", "10:00" },
-        { "EndTimeOnly", "12:00" },
-        { "MaterialId", material.Id.ToString() }
-    };
+            {
+                { "StartDateOnly", DateOnly.FromDateTime(DateTime.Today.AddDays(1)).ToString("yyyy-MM-dd") },
+                { "EndDateOnly", DateOnly.FromDateTime(DateTime.Today.AddDays(2)).ToString("yyyy-MM-dd") },
+                { "StartTimeOnly", "10:00" },
+                { "EndTimeOnly", "12:00" },
+                { "MaterialId", material.Id.ToString() }
+            };
 
             var content = new FormUrlEncodedContent(formData);
             var response = await _client.PostAsync($"/ReservationTimeRangeMaterials/Create?materialId={material.Id}", content);

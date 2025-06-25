@@ -82,6 +82,13 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Index_ReturnsViewWithStatusCode_Create()
+        {
+            var response = await _client.GetAsync("/MaterialTypes/Create");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Details_ReturnsMaterialType_WhenValidId()
         {
             var materialType = new MaterialType("Test Detail");

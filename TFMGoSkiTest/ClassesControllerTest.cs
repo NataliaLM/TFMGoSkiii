@@ -111,6 +111,14 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task Test_Classes_Index_ReturnsSuccess()
         {
+            Instructor instructor = new Instructor("instructor");
+            City city = new City("city");
+            _context.Add(instructor);
+            _context.Add(city);
+            _context.SaveChanges();
+            Class @class = new Class("name", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Add(@class);
+            _context.SaveChanges();
             var response = await _client.GetAsync("/Classes");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }

@@ -81,6 +81,13 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Create_Get_ReturnsSuccess()
+        {
+            var response = await _client.GetAsync("/MaterialStatus/Create");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Create_ValidMaterialStatus_RedirectsToIndex()
         {
             var data = new Dictionary<string, string>

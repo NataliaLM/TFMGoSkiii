@@ -102,6 +102,14 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Create_ReturnsSuccess()
+        {
+            var response = await _client.GetAsync("/MaterialReservations/Create");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Create_Post_CreatesReservationAndRedirects()
         {
             var email = await AuthenticateClientAsync();
@@ -209,6 +217,22 @@ namespace TFMGoSkiTest
 
             var updated = _context.MaterialReservations.FirstOrDefault(r => r.Id == reservation.Id);
             Assert.NotNull(updated);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsSuccess()
+        {
+            User user = new User();
+            _context.Add(user);
+            _context.SaveChanges();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.Add(materialReservation);
+            _context.SaveChanges();
+
+            var response = await _client.GetAsync($"MaterialReservations/Delete/{materialReservation.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
