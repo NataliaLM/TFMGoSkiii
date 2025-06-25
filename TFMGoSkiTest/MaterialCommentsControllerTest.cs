@@ -59,6 +59,23 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Details_Get_ReturnsViewResult_WithMaterialComments()
+        {
+            MaterialComment materialComment = new MaterialComment(1, "Test comment", 5);
+            // Arrange
+            _context.MaterialComments.Add(materialComment);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _controller.Details(materialComment.Id);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<MaterialComment>(viewResult.Model);
+        }
+
+
+        [Fact]
         public async Task IndexUser_ReturnsViewResult_WithUserComments()
         {
             // Arrange
@@ -110,6 +127,49 @@ namespace TFMGoSkiTest
             var model = Assert.IsAssignableFrom<IEnumerable<MaterialCommentDto>>(viewResult.Model);
             //Assert.Single(model);
         }
+
+        [Fact]
+        public async Task Create_Get_ReturnsViewResult_WithMaterialComments()
+        {
+            MaterialComment materialComment = new MaterialComment(1, "Test comment", 5);
+            // Arrange
+            _context.MaterialComments.Add(materialComment);
+            await _context.SaveChangesAsync();
+
+            City city = new City("city");
+            _context.Add(city);
+            MaterialType materialType = new MaterialType("material type");
+            _context.Add(materialType);
+            MaterialStatus materialStatus = new MaterialStatus("material status");
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+
+            Material material = new Material("material", "description", 12, 12.12m, "12", city.Id, materialType.Id, materialStatus.Id);
+            _context.Add(material);
+
+            User user = new User();
+            _context.Add(user);
+
+            _context.SaveChanges();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.Add(materialReservation);
+
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Today.AddHours(1)), TimeOnly.FromDateTime(DateTime.Today.AddHours(2)), 12, material.Id);
+            _context.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 12);
+            _context.Add(reservationMaterialCart);
+            _context.SaveChanges();
+
+            // Act
+            var result = await _controller.Create(materialComment.Id);
+
+            // Assert
+            var viewResult = Assert.IsType<NotFoundResult>(result);
+        }
+
 
         [Fact]
         public async Task Create_Post_ExistingComment_ReturnsViewWithError()

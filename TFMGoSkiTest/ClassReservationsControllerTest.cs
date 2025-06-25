@@ -952,6 +952,48 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Test_ClassReservations_Edit_Post_ReturnsRedirect_NumberBooked()
+        {
+            var user = new User { UserName = "InvalidEditUser" };
+
+            Instructor instructor = new Instructor("Name Instructor");
+            _context.Instructors.Add(instructor);
+            _context.SaveChanges();
+
+            City city = new City("Name City");
+            _context.Cities.Add(city);
+            _context.SaveChanges();
+
+            var @class = new Class("InvalidEditClass", 12.12m, 12, ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Users.Add(user);
+            _context.Classes.Add(@class);
+
+            ReservationTimeRangeClass reservationTimeRangeClass = new ReservationTimeRangeClass(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 8, @class.Id);
+            _context.ReservationTimeRangeClasses.Add(reservationTimeRangeClass);
+            await _context.SaveChangesAsync();
+
+            var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
+            _context.ClassReservations.Add(reservation);
+            await _context.SaveChangesAsync();
+
+            var formData = new Dictionary<string, string>
+            {
+                { "Id", reservation.Id.ToString() },
+                { "UserId", user.Id.ToString() },
+                { "ClassId", @class.Id.ToString() },
+                { "ReservationTimeRangeClassId", reservationTimeRangeClass.Id.ToString() },
+                { "NumberPersonsBooked", "2" } 
+            };
+
+            var content = new FormUrlEncodedContent(formData);
+
+            var response = await _client.PostAsync($"/ClassReservations/Edit/{reservation.Id}", content);
+
+
+            Assert.True(response.StatusCode == HttpStatusCode.Redirect || response.StatusCode == HttpStatusCode.OK);
+        }
+
+        [Fact]
         public async Task Test_ClassReservations_Delete_Get_ReturnsSuccess()
         {
             var user = new User { 
@@ -1040,6 +1082,10 @@ namespace TFMGoSkiTest
             var reservation = new ClassReservation(user.Id, @class.Id, reservationTimeRangeClass.Id, 1);
             _context.ClassReservations.Add(reservation);
             await _context.SaveChangesAsync();
+
+            ClassComment classComment = new ClassComment(reservation.Id, "text", 4);
+            _context.Add(classComment);
+            _context.SaveChanges();
 
             var response = await _client.PostAsync($"/ClassReservations/Delete/{reservation.Id}", new StringContent(""));
 
@@ -1797,6 +1843,50 @@ namespace TFMGoSkiTest
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
+
+        [Fact]
+        public async Task GetTimeRangesByClassId_ReturnsCorrectTimeRanges()
+        {
+            Instructor instructor = new Instructor("instructor");
+            City city = new City("city");
+            _context.Add(instructor);
+            _context.Add(city);
+            _context.SaveChanges();
+            // Arrange
+            var classEntity = new Class("Ski Class", 12.12m, 12,ClassLevel.Advanced, instructor.Id, city.Id);
+            _context.Classes.Add(classEntity);
+            await _context.SaveChangesAsync();
+
+            var timeRange1 = new ReservationTimeRangeClass(
+                DateOnly.FromDateTime(DateTime.Today),
+                DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                TimeOnly.FromTimeSpan(new TimeSpan(10, 0, 0)),
+                TimeOnly.FromTimeSpan(new TimeSpan(12, 0, 0)),
+                5,
+                classEntity.Id);
+
+            var timeRange2 = new ReservationTimeRangeClass(
+                DateOnly.FromDateTime(DateTime.Today.AddDays(2)),
+                DateOnly.FromDateTime(DateTime.Today.AddDays(3)),
+                TimeOnly.FromTimeSpan(new TimeSpan(14, 0, 0)),
+                TimeOnly.FromTimeSpan(new TimeSpan(16, 0, 0)),
+                3,
+                classEntity.Id);
+
+            _context.ReservationTimeRangeClasses.AddRange(timeRange1, timeRange2);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var response = await _client.GetAsync($"/ClassReservations/GetTimeRangesByClassId?classId={classEntity.Id}");
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var responseString = await response.Content.ReadAsStringAsync();
+             
+            Assert.Contains($"{timeRange1.Id}", responseString);
+            Assert.Contains($"{timeRange2.Id}", responseString);
+        }
+
 
     }
 }
