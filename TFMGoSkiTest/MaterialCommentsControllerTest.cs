@@ -241,8 +241,20 @@ namespace TFMGoSkiTest
             var user = new User();
             _context.Users.Add(user);
 
-            var material = new Material("Ski", "Desc", 1, 1, "img", 1, 1, 1);
+            await _context.SaveChangesAsync();
+
+            City city = new City("city");
+            MaterialType materialType = new MaterialType("name");
+            MaterialStatus materialStatus = new MaterialStatus("name");
+            _context.Add(city);
+            _context.Add(materialType);
+            _context.Add(materialStatus);
+            _context.SaveChanges();
+
+            var material = new Material("Ski", "Desc", 1, 1, "img", city.Id, materialType.Id, materialStatus.Id);
             _context.Materials.Add(material);
+
+            await _context.SaveChangesAsync();
 
             var timeRange = new ReservationTimeRangeMaterial(
                 DateOnly.FromDateTime(DateTime.Today),
@@ -255,6 +267,8 @@ namespace TFMGoSkiTest
             _context.ReservationTimeRangeMaterials.Add(timeRange);
 
             await _context.SaveChangesAsync();
+
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12.12m, false);
 
             var reservationCart = new ReservationMaterialCart(material.Id, 1, user.Id, timeRange.Id, 10);
             _context.ReservationMaterialCarts.Add(reservationCart);
