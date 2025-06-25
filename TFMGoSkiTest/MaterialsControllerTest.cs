@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using TFMGoSki.Data;
 using TFMGoSki.Models;
 using TFMGoSki.ViewModels;
 using Xunit;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace TFMGoSkiTest
 {
@@ -23,9 +25,12 @@ namespace TFMGoSkiTest
         private readonly HttpClient _client;
         private readonly WebApplicationFactory<Program> _factory;
         private readonly TFMGoSkiDbContext _context;
+        private readonly IServiceScope _scope; 
+        private readonly UserManager<User> _userManager;
 
         public MaterialsControllerTest(WebApplicationFactory<Program> factory)
         {
+            
             _factory = factory.WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Test");
@@ -39,6 +44,48 @@ namespace TFMGoSkiTest
             // Limpiar la base de datos para tests
             _context.Materials.RemoveRange(_context.Materials);
             _context.SaveChanges();
+
+            _scope = _factory.Services.CreateScope();
+            _userManager = _scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+        }
+
+        private async Task<string> AuthenticateClientAsync(string role = "Client")
+        {
+            var roleManager = _scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+
+            if (!await roleManager.RoleExistsAsync(role))
+                await roleManager.CreateAsync(new Role(role));
+
+            var testEmail = $"testuser{Guid.NewGuid()}@example.com";
+            var testPassword = "Test123!";
+
+            var user = new User
+            {
+                UserName = testEmail,
+                Email = testEmail,
+                FullName = "Test User",
+                PhoneNumber = "1234567890"
+            };
+
+            var result = await _userManager.CreateAsync(user, testPassword);
+            Assert.True(result.Succeeded);
+
+            await _userManager.AddToRoleAsync(user, role);
+
+            var loginData = new Dictionary<string, string>
+            {
+                { "UserName", testEmail },
+                { "Password", testPassword }
+            };
+
+            var loginContent = new FormUrlEncodedContent(loginData);
+
+            var response = await _client.PostAsync("/Account/Login", loginContent);
+            response.EnsureSuccessStatusCode();
+
+            // Después del login, el cliente mantiene cookies (auth)
+            return testEmail;
         }
 
         [Fact]
@@ -61,11 +108,32 @@ namespace TFMGoSkiTest
         [Fact]
         public async Task IndexUser_FiltersWork()
         {
+            await AuthenticateClientAsync();
+
             // Arrange
             var material1 = new Material("Ski1", "Desc", 5, 50, "M", 1, 1, 1);
             var material2 = new Material("Ski2", "Desc", 5, 150, "L", 1, 1, 1);
             _context.Materials.AddRange(material1, material2);
             await _context.SaveChangesAsync();
+
+            User user = new User();
+            _context.Add(user);
+            _context.SaveChanges();
+            MaterialReservation materialReservation = new MaterialReservation(user.Id, 12, false);
+            _context.Add(materialReservation);
+            _context.SaveChanges();
+
+            ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(DateOnly.FromDateTime(DateTime.Today.AddDays(1)), DateOnly.FromDateTime(DateTime.Today.AddDays(2)), TimeOnly.FromDateTime(DateTime.Now.AddHours(1)), TimeOnly.FromDateTime(DateTime.Now.AddHours(2)), 12, material1.Id);
+            _context.Add(reservationTimeRangeMaterial);
+            _context.SaveChanges();
+
+            ReservationMaterialCart reservationMaterialCart = new ReservationMaterialCart(material1.Id, materialReservation.Id, user.Id, reservationTimeRangeMaterial.Id, 1);
+            _context.Add(reservationMaterialCart);
+            _context.SaveChanges();
+            
+            MaterialComment materialComment = new MaterialComment(materialReservation.Id, "text", 4);
+            _context.Add(materialComment);
+            _context.SaveChanges();
 
             // Act
             var response = await _client.GetAsync("/Materials/IndexUser?minPrice=100&size=L");
