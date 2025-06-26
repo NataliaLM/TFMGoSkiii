@@ -474,8 +474,8 @@ namespace TFMGoSki.Controllers
             
             #region Total
 
-            var material = _context.Materials
-                    .FirstOrDefault(c => c.Id == reservationMaterialCart.MaterialId);
+            var material = _context.Materials.FirstOrDefault(c => c.Id == reservationMaterialCart.MaterialId);
+            if (material == null) return NotFound();
 
             var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCart.MaterialReservationId);
             if (userReservation == null) return NotFound();
