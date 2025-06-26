@@ -19,7 +19,10 @@
             <th>Time Range</th>
             <th>Number</th>
             <th>Subtotal</th>
+@if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"] && ViewData.ContainsKey("IsPaid") && (bool)ViewData["IsPaid"])
+            {
             <th>Comment</th>
+}
         </tr>
     </thead>
     <tbody>
@@ -33,7 +36,7 @@
             </td>
             <td>@cart.NumberMaterialsBooked</td>
             <td>@(cart.MaterialPrice * cart.NumberMaterialsBooked)</td>
-            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"])
+            @if (ViewData.ContainsKey("IsClient") && (bool)ViewData["IsClient"] && ViewData.ContainsKey("IsPaid") && (bool)ViewData["IsPaid"])
             {
             <td>
                 @if (!cart.HasComment)

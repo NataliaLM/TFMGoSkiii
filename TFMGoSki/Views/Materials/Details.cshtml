@@ -79,6 +79,35 @@ else
     <p>No availabilities for this material.</p>
 }
 
+<hr />
+<h4>Comments</h4>
+
+@if (Model.Comments != null && Model.Comments.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Text</th>
+                <th>Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var comment in Model.Comments)
+        {
+            <tr>
+                <td>@comment.Text</td>
+                <td>@comment.Raiting</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No comments yet for this material.</p>
+}
+
+
 <div>
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a> |

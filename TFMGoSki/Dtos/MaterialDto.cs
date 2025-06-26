@@ -14,9 +14,8 @@ namespace TFMGoSki.Dtos
         public int QuantityMaterial { get; set; }
         [Display(Name = "Price")]
         public decimal Price { get; set; }
-        [Display(Name = "Price")]
+        [Display(Name = "Size")]
         public string? Size { get; set; }
-
         [Display(Name = "City Name")]
         public string? CityId { get; set; }
         [Display(Name = "Material Type")]

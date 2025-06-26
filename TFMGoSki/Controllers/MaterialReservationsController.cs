@@ -56,6 +56,15 @@ namespace TFMGoSki.Controllers
 
             if (materialReservation == null) return NotFound();
 
+            if (materialReservation.Paid == true)
+            {
+                ViewData["IsPaid"] = true;
+            }
+            else
+            {
+                ViewData["IsPaid"] = false;
+            }
+
             var user = await _context.Users.FindAsync(materialReservation.UserId);
 
             var cartsRaw = await _context.ReservationMaterialCarts

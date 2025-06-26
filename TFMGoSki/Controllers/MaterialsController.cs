@@ -89,8 +89,6 @@ namespace TFMGoSki.Controllers
             return View(dtoList);
         }
 
-
-
         // GET: Materials/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -115,6 +113,28 @@ namespace TFMGoSki.Controllers
             {
                 return NotFound();
             }
+
+            #region comments
+
+            var materials = await _context.Materials.ToListAsync();
+
+            var materialIds = materials.Select(m => m.Id).ToList();
+
+            var materialCommentDtos = await _context.MaterialComments
+    .Join(_context.ReservationMaterialCarts,
+          comment => comment.ReservationMaterialCartId,
+          cart => cart.Id,
+          (comment, cart) => new { comment, cart })
+    .Where(x => x.cart.MaterialId == material.Id)
+    .Select(x => new MaterialCommentDto
+    {
+        Id = x.comment.Id,
+        Text = x.comment.Text,
+        Raiting = x.comment.Raiting
+    })
+    .ToListAsync();
+
+            #endregion
 
             // Buscar las disponibilidades asociadas manualmente
             var reservations = await _context.ReservationTimeRangeMaterials
@@ -145,7 +165,8 @@ namespace TFMGoSki.Controllers
                 CityId = material.CityId.ToString(),
                 MaterialTypeId = material.MaterialTypeId.ToString(),
                 MaterialStatusId = material.MaterialStatusId.ToString(),
-                ReservationTimeRangeMaterialDto = reservationDtos
+                ReservationTimeRangeMaterialDto = reservationDtos,
+                Comments = materialCommentDtos
             };
 
             return View(materialDto);
