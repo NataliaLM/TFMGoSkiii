@@ -118,6 +118,7 @@ namespace TFMGoSki.Controllers
                 try
                 {
                     MaterialStatus? materialStatus = _context.MaterialStatuses.FirstOrDefault(x => x.Id == id);
+                    if (materialStatus == null) return NotFound();
                     materialStatus.Update(materialStatusViewModel.Name);
                     _context.Update(materialStatus);
                     await _context.SaveChangesAsync();

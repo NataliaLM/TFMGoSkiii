@@ -87,6 +87,7 @@ namespace TFMGoSki.Controllers
             if (ModelState.IsValid)
             {
                 Material? material = _context.Materials.FirstOrDefault(m => m.Id == materialId);
+                if (material == null) return NotFound();
                 ReservationTimeRangeMaterial reservationTimeRangeMaterial = new ReservationTimeRangeMaterial(reservationTimeRangeMaterialViewModel.StartDateOnly, reservationTimeRangeMaterialViewModel.EndDateOnly, reservationTimeRangeMaterialViewModel.StartTimeOnly, reservationTimeRangeMaterialViewModel.EndTimeOnly, material.QuantityMaterial, reservationTimeRangeMaterialViewModel.MaterialId);
                 _context.Add(reservationTimeRangeMaterial);
                 await _context.SaveChangesAsync();
@@ -134,8 +135,9 @@ namespace TFMGoSki.Controllers
                 try
                 {
                     Material? material = _context.Materials.FirstOrDefault(m => m.Id == reservationTimeRangeMaterialViewModel.MaterialId);
-
+                    if (material == null) return NotFound();
                     ReservationTimeRangeMaterial? reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials.FirstOrDefault(r => r.Id == reservationTimeRangeMaterialViewModel.Id);
+                    if (reservationTimeRangeMaterial == null) return NotFound();
                     reservationTimeRangeMaterial.Update(reservationTimeRangeMaterialViewModel.StartDateOnly, reservationTimeRangeMaterialViewModel.EndDateOnly, reservationTimeRangeMaterialViewModel.StartTimeOnly, reservationTimeRangeMaterialViewModel.EndTimeOnly, material.QuantityMaterial, reservationTimeRangeMaterialViewModel.MaterialId);
 
                     _context.Update(reservationTimeRangeMaterial);

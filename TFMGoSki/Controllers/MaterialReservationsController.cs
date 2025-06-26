@@ -177,6 +177,7 @@ namespace TFMGoSki.Controllers
                 try
                 {
                     MaterialReservation? materialReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == materialReservationViewModel.Id);
+                    if (materialReservation == null) return NotFound();
                     materialReservation.UpdatePaid(true);
                     _context.Update(materialReservation);
                     await _context.SaveChangesAsync();

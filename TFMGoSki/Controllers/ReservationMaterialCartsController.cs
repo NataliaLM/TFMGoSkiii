@@ -131,8 +131,10 @@ namespace TFMGoSki.Controllers
             //LoadSelectLists(userId); // Solo cargar reservas del usuario
 
             Material? material = _context.Materials.FirstOrDefault(m => m.Id == materialId);
+            if (material == null) return NotFound();
             ReservationTimeRangeMaterial? reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials.FirstOrDefault(r => r.Id == reservationTimeRangeMaterialId);
-                        
+            if (reservationTimeRangeMaterial == null) return NotFound();            
+
             var viewModel = new ReservationMaterialCartViewModel
             {
                 UserId = userId,
@@ -211,6 +213,7 @@ namespace TFMGoSki.Controllers
                 #region Total
 
                 var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCartViewModel.MaterialReservationId);
+                if (userReservation == null) return NotFound();
                 userReservation.Total = userReservation.Total + (material.Price * reservationMaterialCartViewModel.NumberMaterialsBooked);
                 _context.Update(userReservation);
                 await _context.SaveChangesAsync();
@@ -284,6 +287,7 @@ namespace TFMGoSki.Controllers
                 try
                 {
                     ReservationMaterialCart reservationMaterialCart = _context.ReservationMaterialCarts.FirstOrDefault(c => c.Id == id);
+                    if (reservationMaterialCart == null) return NotFound();
 
                     #region Remaining Materials Quantity
 
@@ -410,6 +414,7 @@ namespace TFMGoSki.Controllers
                     #region Total
 
                     var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCart.MaterialReservationId);
+                    if (userReservation == null) return NotFound();
 
                     int differenceChangeReservation = newNumberBooked - originalNumberBooked;
 
@@ -455,10 +460,7 @@ namespace TFMGoSki.Controllers
 
             var reservationMaterialCart = await _context.ReservationMaterialCarts
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (reservationMaterialCart == null)
-            {
-                return NotFound();
-            }
+            if (reservationMaterialCart == null) return NotFound();
 
             return View(reservationMaterialCart);
         }
@@ -468,6 +470,7 @@ namespace TFMGoSki.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var reservationMaterialCart = await _context.ReservationMaterialCarts.FindAsync(id);
+            if (reservationMaterialCart == null) return NotFound();
             
             #region Total
 
@@ -475,6 +478,7 @@ namespace TFMGoSki.Controllers
                     .FirstOrDefault(c => c.Id == reservationMaterialCart.MaterialId);
 
             var userReservation = _context.MaterialReservations.FirstOrDefault(mr => mr.Id == reservationMaterialCart.MaterialReservationId);
+            if (userReservation == null) return NotFound();
             userReservation.Total = userReservation.Total - (material.Price * reservationMaterialCart.NumberMaterialsBooked);
             _context.Update(userReservation);
             await _context.SaveChangesAsync();
@@ -484,7 +488,7 @@ namespace TFMGoSki.Controllers
             #region RemainigStudentsQuantity
 
             ReservationTimeRangeMaterial? reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials.FirstOrDefault(rtrm => rtrm.Id == reservationMaterialCart.ReservationTimeRangeMaterialId);
-
+            if (reservationTimeRangeMaterial == null) return NotFound();
             if (reservationTimeRangeMaterial.RemainingMaterialsQuantity == -1)
             {
                 reservationTimeRangeMaterial.RemainingMaterialsQuantity = reservationMaterialCart.NumberMaterialsBooked;
