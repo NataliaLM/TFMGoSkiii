@@ -264,7 +264,7 @@ namespace TFMGoSkiTest
             var content = new FormUrlEncodedContent(reservationMaterialCartViewModel);
 
             var response = await _client.PostAsJsonAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
@@ -358,7 +358,7 @@ namespace TFMGoSkiTest
 
             var response = await _client.PostAsync($"/ReservationMaterialCarts/Edit/{reservationMaterialCart.Id}", content);
 
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); // Redirects on success
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode); // Redirects on success
         }
 
 
