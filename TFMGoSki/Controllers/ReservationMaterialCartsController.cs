@@ -284,7 +284,7 @@ namespace TFMGoSki.Controllers
             int userId = int.Parse(_userManager.GetUserId(User));
             reservationMaterialCartViewModel.UserId = userId;
             var userFound = _context.Users.FirstOrDefault(u => u.Id == userId);
-            if (userFound != null) return NotFound();
+            if (userFound == null) return NotFound();
             string? user = userFound.Email;
             if (user == null) return NotFound();
             reservationMaterialCartViewModel.UserName = user;
