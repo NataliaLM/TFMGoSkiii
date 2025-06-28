@@ -156,8 +156,9 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ReservationMaterialCartViewModel reservationMaterialCartViewModel)
         {
-            reservationMaterialCartViewModel.UserId = int.Parse(_userManager.GetUserId(User));
-            string? reservationMaterial = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            int userId = int.Parse(_userManager.GetUserId(User));
+            reservationMaterialCartViewModel.UserId = userId;
+            string? reservationMaterial = _context.Users.FirstOrDefault(u => u.Id == userId).Email;
             if (reservationMaterial == null) return NotFound();
             reservationMaterialCartViewModel.UserName = reservationMaterial;
             if (ModelState.IsValid)
@@ -278,8 +279,9 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, ReservationMaterialCartViewModel reservationMaterialCartViewModel)
         {
-            reservationMaterialCartViewModel.UserId = int.Parse(_userManager.GetUserId(User));
-            string? user = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            int userId = int.Parse(_userManager.GetUserId(User));
+            reservationMaterialCartViewModel.UserId = userId;
+            string? user = _context.Users.FirstOrDefault(u => u.Id == userId).Email;
             if (user == null) return NotFound();
             reservationMaterialCartViewModel.UserName = user;
             if (id != reservationMaterialCartViewModel.Id)
