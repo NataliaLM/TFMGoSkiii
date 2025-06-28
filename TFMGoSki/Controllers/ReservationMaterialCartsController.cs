@@ -158,7 +158,9 @@ namespace TFMGoSki.Controllers
         {
             int userId = int.Parse(_userManager.GetUserId(User));
             reservationMaterialCartViewModel.UserId = userId;
-            string? reservationMaterial = _context.Users.FirstOrDefault(u => u.Id == userId).Email;
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (user == null) return NotFound();
+            string? reservationMaterial = user.Email;
             if (reservationMaterial == null) return NotFound();
             reservationMaterialCartViewModel.UserName = reservationMaterial;
             if (ModelState.IsValid)
@@ -281,7 +283,9 @@ namespace TFMGoSki.Controllers
         {
             int userId = int.Parse(_userManager.GetUserId(User));
             reservationMaterialCartViewModel.UserId = userId;
-            string? user = _context.Users.FirstOrDefault(u => u.Id == userId).Email;
+            var userFound = _context.Users.FirstOrDefault(u => u.Id == userId);
+            if (userFound != null) return NotFound();
+            string? user = userFound.Email;
             if (user == null) return NotFound();
             reservationMaterialCartViewModel.UserName = user;
             if (id != reservationMaterialCartViewModel.Id)
