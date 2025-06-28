@@ -2,3 +2,20 @@
     background-color: #f2f2f2;
     border-radius: 4px;
 }
+
+.dropdown-menu {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.nav-link.dropdown-toggle i {
+    font-size: 1rem;
+    opacity: 0.8;
+}

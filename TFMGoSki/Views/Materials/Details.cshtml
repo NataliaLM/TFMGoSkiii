@@ -114,7 +114,7 @@ else
     
 </div>
 
-@if (!ViewData.ContainsKey("IsClient") && !(bool)ViewData["IsClient"])
+@if (ViewData.ContainsKey("IsClient") && !(bool)ViewData["IsClient"])
 {
 <div>
 <a asp-controller="ReservationTimeRangeMaterials" asp-action="Create" asp-route-materialId="@Model.Id" class="btn btn-success">

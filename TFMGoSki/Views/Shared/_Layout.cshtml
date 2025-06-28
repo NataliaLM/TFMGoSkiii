@@ -2,130 +2,145 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="auto">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TFMGoSki</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#712cf9" />
+    <title>@ViewData["Title"] - Snow Go</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/siteLayoutChange.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TFMGoSki.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="~/css/sign-in.css" asp-append-version="true" />
+
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TFMGoSki</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+    <!-- Color mode toggle -->
+    <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+        <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+            <svg class="bi my-1 theme-icon-active" aria-hidden="true"><use href="#circle-half"></use></svg>
+            <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+            <li><button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light">Light <svg class="bi ms-auto d-none" aria-hidden="true"><use href="#check2" /></svg></button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark">Dark <svg class="bi ms-auto d-none" aria-hidden="true"><use href="#check2" /></svg></button></li>
+            <li><button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto">Auto <svg class="bi ms-auto d-none" aria-hidden="true"><use href="#check2" /></svg></button></li>
+        </ul>
+    </div>
+
+    <!-- Main Navbar -->
+    <header class="p-3 mb-3 border-bottom bg-white shadow-sm">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                <a class="navbar-brand fw-bold text-primary" asp-controller="Home" asp-action="Index">Snow Go</a>
+
+                <ul class="nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link link-dark" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+
+                    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle fw-semibold text-dark px-3" href="#" id="dropdownClass" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-snow me-1"></i> Class Management
+        </a>
+        <ul class="dropdown-menu shadow border-0 rounded-3" aria-labelledby="dropdownClass">
+            <li><a class="dropdown-item" asp-controller="Cities" asp-action="Index">Cities</a></li>
+            <li><a class="dropdown-item" asp-controller="Classes" asp-action="Index">Classes</a></li>
+            <li><a class="dropdown-item" asp-controller="Instructors" asp-action="Index">Instructors</a></li>
+            <li><a class="dropdown-item" asp-controller="ReservationTimeRangeClasses" asp-action="Index">Reservation Time Ranges</a></li>
+            <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="Index">Class Comments</a></li>
+            <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="Index">Class Reservations</a></li>
+        </ul>
     </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle fw-semibold text-dark px-3" href="#" id="dropdownMaterial" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-tree me-1"></i> Material Management
+        </a>
+        <ul class="dropdown-menu shadow border-0 rounded-3" aria-labelledby="dropdownMaterial">
+            <li><a class="dropdown-item" asp-controller="Materials" asp-action="Index">Materials</a></li>
+            <li><a class="dropdown-item" asp-controller="MaterialStatus" asp-action="Index">Material Status</a></li>
+            <li><a class="dropdown-item" asp-controller="MaterialTypes" asp-action="Index">Material Types</a></li>
+            <li><a class="dropdown-item" asp-controller="ReservationTimeRangeMaterials" asp-action="Index">Reservation Time Ranges</a></li>
+        </ul>
+    </li>
+}
+
+@if (SignInManager.IsSignedIn(User) && User.IsInRole("Client"))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle fw-semibold text-dark px-3" href="#" id="dropdownMyClasses" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-snow me-1"></i> My Classes
+        </a>
+        <ul class="dropdown-menu shadow border-0 rounded-3" aria-labelledby="dropdownMyClasses">
+            <li><a class="dropdown-item" asp-controller="Classes" asp-action="IndexUser">View Classes</a></li>
+            <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="IndexUser">My Class Comments</a></li>
+            <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="IndexUser">My Class Reservations</a></li>
+        </ul>
     </li>
 
-    @if (SignInManager.IsSignedIn(User) && (User.IsInRole("Admin") || User.IsInRole("Worker")))
-    {
-        <!-- Class Management Dropdown -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Class Management</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" asp-controller="Cities" asp-action="Index">Cities</a></li>
-                <li><a class="dropdown-item" asp-controller="Classes" asp-action="Index">Classes</a></li>
-                <li><a class="dropdown-item" asp-controller="Instructors" asp-action="Index">Instructors</a></li>
-                <li><a class="dropdown-item" asp-controller="ReservationTimeRangeClasses" asp-action="Index">Reservation Time Ranges</a></li>
-                <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="Index">Class Comments</a></li>
-                <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="Index">Class Reservations</a></li>
-            </ul>
-        </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle fw-semibold text-dark px-3" href="#" id="dropdownMyMaterials" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-tree me-1"></i> My Materials
+        </a>
+        <ul class="dropdown-menu shadow border-0 rounded-3" aria-labelledby="dropdownMyMaterials">
+            <li><a class="dropdown-item" asp-controller="MaterialComments" asp-action="IndexUser">My Material Comments</a></li>
+            <li><a class="dropdown-item" asp-controller="MaterialReservations" asp-action="IndexUser">My Material Reservations</a></li>
+            <li><a class="dropdown-item" asp-controller="Materials" asp-action="IndexUser">My Materials</a></li>
+            <li><a class="dropdown-item" asp-controller="ReservationMaterialCarts" asp-action="IndexUser">My Reservation Cart</a></li>
+        </ul>
+    </li>
+}
 
-        <!-- Material Management Dropdown -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">Material Management</a>
-            <ul class="dropdown-menu">
-                <!-- <li><a class="dropdown-item" asp-controller="MaterialComments" asp-action="Index">Material Comments</a></li>
-                <li><a class="dropdown-item" asp-controller="MaterialReservations" asp-action="Index">Material Reservations</a></li> -->
-                <li><a class="dropdown-item" asp-controller="Materials" asp-action="Index">Materials</a></li>
-                <li><a class="dropdown-item" asp-controller="MaterialStatus" asp-action="Index">Material Status</a></li>
-                <li><a class="dropdown-item" asp-controller="MaterialTypes" asp-action="Index">Material Types</a></li>
-                <!--<li><a class="dropdown-item" asp-controller="ReservationMaterialCarts" asp-action="Index">Reservation Carts</a></li>-->
-                <li><a class="dropdown-item" asp-controller="ReservationTimeRangeMaterials" asp-action="Index">Reservation Time Ranges</a></li>
-            </ul>
-        </li>
-    }
+                </ul>
 
-    @if (SignInManager.IsSignedIn(User) && User.IsInRole("Client"))
-    {
-        <!-- My Classes Dropdown -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">My Classes</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" asp-controller="Classes" asp-action="IndexUser">View Classes</a></li>
-                <li><a class="dropdown-item" asp-controller="ClassComments" asp-action="IndexUser">My Class Comments</a></li>
-                <li><a class="dropdown-item" asp-controller="ClassReservations" asp-action="IndexUser">My Class Reservations</a></li>
-            </ul>
-        </li>
-
-        <!-- My Materials Dropdown -->
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">My Materials</a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" asp-controller="MaterialComments" asp-action="IndexUser">My Material Comments</a></li>
-                <li><a class="dropdown-item" asp-controller="MaterialReservations" asp-action="IndexUser">My Material Reservations</a></li>
-                <li><a class="dropdown-item" asp-controller="Materials" asp-action="IndexUser">My Materials</a></li>
-                <li><a class="dropdown-item" asp-controller="ReservationMaterialCarts" asp-action="IndexUser">My Reservation Cart</a></li>
-            </ul>
-        </li>
-    }
-
-    <!-- Profile & Account -->
-    @if (SignInManager.IsSignedIn(User))
-    {
-        <li class="nav-item">
-            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                <button type="submit" class="nav-link btn btn-link text-dark" style="border: none; padding: 0;">Logout</button>
-            </form>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
-        </li>
-    }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
-        </li>
-    }
-</ul>
-
+                <div class="text-end">
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <a class="btn btn-outline-primary me-2" asp-controller="Account" asp-action="Profile">Profile</a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-outline-danger">Logout</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-primary me-2" asp-controller="Account" asp-action="Login">Login</a>
+                        <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Register</a>
+                    }
                 </div>
             </div>
-        </nav>
+        </div>
     </header>
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - TFMGoSki - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer mt-auto py-2 bg-light border-top">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2025 - Snow Go</span>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- Scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/color-modes.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- SVG Symbols (required by theme toggle) -->
+    @* Puedes copiar los <symbol> de tu HTML original aquí o como archivo parcial *@
 </body>
 </html>

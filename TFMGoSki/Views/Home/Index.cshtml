@@ -1,8 +1,82 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero-section {
+        min-height: calc(100vh - 150px);
+        background: 
+            linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)),
+            url('/Assets/fotopersonaesquia.png') no-repeat center center !important;
+        background-size: cover !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        color: #212529 !important;
+        text-align: center;
+    }
+
+    .welcome-content {
+        max-width: 700px;
+        /* Sin fondo para evitar recuadro */
+        background-color: transparent;
+        padding: 2rem;
+        color: #212529;
+    }
+
+    /* Sólo los títulos en cursiva y Dancing Script */
+    .welcome-content h1,
+    .welcome-content h3,
+    .welcome-content h4 {
+        font-family: 'Dancing Script', cursive;
+        font-style: italic;
+        font-weight: bold;
+        color: #212529;
+        margin-top: 2rem;
+    }
+
+    .welcome-content h1 {
+        font-size: 4rem;
+        margin-top: 0;
+    }
+
+    .welcome-content h3,
+    .welcome-content h4 {
+        font-size: 2.2rem;
+    }
+
+    /* Texto normal no cursivo, pero en negrita y negro */
+    .welcome-content p,
+    .welcome-content ul,
+    .welcome-content li {
+        font-family: Arial, sans-serif;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: #212529;
+        text-align: left;
+        padding-left: 1rem;
+    }
+
+    .welcome-content li {
+        margin-bottom: 0.75rem;
+    }
+</style>
+
+<div class="hero-section">
+    <div class="welcome-content">
+        <h1 class="display-4">Welcome!</h1>
+        <p class="lead">Discover an easier and more reliable way to organize your snow experience.</p>
+
+        <h3>Why use our platform?</h3>
+        <ul class="lead">
+            <li><strong>Quick and easy access:</strong> Book equipment and classes anytime, from any device.</li>
+            <li><strong>Efficient management:</strong> Staff can manage bookings and control inventory in an organized and practical way.</li>
+            <li><strong>Interaction and trust:</strong> Users can leave reviews about the equipment and classes, helping others make informed decisions.</li>
+        </ul>
+
+        <h4>Our slogan:</h4>
+        <p class="fst-italic">"Ski without worries: book, enjoy, and glide."</p>
+    </div>
 </div>
