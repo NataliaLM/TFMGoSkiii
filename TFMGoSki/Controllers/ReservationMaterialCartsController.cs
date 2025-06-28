@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -156,7 +157,9 @@ namespace TFMGoSki.Controllers
         public async Task<IActionResult> Create(ReservationMaterialCartViewModel reservationMaterialCartViewModel)
         {
             reservationMaterialCartViewModel.UserId = int.Parse(_userManager.GetUserId(User));
-            reservationMaterialCartViewModel.UserName = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            string? reservationMaterial = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            if (reservationMaterial == null) return NotFound();
+            reservationMaterialCartViewModel.UserName = reservationMaterial;
             if (ModelState.IsValid)
             {
                 #region Remaining Materials Quantity
@@ -276,7 +279,9 @@ namespace TFMGoSki.Controllers
         public async Task<IActionResult> Edit(int id, ReservationMaterialCartViewModel reservationMaterialCartViewModel)
         {
             reservationMaterialCartViewModel.UserId = int.Parse(_userManager.GetUserId(User));
-            reservationMaterialCartViewModel.UserName = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            string? user = _context.Users.FirstOrDefault(u => u.Id == int.Parse(_userManager.GetUserId(User))).Email;
+            if (user == null) return NotFound();
+            reservationMaterialCartViewModel.UserName = user;
             if (id != reservationMaterialCartViewModel.Id)
             {
                 return NotFound();
