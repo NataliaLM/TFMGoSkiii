@@ -163,21 +163,19 @@ namespace TFMGoSki.Controllers
             string? reservationMaterial = user.Email;
             if (reservationMaterial == null) return NotFound();
             reservationMaterialCartViewModel.UserName = reservationMaterial;
+            var reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials
+                    .FirstOrDefault(r => r.Id == reservationMaterialCartViewModel.ReservationTimeRangeMaterialId);
+            var material = _context.Materials
+                    .FirstOrDefault(c => c.Id == reservationMaterialCartViewModel.MaterialId);
+            if (reservationTimeRangeMaterial == null || material == null)
+            {
+                ModelState.AddModelError(string.Empty, "Reservation time range or material not found.");
+                //LoadSelectLists();
+                return View(reservationMaterialCartViewModel);
+            }
             if (ModelState.IsValid)
             {
-                #region Remaining Materials Quantity
-
-                var reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials
-                    .FirstOrDefault(r => r.Id == reservationMaterialCartViewModel.ReservationTimeRangeMaterialId);
-                var material = _context.Materials
-                    .FirstOrDefault(c => c.Id == reservationMaterialCartViewModel.MaterialId);
-
-                if (reservationTimeRangeMaterial == null || material == null)
-                {
-                    ModelState.AddModelError(string.Empty, "Reservation time range or material not found.");
-                    //LoadSelectLists();
-                    return View(reservationMaterialCartViewModel);
-                }
+                #region Remaining Materials Quantity                           
 
                 int numberToBook = reservationMaterialCartViewModel.NumberMaterialsBooked;
 
@@ -232,7 +230,10 @@ namespace TFMGoSki.Controllers
 
                 return RedirectToAction(nameof(IndexUser));                
             }
-            
+
+            reservationMaterialCartViewModel.MaterialName = material.Name;
+            reservationMaterialCartViewModel.ReservationTimeRangeMaterialName = $"({reservationTimeRangeMaterial.EndDateOnly} - {reservationTimeRangeMaterial.EndDateOnly}) - ({reservationTimeRangeMaterial.StartTimeOnly} - {reservationTimeRangeMaterial.EndTimeOnly})";
+
             //LoadSelectLists();
             return View(reservationMaterialCartViewModel);
         }
@@ -458,6 +459,19 @@ namespace TFMGoSki.Controllers
                 return RedirectToAction(nameof(IndexUser));
             }
             LoadSelectLists();
+            var reservationTimeRangeMaterial = _context.ReservationTimeRangeMaterials
+                    .FirstOrDefault(r => r.Id == reservationMaterialCartViewModel.ReservationTimeRangeMaterialId);
+            var materialFound = _context.Materials
+                    .FirstOrDefault(c => c.Id == reservationMaterialCartViewModel.MaterialId);
+            if (reservationTimeRangeMaterial == null || materialFound == null)
+            {
+                ModelState.AddModelError(string.Empty, "Reservation time range or material not found.");
+                //LoadSelectLists();
+                return View(reservationMaterialCartViewModel);
+            }
+            reservationMaterialCartViewModel.MaterialName = materialFound.Name;
+            reservationMaterialCartViewModel.ReservationTimeRangeMaterialName = $"({reservationTimeRangeMaterial.EndDateOnly} - {reservationTimeRangeMaterial.EndDateOnly}) - ({reservationTimeRangeMaterial.StartTimeOnly} - {reservationTimeRangeMaterial.EndTimeOnly})";
+
             return View(reservationMaterialCartViewModel);
         }
 

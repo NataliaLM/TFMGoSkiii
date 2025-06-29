@@ -27,6 +27,7 @@ namespace TFMGoSki.ViewModels
         public string? ReservationTimeRangeMaterialName { get; set; }
         [Display(Name = "Number Materials Booked")]
         [Required(ErrorMessage = "The Number of Materials Booked is required.")]
+        [Range(1, int.MaxValue, ErrorMessage = "The number of materials booked must be greater than zero.")]
         public int NumberMaterialsBooked { get; set; }
 
     }

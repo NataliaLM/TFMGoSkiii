@@ -93,6 +93,9 @@ namespace TFMGoSki.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+            var materialFounnd = _context.Materials.FirstOrDefault(m => m.Id == materialId);
+            if(materialFounnd == null) return NotFound();
+            reservationTimeRangeMaterialViewModel.MaterialName = materialFounnd.Name;
             return View(reservationTimeRangeMaterialViewModel);
         }
 
@@ -157,6 +160,10 @@ namespace TFMGoSki.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewBag.MaterialId = new SelectList(_context.Materials, "Id", "Name", reservationTimeRangeMaterialViewModel.MaterialId);
+
+            var materialFounnd = _context.Materials.FirstOrDefault(m => m.Id == reservationTimeRangeMaterialViewModel.Id);
+            if (materialFounnd == null) return NotFound();
+            reservationTimeRangeMaterialViewModel.MaterialName = materialFounnd.Name;
 
             return View(reservationTimeRangeMaterialViewModel);
         }
