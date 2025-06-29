@@ -61,10 +61,10 @@ namespace TFMGoSki.Controllers
                 ModelState.AddModelError("Name", "There is already a material status with this name.");
                 return View(materialStatusViewModel);
             }
-
-            MaterialStatus materialStatus = new MaterialStatus(materialStatusViewModel.Name);
+                        
             if (ModelState.IsValid)
             {
+                MaterialStatus materialStatus = new MaterialStatus(materialStatusViewModel.Name);
                 _context.Add(materialStatus);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -100,10 +100,10 @@ namespace TFMGoSki.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, MaterialStatusViewModel materialStatusViewModel)
         {
-            if (id != materialStatusViewModel.Id)
-            {
-                return NotFound();
-            }
+            //if (id != materialStatusViewModel.Id)
+            //{
+            //    return NotFound();
+            //}
 
             var materialStatusFound = _context.MaterialTypes.FirstOrDefault(c => c.Name.Equals(materialStatusViewModel.Name) && c.Id != id);
 

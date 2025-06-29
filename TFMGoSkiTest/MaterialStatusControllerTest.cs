@@ -102,6 +102,19 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Create_ValidMaterialStatus_RedirectsToIndex_ModelInvalid()
+        {
+            var data = new Dictionary<string, string>
+            {
+            };
+
+            var content = new FormUrlEncodedContent(data);
+            var response = await _client.PostAsync("/MaterialStatus/Create", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Create_DuplicateName_ShowsValidationError()
         {
             // Arrange: create one first
@@ -141,6 +154,32 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Edit_Get_ReturnsView_MaterialStatus_NotFound()
+        {
+            // Arrange
+            var status = new MaterialStatus("Editable Status"); 
+
+            var response = await _client.GetAsync($"/MaterialStatus/Edit/{status.Id}");
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); 
+        }
+
+        [Fact]
+        public async Task Edit_Get_ReturnsView_Edit_NotFound()
+        {
+            // Arrange
+            var status = new MaterialStatus("Editable Status");
+            _context.MaterialStatuses.Add(status);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/MaterialStatus/Edit?");
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Edit_Post_ValidUpdate_Redirects()
         {
             var status = new MaterialStatus("Old Name");
@@ -160,6 +199,42 @@ namespace TFMGoSkiTest
         }
 
         [Fact]
+        public async Task Edit_Post_ValidUpdate_Redirects_Model_Invalid()
+        {
+            var status = new MaterialStatus("Old Name");
+            _context.MaterialStatuses.Add(status);
+            await _context.SaveChangesAsync();
+
+            var data = new Dictionary<string, string>
+            { 
+            };
+
+            var content = new FormUrlEncodedContent(data);
+            var response = await _client.PostAsync($"/MaterialStatus/Edit/{status.Id}", content);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Post_ValidUpdate_Redirects_IdsDiffer()
+        {
+            var status = new MaterialStatus("Old Name");
+            _context.MaterialStatuses.Add(status);
+            await _context.SaveChangesAsync();
+
+            var data = new Dictionary<string, string>
+            {
+                { "Id", "98" },
+                { "Name", "Updated Name" }
+            };
+
+            var content = new FormUrlEncodedContent(data);
+            var response = await _client.PostAsync($"/MaterialStatus/Edit/89", content);
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Delete_Get_ReturnsConfirmationView()
         {
             var status = new MaterialStatus("To Be Deleted");
@@ -171,6 +246,24 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("To Be Deleted", html);
+        }
+
+        [Fact]
+        public async Task Delete_Get_ReturnsConfirmationView_MaterialStatus_Null()
+        {
+            var response = await _client.GetAsync($"/MaterialStatus/Delete/89");
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); 
+        }
+
+        [Fact]
+        public async Task Delete_Get_ReturnsConfirmationView_DeleteNull()
+        { 
+            var response = await _client.GetAsync($"/MaterialStatus/Delete?");
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode); 
         }
 
         [Fact]
@@ -198,6 +291,19 @@ namespace TFMGoSkiTest
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("Details Test", html);
+        }
+
+        [Fact]
+        public async Task Details_ValidId_ReturnsStatus_Id_Null()
+        {
+            var status = new MaterialStatus("Details Test");
+            _context.MaterialStatuses.Add(status);
+            await _context.SaveChangesAsync();
+
+            var response = await _client.GetAsync($"/MaterialStatus/Details?");
+            var html = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [Fact]
